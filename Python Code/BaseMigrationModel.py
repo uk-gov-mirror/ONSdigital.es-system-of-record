@@ -39,7 +39,7 @@ def upgrade():
         schema=schema_name
     )
     op.create_table('query_type',
-        sa.Column('query_type', sa.VARCHAR(length=15), autoincrement=False, nullable=False),
+        sa.Column('query_type', sa.VARCHAR(length=25), autoincrement=False, nullable=False),
         sa.Column('query_type_description', sa.TEXT(), autoincrement=False, nullable=False),
         sa.PrimaryKeyConstraint('query_type', name='query_type_pkey'),
         schema=schema_name,
@@ -155,7 +155,7 @@ def upgrade():
     )
     op.create_table('query',
         sa.Column('query_reference', sa.INTEGER(), server_default=sa.text("nextval('es_db_test.query_queryreference_seq'::regclass)"), autoincrement=True, nullable=False),
-        sa.Column('query_type', sa.VARCHAR(length=15), autoincrement=False, nullable=False),
+        sa.Column('query_type', sa.VARCHAR(length=25), autoincrement=False, nullable=False),
         sa.Column('ru_reference', sa.VARCHAR(length=11), autoincrement=False, nullable=False),
         sa.Column('survey_code', sa.CHAR(length=3), autoincrement=False, nullable=False),
         sa.Column('survey_period', sa.CHAR(length=6), autoincrement=False, nullable=False),
@@ -166,7 +166,7 @@ def upgrade():
         sa.Column('last_query_update', sa.DATE(), autoincrement=False, nullable=True),
         sa.Column('query_active', sa.BOOLEAN(), autoincrement=False, nullable=True),
         sa.Column('query_description', sa.TEXT(), autoincrement=False, nullable=False),
-        sa.Column('query_status', sa.VARCHAR(length=15), autoincrement=False, nullable=False),
+        sa.Column('query_status', sa.VARCHAR(length=25), autoincrement=False, nullable=False),
         sa.Column('raised_by', sa.VARCHAR(length=30), autoincrement=False, nullable=False),
         sa.Column('results_state', sa.VARCHAR(length=15), autoincrement=False, nullable=True),
         sa.Column('target_resolution_date', sa.DATE(), autoincrement=False, nullable=True),
