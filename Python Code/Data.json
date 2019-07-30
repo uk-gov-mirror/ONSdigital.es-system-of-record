@@ -1,0 +1,185 @@
+{
+"contributor_survey_period":
+[
+{"ru_reference":"77700000001","survey_code":"066","survey_period":"201712","run_id":1,"additional_comments": null,"contributor_comments": null, "last_updated": null,"active_queries": null,"contributor_interactions": 0,"priority_response_list": null,"response_status": null,"short_description": null,"status_changed": null},
+{"ru_reference":"77700000001","survey_code":"066","survey_period":"201803","run_id":1,"additional_comments": null,"contributor_comments": null, "last_updated": null,"active_queries": null,"contributor_interactions": 0,"priority_response_list": null,"response_status": null,"short_description": null,"status_changed": null},
+{"ru_reference":"77700000001","survey_code":"076","survey_period":"201803","run_id":1,"additional_comments": null,"contributor_comments": null, "last_updated": null,"active_queries": null,"contributor_interactions": 0,"priority_response_list": null,"response_status": null,"short_description": null,"status_changed": null},
+{"ru_reference":"77700000002","survey_code":"066","survey_period":"201803","run_id":1,"additional_comments": null,"contributor_comments": null, "last_updated": null,"active_queries": null,"contributor_interactions": 0,"priority_response_list": null,"response_status": null,"short_description": null,"status_changed": null},
+{"ru_reference":"77700000002","survey_code":"076","survey_period":"201801","run_id":1,"additional_comments": null,"contributor_comments": null, "last_updated": null,"active_queries": null,"contributor_interactions": 0,"priority_response_list": null,"response_status": null,"short_description": null,"status_changed": null},
+{"ru_reference":"77700000003","survey_code":"066","survey_period":"201803","run_id":1,"additional_comments": null,"contributor_comments": null, "last_updated": null,"active_queries": null,"contributor_interactions": 0,"priority_response_list": null,"response_status": null,"short_description": null,"status_changed": null},
+{"ru_reference":"77700000004","survey_code":"066","survey_period":"201803","run_id":1,"additional_comments": null,"contributor_comments": null, "last_updated": null,"active_queries": null,"contributor_interactions": 0,"priority_response_list": null,"response_status": null,"short_description": null,"status_changed": null},
+{"ru_reference":"77700000005","survey_code":"066","survey_period":"201803","run_id":1,"additional_comments": null,"contributor_comments": null, "last_updated": null,"active_queries": null,"contributor_interactions": 0,"priority_response_list": null,"response_status": null,"short_description": null,"status_changed": null},
+{"ru_reference":"77700000001","survey_code":"066","survey_period":"201801","run_id":1,"additional_comments": null,"contributor_comments": null, "last_updated": null,"active_queries": null,"contributor_interactions": 0,"priority_response_list": null,"response_status": null,"short_description": null,"status_changed": null},
+{"ru_reference":"77700000001","survey_code":"076","survey_period":"201802","run_id":1,"additional_comments": null,"contributor_comments": null, "last_updated": null,"active_queries": null,"contributor_interactions": 0,"priority_response_list": null,"response_status": null,"short_description": null,"status_changed": null},
+{"ru_reference":"77700000002","survey_code":"076","survey_period":"201803","run_id":1,"additional_comments": null,"contributor_comments": null, "last_updated": null,"active_queries": null,"contributor_interactions": 0,"priority_response_list": null,"response_status": null,"short_description": null,"status_changed": null},
+{"ru_reference":"77700000006","survey_code":"066","survey_period":"201803","run_id":1,"additional_comments": null,"contributor_comments": null, "last_updated": null,"active_queries": null,"contributor_interactions": 0,"priority_response_list": null,"response_status": null,"short_description": null,"status_changed": null}
+]
+,
+"contact":
+[
+{"contact_reference":"SG3658190","house_name_number": "1","street":"Somewhere Street","additional_address_line": null,"town_city":  "Newport","county":"Newport", "country":"Wales","postcode":"NP10 AXG","contact_constraints": null,"contact_email": null,"contact_fax": null,"contact_name":"Mr B Castle", "contact_organisation":"Site Office Sandy Banks Ltd","contact_preferences":"Call between 10am and 4pm Mon-Fri","contact_telephone":"01633 999999"},
+{"contact_reference":"SG3663572","house_name_number":"23","street": "Wet Cement Walk","additional_address_line": null,"town_city":"Llamberis","county":"Gwynedd", "country":"Wales","postcode": "SN2 3HI","contact_constraints":"Tues Non-Working Day","contact_email": null,"contact_fax": null,"contact_name":"Mr Flint", "contact_organisation":"Special Slate Agent","contact_preferences":"e-mail only","contact_telephone":null}
+]
+,
+"survey_contact":
+[
+{"contact_reference":"SG3658190","ru_reference":"77700000001","survey_code":"066","effective_end_date": null,"effective_start_date":"2017-10-01"},
+{"contact_reference":"SG3658190","ru_reference":"77700000001","survey_code":"076","effective_end_date": null,"effective_start_date":"2018-01-06"},
+{"contact_reference":"SG3663572","ru_reference":"77700000002","survey_code":"066","effective_end_date": null,"effective_start_date":"2018-01-06"},
+{"contact_reference":"SG3663572","ru_reference":"77700000002","survey_code":"076","effective_end_date": null,"effective_start_date":"2018-01-06"},
+{"contact_reference":"SG3663572","ru_reference":"77700000003","survey_code":"066","effective_end_date": null,"effective_start_date":"2018-01-06"},
+{"contact_reference":"SG3663572","ru_reference":"77700000004","survey_code":"066","effective_end_date": null,"effective_start_date":"2018-01-06"},
+{"contact_reference":"SG3663572","ru_reference":"77700000005","survey_code":"066","effective_end_date": null,"effective_start_date":"2018-01-06"},
+{"contact_reference":"SG3663572","ru_reference":"77700000006","survey_code":"066","effective_end_date": null,"effective_start_date":"2018-01-06"}
+]
+,
+"query":
+[
+{"query_type":"Register","ru_reference":"77700000001","survey_code":"066","survey_period":"201712","current_period":"201803","date_raised":"2017-02-08", "general_specific_flag": true,"industry_group": null,"last_query_update":"2017-02-12","query_active": false,"query_description":"Change of HO Contact Details.", "query_status":"Closed - Resolved","raised_by":"BDOD","results_state":"Final","target_resolution_date": null},
+{"query_type":"Data Cleaning","ru_reference":"77700000001","survey_code":"076","survey_period":"201802","current_period":"201803","date_raised":"2017-02-08", "general_specific_flag": false,"industry_group": null,"last_query_update":"2018-02-21","query_active": false,"query_description":"Validation Anomalies.", "query_status":"Closed - Resolved","raised_by":"BDOD","results_state":"Final","target_resolution_date": null},
+{"query_type":"Results Processing","ru_reference":"77700000001","survey_code":"066","survey_period":"201801","current_period":"201803","date_raised":"2017-02-08", "general_specific_flag": false,"industry_group": null,"last_query_update": null,"query_active": true,"query_description":"Imputation Anomalies.", "query_status":"Closed - Resolved","raised_by":"BDOD","results_state":"Provisional","target_resolution_date": null},
+{"query_type":"Data Cleaning","ru_reference":"77700000001","survey_code":"066","survey_period":"201801","current_period":"201803","date_raised":"2017-02-08", "general_specific_flag": false,"industry_group": null,"last_query_update": null,"query_active": true,"query_description":"Validation Anomalies.", "query_status":"Closed - Resolved","raised_by":"BDOD","results_state":"Final","target_resolution_date": null},
+{"query_type":"Register","ru_reference":"77700000002","survey_code":"066","survey_period":"201803","current_period":"201803","date_raised":"2017-02-08", "general_specific_flag":  true,"industry_group": null,"last_query_update": null,"query_active": true,"query_description":"Move from  SEFT to Paper.", "query_status":"Open","raised_by":"BDOD","results_state": null,"target_resolution_date": null},
+{"query_type":"Data Cleaning","ru_reference":"77700000002","survey_code":"076","survey_period":"201803","current_period":"201803","date_raised":"2017-02-08", "general_specific_flag": false,"industry_group": null,"last_query_update": null,"query_active": true,"query_description":"Validation Anomalies.", "query_status":"Open","raised_by":"BDOD","results_state": null,"target_resolution_date": null}
+]
+,
+"query_task":
+[
+{"task_sequence_number":1,"query_reference":1,"response_required_by": null,"task_description":"Manual Data Investigation","task_responsibility":"BRO", "task_status": "Created","next_planned_action": null,"when_action_required": null},
+{"task_sequence_number":1,"query_reference":2,"response_required_by": null,"task_description":"Manual Data Investigation","task_responsibility":"BDOD BSO", "task_status": "Created","next_planned_action": null,"when_action_required": null},
+{"task_sequence_number":1,"query_reference":3,"response_required_by": null,"task_description":"Manual Data Investigation","task_responsibility":"RAP", "task_status": "Created","next_planned_action": null,"when_action_required": null},
+{"task_sequence_number":1,"query_reference":4,"response_required_by": null,"task_description":"Manual Data Investigation","task_responsibility":"BDOD BSO", "task_status": "Created","next_planned_action": null,"when_action_required": null},
+{"task_sequence_number":1,"query_reference":5,"response_required_by": null,"task_description":"Manual Data Investigation","task_responsibility":"BRO", "task_status": "Created","next_planned_action": null,"when_action_required": null},
+{"task_sequence_number":1,"query_reference":6,"response_required_by": null,"task_description":"Manual Data Investigation","task_responsibility":"BDOD BSO", "task_status": "Created","next_planned_action": null,"when_action_required": null}
+]
+,
+"query_task_update":
+[
+]
+,
+"step_exception":
+[
+{"query_reference":1,"survey_period":"201712","run_id":1,"ru_reference":"77700000001","step":"VETs","survey_code":"066","error_code":"ERR0867","error_description":"QuestionNo Failed"},
+{"query_reference":2,"survey_period":"201802","run_id":1,"ru_reference":"77700000001","step":"VETs","survey_code":"076","error_code":"ERR0867","error_description":"QuestionNo Failed"},
+{"query_reference":3,"survey_period":"201801","run_id":1,"ru_reference":"77700000001","step":"VETs","survey_code":"066","error_code":"ERR0867","error_description":"QuestionNo Failed"},
+{"query_reference":4,"survey_period":"201801","run_id":2,"ru_reference":"77700000001","step":"VETs","survey_code":"066","error_code":"ERR0867","error_description":"QuestionNo Failed"},
+{"query_reference":5,"survey_period":"201803","run_id":1,"ru_reference":"77700000002","step":"VETs","survey_code":"066","error_code":"ERR0867","error_description":"QuestionNo Failed"},
+{"query_reference":6,"survey_period":"201803","run_id":1,"ru_reference":"77700000002","step":"VETs","survey_code":"076","error_code":"ERR0867","error_description":"QuestionNo Failed"}
+]
+,
+"question_anomaly":
+[
+{"survey_period":"201712","run_id":1,"ru_reference":"77700000001","step":"VETs","survey_code":"066","question_number":"Q601","anomaly_description":"Asphalting Sand"},
+{"survey_period":"201802","run_id":1,"ru_reference":"77700000001","step":"VETs","survey_code":"076","question_number":"Q700","anomaly_description":"Gritty Sand"},
+{"survey_period":"201801","run_id":1,"ru_reference":"77700000001","step":"VETs","survey_code":"066","question_number":"Q602","anomaly_description":"Building Soft Sand"},
+{"survey_period":"201801","run_id":2,"ru_reference":"77700000001","step":"VETs","survey_code":"066","question_number":"Q601","anomaly_description":"Asphalting Sand"},
+{"survey_period":"201803","run_id":1,"ru_reference":"77700000002","step":"VETs","survey_code":"066","question_number":"Q602","anomaly_description":"Building Soft Sand"},
+{"survey_period":"201803","run_id":1,"ru_reference":"77700000002","step":"VETs","survey_code":"076","question_number":"Q701","anomaly_description":"Fine Gravel"}
+]
+,
+"failed_vet":
+[
+{"survey_period":"201712","run_id":1,"ru_reference":"77700000001","step":"VETs","survey_code":"066","question_number":"Q601","failed_vet":2},
+{"survey_period":"201802","run_id":1,"ru_reference":"77700000001","step":"VETs","survey_code":"076","question_number":"Q700","failed_vet":1},
+{"survey_period":"201801","run_id":1,"ru_reference":"77700000001","step":"VETs","survey_code":"066","question_number":"Q602","failed_vet":2},
+{"survey_period":"201801","run_id":2,"ru_reference":"77700000001","step":"VETs","survey_code":"066","question_number":"Q601","failed_vet":2},
+{"survey_period":"201803","run_id":1,"ru_reference":"77700000002","step":"VETs","survey_code":"066","question_number":"Q602","failed_vet":1},
+{"survey_period":"201803","run_id":1,"ru_reference":"77700000002","step":"VETs","survey_code":"076","question_number":"Q701","failed_vet":1}
+]
+,
+"ssr_old_regions": 
+[
+	{"idbr_region": "AA", "ssr_reference": 1, "region_name": "Northern"}, 
+	{"idbr_region": "BA", "ssr_reference": 1, "region_name": "Northern"}, 
+	{"idbr_region": "BB", "ssr_reference": 3, "region_name": "North West"}, 
+	{"idbr_region": "CB", "ssr_reference": 3, "region_name": "North West"}, 
+	{"idbr_region": "DC", "ssr_reference": 2, "region_name": "Yorks & Humberside"}, 
+	{"idbr_region": "ED", "ssr_reference": 6, "region_name": "East Midlands"}, 
+	{"idbr_region": "FE", "ssr_reference": 5, "region_name": "West Midlands"}, 
+	{"idbr_region": "GF", "ssr_reference": 7, "region_name": "East Anglia"}, 
+	{"idbr_region": "GG", "ssr_reference": 9, "region_name": "South East"}, 
+	{"idbr_region": "HH", "ssr_reference": 9, "region_name": "South East"}, 
+	{"idbr_region": "JG", "ssr_reference": 9, "region_name": "South East"}, 
+	{"idbr_region": "KJ", "ssr_reference": 10, "region_name": "South West"}, 
+	{"idbr_region": "WW", "ssr_reference": 11, "region_name": "Wales"}, 
+	{"idbr_region": "XX", "ssr_reference": 12, "region_name": "Scotland"}, 
+	{"idbr_region": "YY", "ssr_reference": 0, "region_name": "Northern Ireland"}, 
+	{"idbr_region": "ZZ", "ssr_reference": 0, "region_name": "Non-UK"}
+]
+,
+"gor_regions": 
+[
+	{"idbr_region": "AA", "gor_reference": 1, "region_name": "North East"}, 
+	{"idbr_region": "BA", "gor_reference": 3, "region_name": "North West"}, 
+	{"idbr_region": "BB", "gor_reference": 3, "region_name": "North West"}, 
+	{"idbr_region": "CB", "gor_reference": 3, "region_name": "North West"}, 
+	{"idbr_region": "DC", "gor_reference": 2, "region_name": "Yorks & Humberside"}, 
+	{"idbr_region": "ED", "gor_reference": 6, "region_name": "East Midlands"}, 
+	{"idbr_region": "FE", "gor_reference": 5, "region_name": "West Midlands"}, 
+	{"idbr_region": "GF", "gor_reference": 7, "region_name": "Eastern"}, 
+	{"idbr_region": "GG", "gor_reference": 7, "region_name": "Eastern"}, 
+	{"idbr_region": "HH", "gor_reference": 9, "region_name": "South East"}, 
+	{"idbr_region": "JG", "gor_reference": 9, "region_name": "South East"}, 
+	{"idbr_region": "KJ", "gor_reference": 10, "region_name": "South West"}, 
+	{"idbr_region": "WW", "gor_reference": 11, "region_name": "Wales"}, 
+	{"idbr_region": "XX", "gor_reference": 12, "region_name": "Scotland"}, 
+	{"idbr_region": "YY", "gor_reference": 0, "region_name": "Northern Ireland"}, 
+	{"idbr_region": "ZZ", "gor_reference": 0, "region_name": "Non-UK"}
+]
+,
+"vet":
+[
+	{"vet_code": 1, "vet_description": "Value Present"}, 
+	{"vet_code": 2, "vet_description": "Question v Derived Question"}
+]
+,
+"query_type": 
+[
+	{"query_type": "Register", "query_type_description": "Queries raised to manage register change requests"}, 
+	{"query_type": "Data Cleaning", "query_type_description": "Queries raised as a consequence of validation and editing anomalies"}, 
+	{"query_type": "Results Processing", "query_type_description": "Queries raised as a conseqence of aggregated processing anomalies"}, 
+	{"query_type": "Results QA", "query_type_description": "Queries raised as a consequence of QA on aggregated processing"}
+]
+,
+"survey": 
+[
+	{"survey_code": "066", "survey_name": "Sand & Gravel {Land Won}"}, 
+	{"survey_code": "068", "survey_name": "BMI Concrete Tiles"}, 
+	{"survey_code": "071", "survey_name": "BMI Slate"}, 
+	{"survey_code": "073", "survey_name": "BMI Blocks"}, 
+	{"survey_code": "074", "survey_name": "BMI Bricks"}, 
+	{"survey_code": "076", "survey_name": "Sand & Gravel {Marine Dredged}"}
+]
+,
+"contributor": 
+[
+	{"parent_ru_reference": null, "ru_reference": "77700000001", "house_name_number": "1", "street": "Somewhere Street", "additional_address_line": null, "town_city": "Newport", "county": "Newport", "country": "Wales", "post_code": "NP10 AXG", "birth_date": "2019-07-30", "business_profiling_team_case": false, "contact": "Di Jones", "death_date": null, "enforcement_flag": null, "enforcement_status": null, "fax": null, "contributor_name": "Sandy Banks Ltd", "profile_information": "Life's a beach", "sic2003": 8120, "sic2007": 8120, "telephone": null},
+	{"parent_ru_reference": null, "ru_reference": "77700000002", "house_name_number": "28", "street": "SomewhereElse Rd", "additional_address_line": null, "town_city": "Cardiff", "county": "Cardiff", "country": "Wales", "post_code": "CF10 1AA", "birth_date": "2019-07-30", "business_profiling_team_case": false, "contact": "Di Jones Bach", "death_date": null, "enforcement_flag": null, "enforcement_status": null, "fax": null, "contributor_name": "Rock Quarry & Son", "profile_information": "Expecting second son to be added to business", "sic2003": 23630, "sic2007": 23630, "telephone": null},
+	{"parent_ru_reference": null, "ru_reference": "77700000003", "house_name_number": "7", "street": "HappyDays", "additional_address_line": null, "town_city": "Cardiff", "county": "Cardiff", "country": "Wales", "post_code": "CF3 9HH", "birth_date": "2019-07-30", "business_profiling_team_case": false, "contact": "Will.I.Ams", "death_date": null, "enforcement_flag": null, "enforcement_status": null, "fax": null, "contributor_name": "Rolling Stones & Co", "profile_information": "Gathers no moss", "sic2003": 23630, "sic2007": 23630, "telephone": null},
+	{"parent_ru_reference": null, "ru_reference": "77700000004", "house_name_number": "36", "street": "Haol", "additional_address_line": null, "town_city": "Casnewydd", "county": "Casnewydd", "country": "Cymru", "post_code": "NP35 8ER", "birth_date": "2019-07-30", "business_profiling_team_case": true, "contact": "Di Jones 3", "death_date": null, "enforcement_flag": null, "enforcement_status": null, "fax": null, "contributor_name": "Newport Mining Inc.", "profile_information": null, "sic2003": 23630, "sic2007": 23630, "telephone": null},
+	{"parent_ru_reference": null, "ru_reference": "77700000005", "house_name_number": "5", "street": "No Longer There Street", "additional_address_line": null, "town_city": "Newport", "county": "Newport", "country": "Wales", "post_code": "NP1 0OO", "birth_date": "2019-07-30", "business_profiling_team_case": true, "contact": "Di Jones Sequel", "death_date": null, "enforcement_flag": null, "enforcement_status": null, "fax": null, "contributor_name": "Gwent Gravel Ltd", "profile_information": null, "sic2003": 23630, "sic2007": 23630, "telephone": null},
+	{"parent_ru_reference": null, "ru_reference": "77700000006", "house_name_number": "412", "street": "Gravel Drive", "additional_address_line": null, "town_city": "Newport", "county": "Newport", "country": "Wales", "post_code": "NP11 9PT", "birth_date": "2019-07-30", "business_profiling_team_case": false, "contact": "Di Jones 2", "death_date": null, "enforcement_flag": null, "enforcement_status": null, "fax": null, "contributor_name": "Anything Sandy Ltd", "profile_information": null, "sic2003": 8120, "sic2007": 8120, "telephone": null}
+]
+,
+"survey_enrolment": 
+[
+	{"ru_reference": "77700000001", "survey_code": "066", "number_of_consecutive_non_response": 0, "number_of_periods_without_queries": null, "period_of_enrolment": "201701"},
+	{"ru_reference": "77700000001", "survey_code": "076", "number_of_consecutive_non_response": 0, "number_of_periods_without_queries": null, "period_of_enrolment": "201801"},
+	{"ru_reference": "77700000002", "survey_code": "066", "number_of_consecutive_non_response": 0, "number_of_periods_without_queries": null, "period_of_enrolment": "201801"},
+	{"ru_reference": "77700000002", "survey_code": "076", "number_of_consecutive_non_response": 0, "number_of_periods_without_queries": null, "period_of_enrolment": "201801"},
+	{"ru_reference": "77700000003", "survey_code": "066", "number_of_consecutive_non_response": 0, "number_of_periods_without_queries": null, "period_of_enrolment": "201801"},
+	{"ru_reference": "77700000004", "survey_code": "066", "number_of_consecutive_non_response": 0, "number_of_periods_without_queries": null, "period_of_enrolment": "201801"},
+	{"ru_reference": "77700000005", "survey_code": "066", "number_of_consecutive_non_response": 0, "number_of_periods_without_queries": null, "period_of_enrolment": "201801"},
+	{"ru_reference": "77700000006", "survey_code": "066", "number_of_consecutive_non_response": 0, "number_of_periods_without_queries": null, "period_of_enrolment": "201802"}
+]
+,
+"survey_period": 
+[
+	{"survey_period": "201712", "survey_code": "066", "active_period": false, "number_of_responses": 0, "number_cleared": 0,  "sample_size": 20, "number_cleared_first_time": 0},
+	{"survey_period": "201803", "survey_code": "066", "active_period": true, "number_of_responses": 0, "number_cleared": 0, "sample_size": 20, "number_cleared_first_time": 0},
+	{"survey_period": "201803", "survey_code": "076", "active_period": true, "number_of_responses": 0, "number_cleared": 0, "sample_size": 20, "number_cleared_first_time": 0},
+	{"survey_period": "201801", "survey_code": "076", "active_period": false, "number_of_responses": 0, "number_cleared": 0, "sample_size": 20, "number_cleared_first_time": 0},
+	{"survey_period": "201802", "survey_code": "076", "active_period": true, "number_of_responses": 0, "number_cleared": 0, "sample_size": 20, "number_cleared_first_time": 0},
+	{"survey_period": "201801", "survey_code": "066", "active_period": false, "number_of_responses": 0, "number_cleared": 0, "sample_size": 20, "number_cleared_first_time": 0}
+]
+}
