@@ -18,10 +18,10 @@ def lambda_handler(event, context):
         return err.messages
 
     search_list = ['query_reference',
-                   'period_query_relates',
+                   'survey_period',
                    'query_type',
                    'ru_reference',
-                   'survey_output_code',
+                   'survey_code',
                    'query_status']
 
     try:
@@ -29,7 +29,7 @@ def lambda_handler(event, context):
         session = Session(engine)
         metadata = db.MetaData()
     except:
-        return json.loads('{"ru_reference":"' + Ref + '","contributor_name":"Failed To Connect To Database."}')
+        return json.loads('{"contributor_name":"Failed To Connect To Database."}')
 
 
 #    all_query_sql = "SELECT * FROM es_db_test.Query WHERE"
@@ -64,8 +64,8 @@ def lambda_handler(event, context):
             continue
         Ref = int(curr_query['query_reference'].iloc[0])
         RU = curr_query['ru_reference'].iloc[0]
-        Period = str(curr_query['period_query_relates'].iloc[0])
-        Survey = curr_query['survey_output_code'].iloc[0]
+        Period = str(curr_query['survey_period'].iloc[0])
+        Survey = curr_query['survey_code'].iloc[0]
 
 #        try:
 
@@ -96,8 +96,8 @@ def lambda_handler(event, context):
         for index, step_row in table_list['step_exceptions'].iterrows():
             row_step = step_row['step']
             curr_step = table_list['step_exceptions']['step'] == \
-                        (row_step & (table_list['step_exceptions']['run_reference'] ==
-                                     step_row['run_reference']))
+                        (row_step & (table_list['step_exceptions']['run_id'] ==
+                                     step_row['run_id']))
             if curr_step.empty:
                 continue
 
@@ -106,7 +106,7 @@ def lambda_handler(event, context):
             outJSON += (curr_step + ',"Anomalies":[ ')
             for index, ano_row in table_list['question_anomaly'].iterrows():
                 curr_ano = table_list['question_anomaly'](table_list['question_anomaly']['step'] == ano_row['step']) \
-                           & (table_list['question_anomaly']['question_no'] == ano_row['question_no']) & \
+                           & (table_list['question_anomaly']['question_number'] == ano_row['question_number']) & \
                            (table_list['question_anomaly']['step'] == row_step)
                 if curr_ano.empty:
                     continue
@@ -115,8 +115,8 @@ def lambda_handler(event, context):
                 curr_ano = curr_ano[1:-2]
 
                 outJSON += curr_ano + ',"FailedVETs":'
-                curr_per = table_list['vets'][(table_list['vets']['step'] == row_step)
-                                              & (table_list['vets']['question_no'] == ano_row['question_no'])]
+                curr_per = table_list['failed_vet'][(table_list['failed_vet']['step'] == row_step)
+                                              & (table_list['failed_vet']['question_number'] == ano_row['question_number'])]
                 curr_per = json.dumps(curr_per.to_dict(orient='records'), sort_keys=True, default=str)
                 outJSON += (curr_per + '},')
 
@@ -125,20 +125,20 @@ def lambda_handler(event, context):
         outJSON = outJSON[:-1]
 
         outJSON += '],"QueryTasks":[ '
-        for index, tas_row in table_list['query_tasks'].iterrows():
-            curr_tas = table_list['query_tasks'][(table_list['query_tasks']['query_reference'] ==
+        for index, tas_row in table_list['query_task'].iterrows():
+            curr_tas = table_list['query_task'][(table_list['query_task']['query_reference'] ==
                                                   tas_row['query_reference']) & (
-                    table_list['query_tasks']['task_seq_no'] == tas_row['task_seq_no'])]
+                    table_list['query_task']['task_sequence_number'] == tas_row['task_sequence_number'])]
             if curr_tas.empty:
                 continue
             curr_tas = json.dumps(curr_tas.to_dict(orient='records'), sort_keys=True, default=str)
             curr_tas = curr_tas[1:-2]
             outJSON += curr_tas
             outJSON = outJSON + ',"QueryTaskUpdates":'
-            curr_up = table_list['query_task_updates'][(table_list['query_task_updates']['query_reference']
+            curr_up = table_list['query_task_update'][(table_list['query_task_update']['query_reference']
                                                         == tas_row['query_reference']) &
-                                                       (table_list['query_task_updates']['task_seq_no'] ==
-                                                        tas_row['task_seq_no'])]
+                                                       (table_list['query_task_update']['task_sequence_number'] ==
+                                                        tas_row['task_sequence_number'])]
 
             curr_up = json.dumps(curr_up.to_dict(orient='records'), sort_keys=True, default=str)
             outJSON += curr_up + '},'
@@ -162,5 +162,10 @@ def lambda_handler(event, context):
 
     return json.loads(outJSON)
 
-x = lambda_handler({"RURef": "77700000001"}, '')
+x = lambda_handler({'query_reference': 1,
+                   'survey_period': '',
+                   'query_type': '',
+                   'ru_reference': '',
+                   'survey_code': '',
+                   'query_status': ''}, '')
 print(x)
