@@ -4,83 +4,110 @@ import json
 import psycopg2
 import pandas.io.sql as psql
 import os
+import sqlalchemy as db
+from sqlalchemy.orm import Session
+import alchemy_functions
 
 
 def lambda_handler(event, context):
-    usr = os.environ['Username']
-    pas = os.environ['Password']
+    database = os.environ['Database_Location']
 
     try:
         result = ioValidation.QuerySearch(strict=True).load(event)
     except ValidationError as err:
         return err.messages
 
-    search_list = ['QueryReference',
-                   'PeriodQueryRelates',
-                   'QueryType',
-                   'RUReference',
-                   'SurveyOutputCode',
-                   'QueryStatus']
-    all_query_sql = "SELECT * FROM es_db_test.Query WHERE"
+    search_list = ['query_reference',
+                   'period_query_relates',
+                   'query_type',
+                   'ru_reference',
+                   'survey_output_code',
+                   'query_status']
 
-    added_query_sql = ""
+    try:
+        engine = db.create_engine(database)
+        session = Session(engine)
+        metadata = db.MetaData()
+    except:
+        return json.loads('{"ru_reference":"' + Ref + '","contributor_name":"Failed To Connect To Database."}')
+
+
+#    all_query_sql = "SELECT * FROM es_db_test.Query WHERE"
+    table_model = alchemy_functions.table_model(engine, metadata, "query")
+    all_query_sql = db.select([table_model])
+    added_query_sql = 0
 
     for criteria in search_list:
         if event[criteria] is None:
             continue
         if event[criteria] == "":
             continue
+        added_query_sql += 1
+        all_query_sql = all_query_sql.where(table_model.columns.criteria == event[criteria])
 
-        if added_query_sql == "":
-            added_query_sql += " " + criteria + " = %(" + criteria + ")s"
-        else:
-            added_query_sql += " AND " + criteria + " = %(" + criteria + ")s"
+    if added_query_sql == 0:
+        all_query_sql = all_query_sql.where(table_model.columns.query_status == 'Open')
 
-    if added_query_sql == "":
-        all_query_sql = all_query_sql[:-5]
-        # added_query_sql = " QueryStatus = 'open'"
-    all_query_sql += added_query_sql + ";"
+    query = alchemy_functions.select(all_query_sql, session)
+    #query = psql.read_sql(all_query_sql, connection, params={'QueryReference': event['QueryReference'], 'PeriodQueryRelates': event['PeriodQueryRelates'], 'QueryType': event['QueryType'], 'RUReference': event['RUReference'], 'SurveyOutputCode': event['SurveyOutputCode'], 'QueryStatus': event['QueryStatus']})
 
-    try:
-        connection = psycopg2.connect(host="", database="es_results_db", user=usr, password=pas)
-    except:
-        return json.loads('{"queryreference":"Failed To Connect To Database."}')
-
-    query = psql.read_sql(all_query_sql, connection, params={'QueryReference': event['QueryReference'], 'PeriodQueryRelates': event['PeriodQueryRelates'], 'QueryType': event['QueryType'], 'RUReference': event['RUReference'], 'SurveyOutputCode': event['SurveyOutputCode'], 'QueryStatus': event['QueryStatus']})
+    table_list = {'step_exception': None,
+                  'question_anomaly': None,
+                  'failed_vet': None,
+                  'query_task': None,
+                  'query_task_update': None}
 
     outJSON = '{"Queries":[ '
     for index, query_row in query.iterrows():
-        curr_query = query[query['queryreference'] == query_row['queryreference']]
+        curr_query = query[query['query_reference'] == query_row['query_reference']]
         if curr_query.empty:
             continue
-        Ref = int(curr_query['queryreference'].iloc[0])
-        RU = curr_query['rureference'].iloc[0]
-        Period = str(curr_query['periodqueryrelates'].iloc[0])
-        Survey = curr_query['surveyoutputcode'].iloc[0]
+        Ref = int(curr_query['query_reference'].iloc[0])
+        RU = curr_query['ru_reference'].iloc[0]
+        Period = str(curr_query['period_query_relates'].iloc[0])
+        Survey = curr_query['survey_output_code'].iloc[0]
 
-        try:
-            step_exceptions = psql.read_sql("SELECT * FROM es_db_test.Step_Exception WHERE QueryReference = %(Ref)s;", connection, params={'Ref': Ref})
-            question_anomaly = psql.read_sql("SELECT * FROM es_db_test.Question_Anomaly WHERE SurveyPeriod = %(Period)s AND RUReference = %(RU)s AND SurveyOutputCode = %(Survey)s;", connection, params={'RU': RU, 'Period': Period, 'Survey': Survey})
-            VETs = psql.read_sql("SELECT a.*,b.Description FROM es_db_test.Failed_VET a, es_db_test.VET b WHERE a.SurveyPeriod = %(Period)s AND a.RUReference = %(RU)s AND a.SurveyOutputCode = %(Survey)s AND a.FailedVET = b.VET;", connection, params={'RU': RU, 'Period': Period, 'Survey': Survey})
-            query_tasks = psql.read_sql("SELECT * FROM es_db_test.Query_Task WHERE QueryReference = %(Ref)s;", connection, params={'Ref': Ref})
-            query_task_updates = psql.read_sql("SELECT * FROM es_db_test.Query_Task_Update WHERE QueryReference = %(Ref)s;", connection, params={'Ref': Ref})
-        except:
-            return json.loads('{"queryreference":"Error","querytype":"Error selecting query from database"}')
+#        try:
+
+        for current_table in table_list:
+            table_model = alchemy_functions.table_model(engine, metadata, current_table)
+
+            statement = db.select([table_model]).where(table_model.columns.ru_reference == Ref)
+
+            if current_table == "failed_vet":
+                other_model = alchemy_functions.table_model(engine, metadata, "vet")
+                joined = table_model.join(other_model)
+                statement = statement.select_from(joined)
+
+            table_data = alchemy_functions.select(statement, session)
+            table_list[current_table] = table_data
+
+#            step_exceptions = psql.read_sql("SELECT * FROM es_db_test.Step_Exception WHERE QueryReference = %(Ref)s;", connection, params={'Ref': Ref})
+#            question_anomaly = psql.read_sql("SELECT * FROM es_db_test.Question_Anomaly WHERE SurveyPeriod = %(Period)s AND RUReference = %(RU)s AND SurveyOutputCode = %(Survey)s;", connection, params={'RU': RU, 'Period': Period, 'Survey': Survey})
+#            VETs = psql.read_sql("SELECT a.*,b.Description FROM es_db_test.Failed_VET a, es_db_test.VET b WHERE a.SurveyPeriod = %(Period)s AND a.RUReference = %(RU)s AND a.SurveyOutputCode = %(Survey)s AND a.FailedVET = b.VET;", connection, params={'RU': RU, 'Period': Period, 'Survey': Survey})
+#            query_tasks = psql.read_sql("SELECT * FROM es_db_test.Query_Task WHERE QueryReference = %(Ref)s;", connection, params={'Ref': Ref})
+#            query_task_updates = psql.read_sql("SELECT * FROM es_db_test.Query_Task_Update WHERE QueryReference = %(Ref)s;", connection, params={'Ref': Ref})
+#        except:
+#            return json.loads('{"queryreference":"Error","querytype":"Error selecting query from database"}')
 
         curr_query = json.dumps(curr_query.to_dict(orient='records'), sort_keys=True, default=str)
         curr_query = curr_query[1:-2]
         outJSON += curr_query + ',"Exceptions":[ '
-        for index, step_row in step_exceptions.iterrows():
+        for index, step_row in table_list['step_exceptions'].iterrows():
             row_step = step_row['step']
-            curr_step = step_exceptions[(step_exceptions['step'] == row_step) & (step_exceptions['runreference'] == step_row['runreference'])]
+            curr_step = table_list['step_exceptions']['step'] == \
+                        (row_step & (table_list['step_exceptions']['run_reference'] ==
+                                     step_row['run_reference']))
             if curr_step.empty:
                 continue
 
             curr_step = json.dumps(curr_step.to_dict(orient='records'), sort_keys=True, default=str)
             curr_step = curr_step[1:-2]
             outJSON += (curr_step + ',"Anomalies":[ ')
-            for index, ano_row in question_anomaly.iterrows():
-                curr_ano = question_anomaly[(question_anomaly['step'] == ano_row['step']) & (question_anomaly['questionno'] == ano_row['questionno']) & (question_anomaly['step'] == row_step)]
+            for index, ano_row in table_list['question_anomaly'].iterrows():
+                curr_ano = table_list['question_anomaly'](table_list['question_anomaly']['step'] == ano_row['step']) \
+                           & (table_list['question_anomaly']['question_no'] == ano_row['question_no']) & \
+                           (table_list['question_anomaly']['step'] == row_step)
                 if curr_ano.empty:
                     continue
 
@@ -88,34 +115,41 @@ def lambda_handler(event, context):
                 curr_ano = curr_ano[1:-2]
 
                 outJSON += curr_ano + ',"FailedVETs":'
-                curr_per = VETs[(VETs['step'] == row_step) & (VETs['questionno'] == ano_row['questionno'])]
+                curr_per = table_list['vets'][(table_list['vets']['step'] == row_step)
+                                              & (table_list['vets']['question_no'] == ano_row['question_no'])]
                 curr_per = json.dumps(curr_per.to_dict(orient='records'), sort_keys=True, default=str)
                 outJSON += (curr_per + '},')
 
             outJSON = outJSON[:-1]
             outJSON += ']},'
         outJSON = outJSON[:-1]
+
         outJSON += '],"QueryTasks":[ '
-        for index, tas_row in query_tasks.iterrows():
-            curr_tas = query_tasks[(query_tasks['queryreference'] == tas_row['queryreference']) & (
-                    query_tasks['taskseqno'] == tas_row['taskseqno'])]
+        for index, tas_row in table_list['query_tasks'].iterrows():
+            curr_tas = table_list['query_tasks'][(table_list['query_tasks']['query_reference'] ==
+                                                  tas_row['query_reference']) & (
+                    table_list['query_tasks']['task_seq_no'] == tas_row['task_seq_no'])]
             if curr_tas.empty:
                 continue
             curr_tas = json.dumps(curr_tas.to_dict(orient='records'), sort_keys=True, default=str)
             curr_tas = curr_tas[1:-2]
             outJSON += curr_tas
             outJSON = outJSON + ',"QueryTaskUpdates":'
-            curr_up = query_task_updates[(query_task_updates['queryreference'] == tas_row['queryreference']) & (
-                    query_task_updates['taskseqno'] == tas_row['taskseqno'])]
+            curr_up = table_list['query_task_updates'][(table_list['query_task_updates']['query_reference']
+                                                        == tas_row['query_reference']) &
+                                                       (table_list['query_task_updates']['task_seq_no'] ==
+                                                        tas_row['task_seq_no'])]
+
             curr_up = json.dumps(curr_up.to_dict(orient='records'), sort_keys=True, default=str)
             outJSON += curr_up + '},'
+
         outJSON = outJSON[:-1]
         outJSON += ']},'
 
     try:
-        connection.close()
+        session.close()
     except:
-        return json.loads('{"queryreference":"Connection To Database Closed Badly."}')
+        return json.loads('{"query_reference":"Connection To Database Closed Badly."}')
 
     outJSON = outJSON[:-1]
     outJSON += ']}'
@@ -127,3 +161,6 @@ def lambda_handler(event, context):
         return err.messages
 
     return json.loads(outJSON)
+
+x = lambda_handler({"RURef": "77700000001"}, '')
+print(x)
