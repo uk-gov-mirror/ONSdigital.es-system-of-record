@@ -72,7 +72,8 @@ def lambda_handler(event, context):
         for current_table in table_list:
             table_model = alchemy_functions.table_model(engine, metadata, current_table)
 
-            statement = db.select([table_model]).where(table_model.columns.ru_reference == Ref)
+            # Can't use a single select for the 5 tables as two use different criteria. Will meed to change.
+            statement = db.select([table_model]).where(table_model.columns.ru_reference == RU)
 
             if current_table == "failed_vet":
                 other_model = alchemy_functions.table_model(engine, metadata, "vet")
