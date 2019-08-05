@@ -73,7 +73,10 @@ def lambda_handler(event, context):
             table_model = alchemy_functions.table_model(engine, metadata, current_table)
 
             # Can't use a single select for the 5 tables as two use different criteria. Will meed to change.
-            statement = db.select([table_model]).where(table_model.columns.ru_reference == RU)
+            if current_table == 'step_exception' || current_table == 'query_task' || current_table == 'query_task_update':
+                statement = db.select([table_model]).where(table_model.columns.query_reference == Ref)
+            else:
+                statement = db.select([table_model]).where(db.and_(table_model.columns.survey_period == Period,table_model.columns.survey_code == Survey,table_model.columns.ru_reference == RU))
 
             if current_table == "failed_vet":
                 other_model = alchemy_functions.table_model(engine, metadata, "vet")
