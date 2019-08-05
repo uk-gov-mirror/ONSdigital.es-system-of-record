@@ -1,8 +1,6 @@
 from marshmallow import ValidationError
 import ioValidation
 import json
-import psycopg2
-import pandas as pd
 import os
 import sqlalchemy as db
 from sqlalchemy.orm import Session
@@ -45,7 +43,6 @@ def lambda_handler(event, context):
             continue
         added_query_sql += 1
         all_query_sql = all_query_sql.where(getattr(table_model.columns,criteria) == event[criteria])
-        print(all_query_sql)
 
     if added_query_sql == 0:
         all_query_sql = all_query_sql.where(table_model.columns.query_status == 'Open')
