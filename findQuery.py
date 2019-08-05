@@ -42,7 +42,7 @@ def lambda_handler(event, context):
         if event[criteria] == "":
             continue
         added_query_sql += 1
-        all_query_sql = all_query_sql.where(getattr(table_model.columns,criteria) == event[criteria])
+        all_query_sql = all_query_sql.where(getattr(table_model.columns, criteria) == event[criteria])
 
     if added_query_sql == 0:
         all_query_sql = all_query_sql.where(table_model.columns.query_status == 'Open')
