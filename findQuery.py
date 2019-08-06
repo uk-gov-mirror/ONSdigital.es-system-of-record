@@ -74,13 +74,11 @@ def lambda_handler(event, context):
                 if (current_table == 'step_exception') or (current_table == 'query_task')\
                         or (current_table == 'query_task_update'):
                     statement = db.select([table_model]).where(table_model.columns.query_reference == Ref)
-                else:
-                    statement = db.select([table_model]).where(db.and_(table_model.columns.survey_period == Period,table_model.columns.survey_code == Survey,table_model.columns.ru_reference == RU))
-
-                if current_table == "failed_vet":
+                elif current_table == "failed_vet":
                     other_model = alchemy_functions.table_model(engine, metadata, "vet")
-                    joined = table_model.join(other_model)
-                    statement = statement.select_from(joined)
+                    statement = db.select([table_model, other_model.columns.vet_description]).where(db.and_(table_model.columns.survey_period == Period, table_model.columns.survey_code == Survey, table_model.columns.ru_reference == RU, table_model.columns.failed_vet == other_model.columns.vet_code))
+                else:
+                    statement = db.select([table_model]).where(db.and_(table_model.columns.survey_period == Period, table_model.columns.survey_code == Survey, table_model.columns.ru_reference == RU))
 
                 table_data = alchemy_functions.select(statement, session)
                 table_list[current_table] = table_data
