@@ -2,75 +2,49 @@ from marshmallow import ValidationError
 import ioValidation
 import json
 import logging
-import psycopg2
-import pandas.io.sql as psql
 import os
+import sqlalchemy as db
+from sqlalchemy.orm import Session
+import alchemy_functions
 
 logger = logging.getLogger("createQuery")
 
 
 def lambda_handler(event, context):
-    usr = os.environ['Username']
-    pas = os.environ['Password']
+    database = os.environ['Database_Location']
 
     logger.warning("INPUT DATA: {}".format(event))
 
-    try:
-        result = ioValidation.Query(strict=True).load(event)
-    except ValidationError as err:
-        return err.messages
+    #try:
+    #    result = ioValidation.Query(strict=True).load(event)
+    #except ValidationError as err:
+    #    return err.messages
 
     try:
-        connection = psycopg2.connect(host="", database="es_results_db", user=usr, password=pas)
+        engine = db.create_engine(database)
+        session = Session(engine)
+        metadata = db.MetaData()
     except:
-        return json.loads('{"querytype":"Failed To Connect To Database."}')
+        return json.loads('{"contributor_name":"Failed To Connect To Database."}')
 
     try:
-        querySQL = ("INSERT INTO es_db_test.Query "
-                    + "(querytype,"
-                    + "rureference,"
-                    + "surveyoutputcode,"
-                    + "periodqueryrelates,"
-                    + "currentperiod,"
-                    + "datetimeraised,"
-                    + "generalspecificflag,"
-                    + "industrygroup,"
-                    + "lastqueryupdate,"
-                    + "queryactive,"
-                    + "querydescription,"
-                    + "querystatus,"
-                    + "raisedby,"
-                    + "resultsstate,"
-                    + "targetresolutiondate) "
-                    + "VALUES (%(querytype)s"
-                    + ", %(rureference)s"
-                    + ", %(surveyoutputcode)s"
-                    + ", %(periodqueryrelates)s"
-                    + ", %(currentperiod)s"
-                    + ", %(datetimeraised)s"
-                    + ", %(generalspecificflag)s"
-                    + ", %(industrygroup)s"
-                    + ", %(lastqueryupdate)s"
-                    + ", %(queryactive)s"
-                    + ", %(querydescription)s"
-                    + ", %(querystatus)s"
-                    + ", %(raisedby)s"
-                    + ", %(resultsstate)s"
-                    + ", %(targetresolutiondate)s ) "
-                    + "ON CONFLICT (queryreference) "
-                    + "DO NOTHING "
-                    + "RETURNING queryreference;"
-                    )
-
-        newQuery = psql.execute(querySQL, connection, params={"querytype": event["querytype"], "rureference": event["rureference"],
-                                                              "surveyoutputcode": event["surveyoutputcode"], "periodqueryrelates": event["periodqueryrelates"],
-                                                              "currentperiod": event["currentperiod"], "datetimeraised": event["datetimeraised"],
-                                                              "generalspecificflag": event["generalspecificflag"], "industrygroup": event["industrygroup"],
-                                                              "lastqueryupdate": event["lastqueryupdate"], "queryactive": event["queryactive"],
-                                                              "querydescription": event["querydescription"], "querystatus": event["querystatus"],
-                                                              "raisedby": event["raisedby"], "resultsstate": event["resultsstate"],
-                                                              "targetresolutiondate": event["targetresolutiondate"]})
-
+        table_model = alchemy_functions.table_model(engine, metadata, 'query')
+        statement = db.insert(table_model).values(query_type=event['query_type'],
+                                                  ru_reference=event['ru_reference'],
+                                                  survey_code=event['survey_code'],
+                                                  survey_period=event['survey_period'],
+                                                  current_period=event['current_period'],
+                                                  date_raised=event['date_raised'],
+                                                  general_specific_flag=event['general_specific_flag'],
+                                                  industry_group=event['industry_group'],
+                                                  last_query_update=event['last_query_update'],
+                                                  query_active=event['query_active'],
+                                                  query_description=event['query_description'],
+                                                  query_status=event['query_status'],
+                                                  raised_by=event['raised_by'],
+                                                  results_state=event['results_state'],
+                                                  target_resolution_date=event['target_resolution_date'])
+        newQuery = alchemy_functions.update(statement, session)
     except Exception as exc:
         logging.warning("Error inserting into table: {}".format(exc))
         return json.loads('{"querytype":"Failed To Create Query in Query Table."}')
@@ -81,88 +55,45 @@ def lambda_handler(event, context):
             exceptions = event["Exceptions"]
             for count, exception in enumerate(exceptions):
                 logger.warning("Inserting excepton {}".format(count))
-                exceptionSQL = ("INSERT INTO es_db_test.Step_Exception "
-                                + "(queryreference,"
-                                + "surveyperiod,"
-                                + "runreference,"
-                                + "rureference,"
-                                + "step,"
-                                + "surveyoutputcode,"
-                                + "errorcode,"
-                                + "errordescription)"
-                                + "VALUES ( %(queryreference)s"
-                                + ", %(surveyperiod)s"
-                                + ", %(runreference)s"
-                                + ", %(rureference)s"
-                                + ", %(step)s"
-                                + ", %(surveyoutputcode)s"
-                                + ", %(errorcode)s"
-                                + ", %(errordescription)s ) "
-                                + "ON CONFLICT (surveyperiod, runreference, rureference, step, surveyoutputcode) "
-                                + "DO NOTHING;")
-
-                psql.execute(exceptionSQL, connection, params={"queryreference": newQuery, "surveyperiod": exception["surveyperiod"],
-                                                               "runreference": exception["runreference"],
-                                                               "rureference": exception["rureference"],
-                                                               "step": exception["step"], "surveyoutputcode": exception["surveyoutputcode"],
-                                                               "errorcode": exception["errorcode"], "errordescription": exception["errordescription"]})
-
+                table_model = alchemy_functions.table_model(engine, metadata, 'query')
+                statement = db.insert(table_model).values(query_reference=exception['query_reference'],
+                                                          survey_period=exception['survey_period'],
+                                                          run_id=exception['run_id'],
+                                                          ru_reference=exception['ru_reference'],
+                                                          step=exception['step'],
+                                                          survey_code=exception['survey_code'],
+                                                          error_code=exception['error_code'],
+                                                          error_description=exception['error_description'])
+                alchemy_functions.update(statement, session)
                 try:
                     if "Anomalies" in exception.keys():
                         Anomaly = exception["Anomalies"]
                         for count, anomaly in enumerate(Anomaly):
                             logging.warning("inserting into anomaly {}".format(count))
-                            anomalySQL = ("INSERT INTO es_db_test.Question_Anomaly "
-                                          + "(surveyperiod,"
-                                          + "questionno,"
-                                          + "runreference,"
-                                          + "rureference,"
-                                          + "step,"
-                                          + "surveyoutputcode,"
-                                          + "description)"
-                                          + " VALUES ("
-                                          + "  %(surveyperiod)s"
-                                          + ", %(questionno)s"
-                                          + ", %(runreference)s"
-                                          + ", %(rureference)s"
-                                          + ", %(step)s"
-                                          + ", %(surveyoutputcode)s"
-                                          + ", %(description)s ) "
-                                          + "ON CONFLICT (surveyperiod, questionno, runreference, rureference, step, surveyoutputcode) "
-                                          + "DO NOTHING;")
-
-                            psql.execute(anomalySQL, connection, params={"surveyperiod": anomaly["surveyperiod"], "questionno": anomaly["questionno"],
-                                                                         "runreference": anomaly["runreference"], "rureference": anomaly["rureference"],
-                                                                         "step": anomaly["step"], "surveyoutputcode": anomaly["surveyoutputcode"],
-                                                                         "description": anomaly["description"]})
+                            table_model = alchemy_functions.table_model(engine, metadata, 'query')
+                            statement = db.insert(table_model).values(survey_period=anomaly['survey_period'],
+                                                                      question_number=anomaly['question_number'],
+                                                                      run_id=anomaly['run_id'],
+                                                                      ru_reference=anomaly['ru_reference'],
+                                                                      step=anomaly['step'],
+                                                                      survey_code=anomaly['survey_code'],
+                                                                      anomaly_description=anomaly['anomaly_description'])
+                            alchemy_functions.update(statement, session)
 
                             try:
                                 if "FailedVETs" in anomaly.keys():
                                     Vets = anomaly["FailedVETs"]
                                     for count, vets in enumerate(Vets):
                                         logging.warning("inserting into failedvet {}".format(count))
-                                        vetsSQL = ("INSERT INTO es_db_test.Failed_VET "
-                                                   + "(failedvet,"
-                                                   + "surveyperiod,"
-                                                   + "questionno,"
-                                                   + "runreference,"
-                                                   + "rureference,"
-                                                   + "step,"
-                                                   + "surveyoutputcode)"
-                                                   + "VALUES (%(failedvet)s"
-                                                   + ", %(surveyperiod)s"
-                                                   + ", %(questionno)s"
-                                                   + ", %(runreference)s"
-                                                   + ", %(rureference)s"
-                                                   + ", %(step)s"
-                                                   + ", %(surveyoutputcode)s ) "
-                                                   + "ON CONFLICT (failedvet, surveyperiod, questionno, runreference, rureference, step, surveyoutputcode) "
-                                                   + "DO NOTHING;")
-
-                                        psql.execute(vetsSQL, connection, params={"surveyperiod": vets["surveyperiod"], "questionno": vets["questionno"],
-                                                                                  "runreference": vets["runreference"], "failedvet": vets["failedvet"],
-                                                                                  "rureference": vets["rureference"], "step": vets["step"],
-                                                                                  "surveyoutputcode": vets["surveyoutputcode"]})
+                                        table_model = alchemy_functions.table_model(engine, metadata, 'query')
+                                        statement = db.insert(table_model).values(failed_vet=anomaly['failed_vet'],
+                                                                                  survey_period=anomaly['survey_period'],
+                                                                                  question_number=anomaly['question_number'],
+                                                                                  run_id=anomaly['run_id'],
+                                                                                  ru_reference=anomaly['ru_reference'],
+                                                                                  step=anomaly['step'],
+                                                                                  survey_code=anomaly['survey_code'])
+                                        alchemy_functions.update(statement, session)
 
                             except:
                                 return json.loads('{"querytype":"Failed To Create Query in Failed_VET Table."}')
@@ -176,66 +107,46 @@ def lambda_handler(event, context):
             Tasks = event["QueryTasks"]
             for count, task in enumerate(Tasks):
                 logging.warning("inserting into tasks {}".format(count))
-                taskSQL = ("INSERT INTO es_db_test.Query_Task "
-                           + "(taskseqno,"
-                           + "queryreference,"
-                           + "responserequiredby,"
-                           + "taskdescription,"
-                           + "taskresponsibility,"
-                           + "taskstatus,"
-                           + "nextplannedaction,"
-                           + "whenactionrequired)"
-                           + "VALUES (%(taskseqno)s "
-                           + ", %(queryreference)s"
-                           + ", %(responserequiredby)s"
-                           + ", %(taskdescription)s"
-                           + ", %(taskresponsibility)s"
-                           + ", %(taskstatus)s"
-                           + ", %(nextplannedaction)s"
-                           + ", %(whenactionrequired)s ) "
-                           + "ON CONFLICT (taskseqno, queryreference) "
-                           + "DO NOTHING;")
-
-                psql.execute(taskSQL, connection, params={"queryreference": newQuery, "taskseqno": task["taskseqno"],
-                                                          "responserequiredby": task.get("responserequiredby", None), "taskdescription": task.get("taskdescription", None),
-                                                          "taskresponsibility": task.get("taskresponsibility", None), "taskstatus": task.get("taskstatus", None),
-                                                          "nextplannedaction": task.get("nextplannedaction", None), "whenactionrequired": task.get("whenactionrequired", None)})
+                table_model = alchemy_functions.table_model(engine, metadata, 'query')
+                statement = db.insert(table_model).values(task_sequence_number=task['task_sequence_number'],
+                                                          query_reference=task['query_reference'],
+                                                          response_required_by=task['response_required_by'],
+                                                          task_description=task['task_description'],
+                                                          task_responsibility=task['task_responsibility'],
+                                                          task_status=task['task_status'],
+                                                          next_planned_action=task['next_planned_action'],
+                                                          when_action_required=task['when_action_required'])
+                alchemy_functions.update(statement, session)
 
                 try:
                     if "QueryTaskUpdates" in task.keys():
                         updateTask = task["QueryTaskUpdates"]
-                        for count, update in enumerate(updateTask):
+                        for count, query_task in enumerate(updateTask):
                             logging.warning("inserting into query task updates {}".format(count))
-                            updateSQL = ("INSERT INTO es_db_test.Query_Task_Update "
-                                         + "(taskseqno,"
-                                         + "queryreference,"
-                                         + "lastupdated,"
-                                         + "taskupdatedescription,"
-                                         + "updatedby)"
-                                         + "VALUES (%(taskseqno)s "
-                                         + ", %(queryreference)s"
-                                         + ", %(lastupdated)s"
-                                         + ", %(taskupdatedescription)s"
-                                         + ", %(updatedby)s ) "
-                                         + "ON CONFLICT (taskseqno,queryreference,lastupdated) "
-                                         + "DO NOTHING;")
-
-                            psql.execute(updateSQL, connection, params={"queryreference": newQuery, "taskseqno": task["taskseqno"],
-                                                                        "lastupdated": update["lastupdated"], "taskupdatedescription": update["taskupdatedescription"],
-                                                                        "updatedby": update["updatedby"]})
+                            table_model = alchemy_functions.table_model(engine, metadata, 'query')
+                            statement = db.insert(table_model).values(task_sequence_number=query_task['task_sequence_number'],
+                                                                      query_reference=query_task['query_reference'],
+                                                                      last_updated=query_task['last_updated'],
+                                                                      task_update_description=query_task['task_update_description'],
+                                                                      updated_by=query_task['updated_by'])
+                            alchemy_functions.update(statement, session)
 
                 except:
                     return json.loads('{"querytype":"Failed To Create Query in Query_Task_Update Table."}')
     except:
         return json.loads('{"querytype":"Failed To Create Query in Query_Task Table."}')
     try:
-        connection.commit()
+        session.commit()
     except:
         return json.loads('{"querytype":"Failed To Commit Changes To The Database."}')
 
     try:
-        connection.close()
+        session.close()
     except:
         return json.loads('{"querytype":"Connection To Database Closed Badly."}')
 
     return json.loads('{"querytype":"Query created successfully", "queryreference": ' + str(newQuery) + '}')
+
+
+x = lambda_handler('', '')
+print(x)
