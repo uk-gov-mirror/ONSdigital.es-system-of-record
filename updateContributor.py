@@ -1,53 +1,60 @@
 from marshmallow import ValidationError
 import ioValidation
 import json
-import psycopg2
-import pandas.io.sql as psql
-import pandas
 import os
 from datetime import datetime
+import sqlalchemy as db
+import alchemy_functions
+from sqlalchemy.orm import Session
 
 
 def lambda_handler(event, context):
-    usr = os.environ['Username']
-    pas = os.environ['Password']
+
+#    try:
+#        result = ioValidation.ContributorUpdate(strict=True).load(event)
+#    except ValidationError as err:
+#        return err.messages
+
+    database = os.environ['Database_Location']
 
     try:
-        result = ioValidation.ContributorUpdate(strict=True).load(event)
-    except ValidationError as err:
-        return err.messages
+        engine = db.create_engine(database)
+        session = Session(engine)
+        metadata = db.MetaData()
 
-    try:
-        connection = psycopg2.connect(host="",
-                                      database="es_results_db", user=usr, password=pas)
     except:
         return json.loads('{"ContributorData":"Failed To Connect To Database."}')
 
-    currentTime = str(datetime.now())
+    current_time = str(datetime.now())
+
+#    try:
+    table_model = alchemy_functions.table_model(engine, metadata, 'contributor_survey_period')
+    statement = db.update(table_model).\
+        values(additional_comments=event['additional_comments'],
+               contributor_comments=event['contributor_comments'],
+               last_updated=current_time).\
+        where(db.and_(table_model.columns.survey_period == event['survey_period'],
+                      table_model.columns.survey_code == event['survey_code'],
+                      table_model.columns.ru_reference == event['ru_reference']))
+
+    outcome = alchemy_functions.update(statement, session)
 
     try:
-        contributorSQL = ("UPDATE es_db_test.Contributor_Survey_Period SET"
-                          + " AdditionalComments = %(adcoms)s"
-                          + ", ContributorComments = %(contribcoms)s"
-                          + ", LastUpdated = '" + currentTime
-                          + "'  WHERE SurveyPeriod = %(surper)s"
-                          + "  AND RUReference = %(ref)s"
-                          + "  AND SurveyOutputCode = %(surcode)s"
-                          + ";")
-        psql.execute(contributorSQL, connection, params={"adcoms": event["additionalcomments"], "contribcoms": event["contributorcomments"],
-                                                         "surper": event["surveyperiod"], "ref": event["rureference"],
-                                                         "surcode": event["surveyoutputcode"]})
-    except:
-        return json.loads('{"ContributorData":"Failed To Update Contributor_Survey_Period."}')
-
-    try:
-        connection.commit()
+        session.commit()
     except:
         return json.loads('{"ContributorData":"Failed To Commit Changes To The Database."}')
 
     try:
-        connection.close()
+        session.close()
     except:
         return json.loads('{"ContributorData":"Connection To Database Closed Badly."}')
 
     return json.loads('{"ContributorData":"Successfully Updated The Table."}')
+
+
+x = lambda_handler({"additional_comments": "Hello",
+                    "contributor_comments": "Contributor says hello!",
+                    "survey_period": "201712",
+                    "survey_code": "066",
+                    "ru_reference": "77700000001"}, "")
+print(x)

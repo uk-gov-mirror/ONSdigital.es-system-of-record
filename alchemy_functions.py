@@ -13,3 +13,8 @@ def select(select_sql, session):
     if not table_dataframe.empty:
         table_dataframe.columns = table_data[0].keys()
     return table_dataframe
+
+
+def update(update_sql, session):
+    table_data = session.execute(update_sql)
+    return table_data

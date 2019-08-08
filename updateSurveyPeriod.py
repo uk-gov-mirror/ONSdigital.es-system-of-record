@@ -1,57 +1,52 @@
 import json
-import psycopg2
-import pandas.io.sql as psql
 import os
+import sqlalchemy as db
+import alchemy_functions
+from sqlalchemy.orm import Session
 
 
 def lambda_handler(event, context):
-    usr = os.environ['Username']
-    pas = os.environ['Password']
+    database = os.environ['Database_Location']
 
     try:
-        connection = psycopg2.connect(host="",
-                                      database="es_results_db", user=usr, password=pas)
+        engine = db.create_engine(database)
+        session = Session(engine)
+        metadata = db.MetaData()
+
     except:
-        return json.loads('{"SurveyPeriod":"Failed To Connect To Database."}')
+        return json.loads('{"QueryTypes":"Failed To Connect To Database."}')
 
     try:
-        contributorSQL = ("UPDATE es_db_test.Survey_Period SET "
-                          + "ActivePeriod = %(activeperiod)s, "
-                          + "NoOfResponses = %(noofresponses)s, "
-                          + "NumberCleared = %(numbercleared)s, "
-                          + "NumberClearedFirstTime = %(numberclearedfirsttime)s, "
-                          + "SampleSize = %(samplesize)s "
-                          + "WHERE SurveyOutputCode = %(surveyoutputcode)s "
-                          + "AND SurveyPeriod = %(surveyperiod)s;")
+        table_model = alchemy_functions.table_model(engine, metadata, 'survey_period')
 
-        psql.execute(contributorSQL, connection, params={"activeperiod": event["activeperiod"], "noofresponses": event["noofresponses"],
-                                                         "surveyperiod": event["surveyperiod"], "numbercleared": event["numbercleared"],
-                                                         "numberclearedfirsttime": event["numberclearedfirsttime"], "samplesize": event["samplesize"],
-                                                         "surveyoutputcode": event["surveyoutputcode"]})
+        statement = db.update(table_model).\
+            values(active_period=event['active_period'],
+                   number_of_responses=event['number_of_responses'],
+                   number_cleared=event['number_cleared'],
+                   number_cleared_first_time=event['number_cleared_first_time'],
+                   sample_size=event['sample_size']).\
+            where(db.and_(table_model.columns.survey_period ==
+                  event['survey_period'],
+                  table_model.columns.survey_code ==
+                  event['survey_code']))
+
+        outcome = alchemy_functions.update(statement, session)
+
     except:
         return json.loads('{"SurveyPeriod":"Failed To Update Survey_Period."}')
 
-    # contributorSQL = "UPDATE es_db_test.Survey_Period SET "
-    # if event['FirstTime'] == True:
-    #     contributorSQL += "NumberClearedFirstTime = %(cleared)s, "
-
-    # contributorSQL += ( "NumberCleared = %(cleared)s"
-    #                   + "  WHERE SurveyPeriod = %(surper)s"
-    #                   + "  AND SurveyOutputCode = %(surcode)s"
-    #                   + ";")
-
-    # psql.execute(contributorSQL, connection, params={"cleared": event["cleared"],
-    #                                                  "surper": event["surveyperiod"],
-    #                                                  "surcode": event["surveyoutputcode"]})
-
     try:
-        connection.commit()
+        session.commit()
     except:
         return json.loads('{"SurveyPeriod":"Failed To Commit Changes To The Database."}')
 
     try:
-        connection.close()
+        session.close()
     except:
         return json.loads('{"SurveyPeriod":"Connection To Database Closed Badly."}')
 
     return json.loads('{"SurveyPeriod":"Successfully Updated The Table."}')
+
+
+x = lambda_handler({"active_period":True, "number_of_responses":2, "number_cleared":2, "number_cleared_first_time":1, "sample_size":2, "survey_period":"201712", "survey_code":"066"}, '')
+print(x)
