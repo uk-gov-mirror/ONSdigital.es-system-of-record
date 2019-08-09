@@ -11,7 +11,7 @@ def lambda_handler(event, context):
     database = os.environ['Database_Location']
 
 #    try:
-#        result = ioValidation.QuerySearch(strict=True).load(event)
+#        result = ioValidation.QuerySearch(strict=True).load(test_data.txt)
 #    except ValidationError as err:
 #        return err.messages
 

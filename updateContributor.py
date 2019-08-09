@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 def lambda_handler(event, context):
 
 #    try:
-#        result = ioValidation.ContributorUpdate(strict=True).load(event)
+#        result = ioValidation.ContributorUpdate(strict=True).load(test_data.txt)
 #    except ValidationError as err:
 #        return err.messages
 
