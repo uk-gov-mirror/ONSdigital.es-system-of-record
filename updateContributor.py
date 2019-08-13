@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 def lambda_handler(event, context):
 
 #    try:
-#        result = ioValidation.ContributorUpdate(strict=True).load(test_data.txt)
+#        result = ioValidation.ContributorUpdate(strict=True).load("test_data.txt")
 #    except ValidationError as err:
 #        return err.messages
 
@@ -27,17 +27,20 @@ def lambda_handler(event, context):
 
     current_time = str(datetime.now())
 
-#    try:
-    table_model = alchemy_functions.table_model(engine, metadata, 'contributor_survey_period')
-    statement = db.update(table_model).\
-        values(additional_comments=event['additional_comments'],
-               contributor_comments=event['contributor_comments'],
-               last_updated=current_time).\
-        where(db.and_(table_model.columns.survey_period == event['survey_period'],
-                      table_model.columns.survey_code == event['survey_code'],
-                      table_model.columns.ru_reference == event['ru_reference']))
+    try:
+        table_model = alchemy_functions.table_model(engine, metadata, 'contributor_survey_period')
+        statement = db.update(table_model).\
+            values(additional_comments=event['additional_comments'],
+                   contributor_comments=event['contributor_comments'],
+                   last_updated=current_time).\
+            where(db.and_(table_model.columns.survey_period == event['survey_period'],
+                          table_model.columns.survey_code == event['survey_code'],
+                          table_model.columns.ru_reference == event['ru_reference']))
 
-    outcome = alchemy_functions.update(statement, session)
+        outcome = alchemy_functions.update(statement, session)
+
+    except:
+        return json.loads('{"ContributorData":"Failed To Update The Database."}')
 
     try:
         session.commit()

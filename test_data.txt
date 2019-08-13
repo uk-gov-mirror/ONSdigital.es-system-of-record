@@ -1,7 +1,7 @@
 {
   "industry_group": "Con",
   "query_active": false,
-  "query_description": "Validation Exception",
+  "query_description": "Validation Exception Test",
   "current_period": "200001",
   "survey_period": "201803",
   "ru_reference": "77700000002",

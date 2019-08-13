@@ -48,5 +48,7 @@ def lambda_handler(event, context):
     return json.loads('{"SurveyPeriod":"Successfully Updated The Table."}')
 
 
-x = lambda_handler({"active_period":True, "number_of_responses":2, "number_cleared":2, "number_cleared_first_time":1, "sample_size":2, "survey_period":"201712", "survey_code":"066"}, '')
+x = lambda_handler({"active_period": True, "number_of_responses": 2, "number_cleared": 2,
+                    "number_cleared_first_time": 1, "sample_size": 2, "survey_period": "201712",
+                    "survey_code": "066"}, '')
 print(x)

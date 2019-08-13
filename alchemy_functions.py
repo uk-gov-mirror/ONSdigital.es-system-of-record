@@ -1,5 +1,6 @@
-import sqlalchemy as db
+#import sqlalchemy as db
 import pandas as pd
+import db_model as db
 
 
 def table_model(engine, metadata, table_name):

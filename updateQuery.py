@@ -1,6 +1,5 @@
 from marshmallow import ValidationError
 import ioValidation
-import json
 import os
 import logging
 import sqlalchemy as db
@@ -44,8 +43,7 @@ def lambda_handler(event, context):
                                                   results_state=event['results_state'],
                                                   target_resolution_date=event['target_resolution_date']).\
             where(table_model.columns.query_reference == event['query_reference'])
-
-        new_query = alchemy_functions.update(statement, session)
+        alchemy_functions.update(statement, session)
 
     except Exception as exc:
         logging.warning("Error inserting into table: {}".format(exc))
@@ -58,13 +56,13 @@ def lambda_handler(event, context):
                     logger.warning("Inserting step_exception {}".format(count))
                     table_model = alchemy_functions.table_model(engine, metadata, 'step_exception')
                     statement = insert(table_model).values(query_reference=exception['query_reference'],
-                                                              survey_period=exception['survey_period'],
-                                                              run_id=exception['run_id'],
-                                                              ru_reference=exception['ru_reference'],
-                                                              step=exception['step'],
-                                                              survey_code=exception['survey_code'],
-                                                              error_code=exception['error_code'],
-                                                              error_description=exception['error_description']).\
+                                                           survey_period=exception['survey_period'],
+                                                           run_id=exception['run_id'],
+                                                           ru_reference=exception['ru_reference'],
+                                                           step=exception['step'],
+                                                           survey_code=exception['survey_code'],
+                                                           error_code=exception['error_code'],
+                                                           error_description=exception['error_description']).\
                         on_conflict_do_nothing(constraint=table_model.primary_key)
                     alchemy_functions.update(statement, session)
 
@@ -75,32 +73,32 @@ def lambda_handler(event, context):
                                 logging.warning("inserting into question_anomaly {}".format(count))
                                 table_model = alchemy_functions.table_model(engine, metadata, 'question_anomaly')
                                 statement = insert(table_model).values(survey_period=anomaly['survey_period'],
-                                                                          question_number=anomaly['question_number'],
-                                                                          run_id=anomaly['run_id'],
-                                                                          ru_reference=anomaly['ru_reference'],
-                                                                          step=anomaly['step'],
-                                                                          survey_code=anomaly['survey_code'],
-                                                                          anomaly_description=
-                                                                          anomaly['anomaly_description']).\
+                                                                       question_number=anomaly['question_number'],
+                                                                       run_id=anomaly['run_id'],
+                                                                       ru_reference=anomaly['ru_reference'],
+                                                                       step=anomaly['step'],
+                                                                       survey_code=anomaly['survey_code'],
+                                                                       anomaly_description=
+                                                                       anomaly['anomaly_description']).\
                                     on_conflict_do_nothing(constraint=table_model.primary_key)
                                 alchemy_functions.update(statement, session)
 
                                 try:
                                     if "Failed_VETs" in anomaly.keys():
-                                        Vets = anomaly["Failed_VETs"]
-                                        for count, vets in enumerate(Vets):
+                                        failed_vets = anomaly["Failed_VETs"]
+                                        for count, vets in enumerate(failed_vets):
                                             logging.warning("inserting into failed_vet {}".format(count))
                                             table_model = alchemy_functions.table_model(engine, metadata, 'failed_vet')
                                             statement = insert(table_model).values(failed_vet=anomaly['failed_vet'],
-                                                                                      survey_period=anomaly[
+                                                                                   survey_period=anomaly[
                                                                                           'survey_period'],
-                                                                                      question_number=anomaly[
+                                                                                   question_number=anomaly[
                                                                                           'question_number'],
-                                                                                      run_id=anomaly['run_id'],
-                                                                                      ru_reference=anomaly[
+                                                                                   run_id=anomaly['run_id'],
+                                                                                   ru_reference=anomaly[
                                                                                           'ru_reference'],
-                                                                                      step=anomaly['step'],
-                                                                                      survey_code=anomaly[
+                                                                                   step=anomaly['step'],
+                                                                                   survey_code=anomaly[
                                                                                           'survey_code']).\
                                                 on_conflict_do_nothing(constraint=table_model.primary_key)
                                             alchemy_functions.update(statement, session)
@@ -116,8 +114,8 @@ def lambda_handler(event, context):
 
     try:
         if "QueryTasks" in event.keys():
-            Tasks = event["QueryTasks"]
-            for count, task in enumerate(Tasks):
+            tasks = event["QueryTasks"]
+            for count, task in enumerate(tasks):
                 logging.warning("Updating query_tasks {}".format(count))
                 table_model = alchemy_functions.table_model(engine, metadata, 'query_task')
                 statement = db.update(table_model).values(response_required_by=task['response_required_by'],
@@ -125,16 +123,16 @@ def lambda_handler(event, context):
                                                           task_responsibility=task['task_responsibility'],
                                                           task_status=task['task_status'],
                                                           next_planned_action=task['next_planned_action'],
-                                                          when_action_required=task['when_action_required']).\
-                              where(db.and_(table_model.columns.task_sequence_number == task['task_sequence_number'],
-                              table_model.columns.query_reference ==
-                              task['query_reference']))
+                                                          when_action_required=task['when_action_required'])\
+                    .where(db.and_(table_model.columns.task_sequence_number == task['task_sequence_number'],
+                           table_model.columns.query_reference ==
+                           task['query_reference']))
                 alchemy_functions.update(statement, session)
 
                 try:
                     if "QueryTaskUpdates" in task.keys():
-                        updateTask = task["QueryTaskUpdates"]
-                        for count, query_task in enumerate(updateTask):
+                        update_task = task["QueryTaskUpdates"]
+                        for count, query_task in enumerate(update_task):
                             logging.warning("inserting into query task updates {}".format(count))
                             table_model = alchemy_functions.table_model(engine, metadata, 'query_task_update')
                             statement = insert(table_model).values(
@@ -169,6 +167,7 @@ def lambda_handler(event, context):
         return json.loads('{"UpdateData":"Connection To Database Closed Badly."}')
 
     return json.loads('{"UpdateData":"Successfully Updated The Tables."}')
+
 
 x = lambda_handler(test_data, '')
 print(x)
