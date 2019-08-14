@@ -1,7 +1,8 @@
 import json
+import os
+
 import sqlalchemy as db
 from sqlalchemy.orm import Session
-import os
 
 
 # If this fails to complete, you need to drop and recreate the database to fix the query tables serialisation.
