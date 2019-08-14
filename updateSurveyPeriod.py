@@ -30,7 +30,7 @@ def lambda_handler(event, context):
                   table_model.columns.survey_code ==
                   event['survey_code']))
 
-        outcome = alchemy_functions.update(statement, session)
+        alchemy_functions.update(statement, session)
 
     except:
         return json.loads('{"SurveyPeriod":"Failed To Update Survey_Period."}')

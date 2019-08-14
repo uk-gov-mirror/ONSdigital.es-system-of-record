@@ -10,10 +10,10 @@ from sqlalchemy.orm import Session
 
 def lambda_handler(event, context):
 
-#    try:
-#        result = ioValidation.ContributorUpdate(strict=True).load("test_data.txt")
-#    except ValidationError as err:
-#        return err.messages
+    # try:
+    #     ioValidation.ContributorUpdate(strict=True).load("test_data.txt")
+    # except ValidationError as err:
+    #     return err.messages
 
     database = os.environ['Database_Location']
 
@@ -37,7 +37,7 @@ def lambda_handler(event, context):
                           table_model.columns.survey_code == event['survey_code'],
                           table_model.columns.ru_reference == event['ru_reference']))
 
-        outcome = alchemy_functions.update(statement, session)
+        alchemy_functions.update(statement, session)
 
     except:
         return json.loads('{"ContributorData":"Failed To Update The Database."}')

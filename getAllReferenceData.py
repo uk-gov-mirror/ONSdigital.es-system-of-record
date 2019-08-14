@@ -22,12 +22,12 @@ def lambda_handler(event, context):
                       'survey': None,
                       'gor_regions': None,
                       'ssr_old_regions': None}
-    
+
         for current_table in table_list:
             table_model = alchemy_functions.table_model(engine, metadata, current_table)
-    
+
             statement = db.select([table_model])
-    
+
             table_data = alchemy_functions.select(statement, session)
             table_list[current_table] = table_data
 

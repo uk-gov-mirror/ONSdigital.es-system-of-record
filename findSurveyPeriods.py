@@ -11,7 +11,7 @@ def lambda_handler(event, context):
     database = os.environ['Database_Location']
 
 #    try:
-#        result = ioValidation.FindSurvey(strict=True).load(test_data.txt)
+#        ioValidation.FindSurvey(strict=True).load(test_data.txt)
 #    except ValidationError as err:
 #        return err.messages
 
@@ -42,7 +42,7 @@ def lambda_handler(event, context):
     out_json = json.dumps(query.to_dict(orient='records'), sort_keys=True, default=str)
 
 #    try:
-#        result = ioValidation.SurveyPeriod(strict=True, many=True).loads(out_json)
+#        ioValidation.SurveyPeriod(strict=True, many=True).loads(out_json)
 #    except ValidationError as err:
 #        return err.messages
 

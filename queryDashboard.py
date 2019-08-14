@@ -12,7 +12,7 @@ def lambda_handler(event, context):
     database = os.environ['Database_Location']
 
 #    try:
-#        result = ioValidation.QuerySearch(strict=True).load(test_data.txt)
+#        ioValidation.QuerySearch(strict=True).load(test_data.txt)
 #    except ValidationError as err:
 #        return err.messages
 
@@ -164,7 +164,7 @@ def lambda_handler(event, context):
     out_json = out_json.replace("NaN", "null")
 
 #    try:
-#        result = ioValidation.Query(strict=True).loads(out_json)
+#        ioValidation.Query(strict=True).loads(out_json)
 #    except ValidationError as err:
 #        return err.messages
 

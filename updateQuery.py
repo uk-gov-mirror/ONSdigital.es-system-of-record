@@ -20,7 +20,7 @@ def lambda_handler(event, context):
     logger.warning("Input {}".format(event))
 
 #    try:
-#        result = ioValidation.Query(strict=True).load(test_data.txt)
+#        ioValidation.Query(strict=True).load(test_data.txt)
 #    except ValidationError as err:
 #        return err.messages
 
@@ -53,61 +53,60 @@ def lambda_handler(event, context):
         if "Exceptions" in event.keys():
             exceptions = event["Exceptions"]
             for count, exception in enumerate(exceptions):
-                    logger.warning("Inserting step_exception {}".format(count))
-                    table_model = alchemy_functions.table_model(engine, metadata, 'step_exception')
-                    statement = insert(table_model).values(query_reference=exception['query_reference'],
-                                                           survey_period=exception['survey_period'],
-                                                           run_id=exception['run_id'],
-                                                           ru_reference=exception['ru_reference'],
-                                                           step=exception['step'],
-                                                           survey_code=exception['survey_code'],
-                                                           error_code=exception['error_code'],
-                                                           error_description=exception['error_description']).\
-                        on_conflict_do_nothing(constraint=table_model.primary_key)
-                    alchemy_functions.update(statement, session)
+                logger.warning("Inserting step_exception {}".format(count))
+                table_model = alchemy_functions.table_model(engine, metadata, 'step_exception')
+                statement = insert(table_model).values(query_reference=exception['query_reference'],
+                                                       survey_period=exception['survey_period'],
+                                                       run_id=exception['run_id'],
+                                                       ru_reference=exception['ru_reference'],
+                                                       step=exception['step'],
+                                                       survey_code=exception['survey_code'],
+                                                       error_code=exception['error_code'],
+                                                       error_description=exception['error_description']).\
+                    on_conflict_do_nothing(constraint=table_model.primary_key)
+                alchemy_functions.update(statement, session)
 
-                    try:
-                        if "Anomalies" in exception.keys():
-                            anomalies = exception["Anomalies"]
-                            for count, anomaly in enumerate(anomalies):
-                                logging.warning("inserting into question_anomaly {}".format(count))
-                                table_model = alchemy_functions.table_model(engine, metadata, 'question_anomaly')
-                                statement = insert(table_model).values(survey_period=anomaly['survey_period'],
-                                                                       question_number=anomaly['question_number'],
-                                                                       run_id=anomaly['run_id'],
-                                                                       ru_reference=anomaly['ru_reference'],
-                                                                       step=anomaly['step'],
-                                                                       survey_code=anomaly['survey_code'],
-                                                                       anomaly_description=
-                                                                       anomaly['anomaly_description']).\
-                                    on_conflict_do_nothing(constraint=table_model.primary_key)
-                                alchemy_functions.update(statement, session)
+                try:
+                    if "Anomalies" in exception.keys():
+                        anomalies = exception["Anomalies"]
+                        for count, anomaly in enumerate(anomalies):
+                            logging.warning("inserting into question_anomaly {}".format(count))
+                            table_model = alchemy_functions.table_model(engine, metadata, 'question_anomaly')
+                            statement = insert(table_model).values(survey_period=anomaly['survey_period'],
+                                                                   question_number=anomaly['question_number'],
+                                                                   run_id=anomaly['run_id'],
+                                                                   ru_reference=anomaly['ru_reference'],
+                                                                   step=anomaly['step'],
+                                                                   survey_code=anomaly['survey_code'],
+                                                                   anomaly_description=anomaly['anomaly_description']).\
+                                on_conflict_do_nothing(constraint=table_model.primary_key)
+                            alchemy_functions.update(statement, session)
 
-                                try:
-                                    if "Failed_VETs" in anomaly.keys():
-                                        failed_vets = anomaly["Failed_VETs"]
-                                        for count, vets in enumerate(failed_vets):
-                                            logging.warning("inserting into failed_vet {}".format(count))
-                                            table_model = alchemy_functions.table_model(engine, metadata, 'failed_vet')
-                                            statement = insert(table_model).values(failed_vet=anomaly['failed_vet'],
-                                                                                   survey_period=anomaly[
-                                                                                          'survey_period'],
-                                                                                   question_number=anomaly[
-                                                                                          'question_number'],
-                                                                                   run_id=anomaly['run_id'],
-                                                                                   ru_reference=anomaly[
-                                                                                          'ru_reference'],
-                                                                                   step=anomaly['step'],
-                                                                                   survey_code=anomaly[
-                                                                                          'survey_code']).\
-                                                on_conflict_do_nothing(constraint=table_model.primary_key)
-                                            alchemy_functions.update(statement, session)
+                            try:
+                                if "Failed_VETs" in anomaly.keys():
+                                    failed_vets = anomaly["Failed_VETs"]
+                                    for count, vets in enumerate(failed_vets):
+                                        logging.warning("inserting into failed_vet {}".format(count))
+                                        table_model = alchemy_functions.table_model(engine, metadata, 'failed_vet')
+                                        statement = insert(table_model).values(failed_vet=anomaly['failed_vet'],
+                                                                               survey_period=anomaly[
+                                                                                      'survey_period'],
+                                                                               question_number=anomaly[
+                                                                                      'question_number'],
+                                                                               run_id=anomaly['run_id'],
+                                                                               ru_reference=anomaly[
+                                                                                      'ru_reference'],
+                                                                               step=anomaly['step'],
+                                                                               survey_code=anomaly[
+                                                                                      'survey_code']).\
+                                            on_conflict_do_nothing(constraint=table_model.primary_key)
+                                        alchemy_functions.update(statement, session)
 
-                                except:
-                                    return json.loads('{"UpdateData":"Failed To Update Query in Failed_VET Table."}')
+                            except:
+                                return json.loads('{"UpdateData":"Failed To Update Query in Failed_VET Table."}')
 
-                    except:
-                        return json.loads('{"UpdateData":"Failed To Update Query in Question_Anomaly Table."}')
+                except:
+                    return json.loads('{"UpdateData":"Failed To Update Query in Question_Anomaly Table."}')
 
     except:
         return json.loads('{"UpdateData":"Failed To Update Query in Step_Exception Table."}')
@@ -159,7 +158,6 @@ def lambda_handler(event, context):
         session.commit()
     except:
         return json.loads('{"UpdateData.":"Failed To Commit."}')
-
 
     try:
         session.close()

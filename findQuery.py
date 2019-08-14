@@ -11,7 +11,7 @@ def lambda_handler(event, context):
     database = os.environ['Database_Location']
 
 #    try:
-#        result = ioValidation.QuerySearch(strict=True).load(test_data.txt)
+#        ioValidation.QuerySearch(strict=True).load(test_data.txt)
 #    except ValidationError as err:
 #        return err.messages
 
@@ -79,7 +79,7 @@ def lambda_handler(event, context):
                                       table_model.columns.survey_code == survey, table_model.columns.ru_reference == ru,
                                       table_model.columns.failed_vet == other_model.columns.vet_code))
                 else:
-                    statement = db.select([table_model]).where(db.and_(table_model.columns.survey_period == 
+                    statement = db.select([table_model]).where(db.and_(table_model.columns.survey_period ==
                                                                        period, table_model.columns.survey_code ==
                                                                        survey, table_model.columns.ru_reference == ru))
 
@@ -104,8 +104,8 @@ def lambda_handler(event, context):
             out_json += (curr_step + ',"Anomalies":[ ')
             for index, ano_row in table_list['question_anomaly'].iterrows():
                 curr_ano = table_list['question_anomaly'][(table_list['question_anomaly']['step'] == ano_row['step'])
-                                                          & (table_list['question_anomaly']['question_number'] == 
-                                                             ano_row['question_number']) 
+                                                          & (table_list['question_anomaly']['question_number'] ==
+                                                             ano_row['question_number'])
                                                           & (table_list['question_anomaly']['step'] == row_step)]
                 if curr_ano.empty:
                     continue
@@ -136,8 +136,8 @@ def lambda_handler(event, context):
             out_json += curr_tas
             out_json = out_json + ',"QueryTaskUpdates":'
             if not table_list['query_task_update'].empty:
-                curr_up = table_list['query_task_update'][(table_list['query_task_update']['query_reference'] == 
-                                                           tas_row['query_reference']) 
+                curr_up = table_list['query_task_update'][(table_list['query_task_update']['query_reference'] ==
+                                                           tas_row['query_reference'])
                                                           & (table_list['query_task_update']['task_sequence_number'] ==
                                                              tas_row['task_sequence_number'])]
 
@@ -159,7 +159,7 @@ def lambda_handler(event, context):
     out_json = out_json.replace("NaN", "null")
 
     try:
-        result = ioValidation.Query(strict=True).loads(out_json)
+        ioValidation.Query(strict=True).loads(out_json)
     except ValidationError as err:
         return err.messages
 
