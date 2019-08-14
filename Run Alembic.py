@@ -3,7 +3,8 @@ import subprocess
 
 def main(direction, revision):
     # Replace file path with your alembic install location
-    subprocess.run(["alembic", direction, revision], cwd="\\Users\\Off.Network.User12\\AppData\\Local\\Programs\\Python\\Python37\\Scripts")
+    path = "\\Users\\Off.Network.User12\\AppData\\Local\\Programs\\Python\\Python37\\Scripts"
+    subprocess.run(["alembic", direction, revision], cwd=path)
 
 
 main("upgrade", "7e4c6b9e5a5d")
