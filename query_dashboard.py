@@ -6,9 +6,10 @@ from marshmallow import ValidationError
 from sqlalchemy.orm import Session
 
 import alchemy_functions
-import ioValidation
+import io_validation
 
 
+# Same as findQuery but with one extra return key/value pair.
 def lambda_handler(event, context):
     database = os.environ['Database_Location']
 
@@ -32,7 +33,9 @@ def lambda_handler(event, context):
         return json.loads('{"contributor_name":"Failed To Connect To Database."}')
 
     table_model = alchemy_functions.table_model(engine, metadata, "query")
-    all_query_sql = db.select([table_model])
+    table_mod2 = alchemy_functions.table_model(engine, metadata, "contributor")
+    all_query_sql = db.select([table_model, table_mod2.columns.contributor_name])\
+        .where(table_model.columns.ru_reference == table_mod2.columns.ru_reference)
 
     added_query_sql = 0
 
@@ -66,24 +69,23 @@ def lambda_handler(event, context):
         survey = curr_query['survey_code'].iloc[0]
 
         try:
-
             for current_table in table_list:
                 table_model = alchemy_functions.table_model(engine, metadata, current_table)
 
                 # Can't use a single select for the 5 tables as two use different criteria. Will meed to change.
-                if (current_table == 'step_exception') or (current_table == 'query_task')\
+                if (current_table == 'step_exception') or (current_table == 'query_task') \
                         or (current_table == 'query_task_update'):
                     statement = db.select([table_model]).where(table_model.columns.query_reference == ref)
                 elif current_table == "failed_vet":
                     other_model = alchemy_functions.table_model(engine, metadata, "vet")
-                    statement = db.select([table_model, other_model.columns.vet_description]).\
-                        where(db.and_(table_model.columns.survey_period == period,
-                                      table_model.columns.survey_code == survey, table_model.columns.ru_reference == ru,
-                                      table_model.columns.failed_vet == other_model.columns.vet_code))
+                    statement = db.select([table_model, other_model.columns.vet_description]).where(
+                        db.and_(table_model.columns.survey_period == period, table_model.columns.survey_code == survey,
+                                table_model.columns.ru_reference == ru,
+                                table_model.columns.failed_vet == other_model.columns.vet_code))
                 else:
-                    statement = db.select([table_model]).where(db.and_(table_model.columns.survey_period ==
-                                                                       period, table_model.columns.survey_code ==
-                                                                       survey, table_model.columns.ru_reference == ru))
+                    statement = db.select([table_model]).where(
+                        db.and_(table_model.columns.survey_period == period, table_model.columns.survey_code == survey,
+                                table_model.columns.ru_reference == ru))
 
                 table_data = alchemy_functions.select(statement, session)
                 table_list[current_table] = table_data
@@ -96,8 +98,8 @@ def lambda_handler(event, context):
         out_json += curr_query + ',"Exceptions":[ '
         for index, step_row in table_list['step_exception'].iterrows():
             row_step = step_row['step']
-            curr_step = table_list['step_exception'][(table_list['step_exception']['step'] == row_step)
-                                                     & (table_list['step_exception']['run_id'] == step_row['run_id'])]
+            curr_step = table_list['step_exception'][(table_list['step_exception']['step'] == row_step) & (
+                        table_list['step_exception']['run_id'] == step_row['run_id'])]
             if curr_step.empty:
                 continue
 
@@ -105,10 +107,11 @@ def lambda_handler(event, context):
             curr_step = curr_step[1:-2]
             out_json += (curr_step + ',"Anomalies":[ ')
             for index, ano_row in table_list['question_anomaly'].iterrows():
-                curr_ano = table_list['question_anomaly'][(table_list['question_anomaly']['step'] == ano_row['step'])
-                                                          & (table_list['question_anomaly']['question_number'] ==
-                                                             ano_row['question_number'])
-                                                          & (table_list['question_anomaly']['step'] == row_step)]
+                curr_ano = table_list['question_anomaly'][
+                    (table_list['question_anomaly']['step'] == ano_row['step'])
+                    & (table_list['question_anomaly']['question_number'] == ano_row['question_number'])
+                    & (table_list['question_anomaly']['step'] == row_step)]
+
                 if curr_ano.empty:
                     continue
 
@@ -117,8 +120,9 @@ def lambda_handler(event, context):
 
                 out_json += curr_ano + ',"FailedVETs":'
                 curr_per = table_list['failed_vet'][(table_list['failed_vet']['step'] == row_step)
-                                                    & (table_list['failed_vet']['question_number']
-                                                        == ano_row['question_number'])]
+                                                    & (table_list['failed_vet']['question_number'] == ano_row[
+                                                        'question_number'])]
+
                 curr_per = json.dumps(curr_per.to_dict(orient='records'), sort_keys=True, default=str)
                 out_json += (curr_per + '},')
 
@@ -130,7 +134,8 @@ def lambda_handler(event, context):
         for index, tas_row in table_list['query_task'].iterrows():
             curr_tas = table_list['query_task'][(table_list['query_task']['query_reference'] ==
                                                  tas_row['query_reference']) & (
-                    table_list['query_task']['task_sequence_number'] == tas_row['task_sequence_number'])]
+                                                        table_list['query_task']['task_sequence_number']
+                                                        == tas_row['task_sequence_number'])]
             if curr_tas.empty:
                 continue
             curr_tas = json.dumps(curr_tas.to_dict(orient='records'), sort_keys=True, default=str)
@@ -138,10 +143,10 @@ def lambda_handler(event, context):
             out_json += curr_tas
             out_json = out_json + ',"QueryTaskUpdates":'
             if not table_list['query_task_update'].empty:
-                curr_up = table_list['query_task_update'][(table_list['query_task_update']['query_reference'] ==
-                                                           tas_row['query_reference'])
-                                                          & (table_list['query_task_update']['task_sequence_number'] ==
-                                                             tas_row['task_sequence_number'])]
+                curr_up = table_list['query_task_update'][(table_list['query_task_update']['query_reference']
+                                                           == tas_row['query_reference']) &
+                                                          (table_list['query_task_update']['task_sequence_number'] ==
+                                                           tas_row['task_sequence_number'])]
 
                 curr_up = json.dumps(curr_up.to_dict(orient='records'), sort_keys=True, default=str)
             else:
@@ -154,16 +159,16 @@ def lambda_handler(event, context):
     try:
         session.close()
     except:
-        return json.loads('{"query_reference":"Connection To Database Closed Badly."}')
+        return json.loads('{"query_reference":"session To Database Closed Badly."}')
 
     out_json = out_json[:-1]
     out_json += ']}'
     out_json = out_json.replace("NaN", "null")
 
-    try:
-        ioValidation.Query(strict=True).loads(out_json)
-    except ValidationError as err:
-        return err.messages
+#    try:
+#        ioValidation.Query(strict=True).loads(out_json)
+#    except ValidationError as err:
+#        return err.messages
 
     return json.loads(out_json)
 

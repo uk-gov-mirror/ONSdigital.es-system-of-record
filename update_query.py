@@ -8,7 +8,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 import alchemy_functions
-import ioValidation
+import io_validation
 
 logger = logging.getLogger("updateQuery")
 

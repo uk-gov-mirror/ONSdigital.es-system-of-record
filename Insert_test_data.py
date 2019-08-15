@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 # If this fails to complete, you need to drop and recreate the database to fix the query tables serialisation.
 def main():
     database = os.environ['Database_Location']
-    input_file = open('Data.json').read()
+    input_file = open('data.json').read()
     input_json = json.loads(input_file)
 
     try:
