@@ -9,8 +9,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = '7e4c6b9e5a5d'
-down_revision = 'Empty_Database'
+revision = 'base_migration_model'
+down_revision = 'empty_database'
 branch_labels = None
 depends_on = None
 schema_name = 'es_db_test'

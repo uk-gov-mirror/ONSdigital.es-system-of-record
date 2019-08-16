@@ -4,6 +4,8 @@ import os
 import sqlalchemy as db
 from sqlalchemy.orm import Session
 
+import alchemy_functions as af
+
 
 # If this fails to complete, you need to drop and recreate the database to fix the query tables serialisation.
 def main():
@@ -46,7 +48,7 @@ def main():
 
 def insert(engine, session, metadata, table_name, table_data):
     if table_data:
-        table_model = db.Table(table_name, metadata, schema='es_db_test', autoload=True, autoload_with=engine)
+        table_model = af.table_model(engine, metadata, table_name)
         insert_sql = db.insert(table_model)
         session.execute(insert_sql, table_data)
 

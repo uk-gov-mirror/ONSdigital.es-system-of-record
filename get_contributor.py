@@ -17,7 +17,7 @@ def lambda_handler(event, context):
     # except ValidationError as err:
     #     return err.messages
 
-    ref = event['ru_ref']
+    ref = event['ru_reference']
 
     try:
         engine = db.create_engine(database)
@@ -80,5 +80,5 @@ def lambda_handler(event, context):
     return json.loads(out_json)
 
 
-x = lambda_handler({"ru_ref": "77700000001"}, '')
+x = lambda_handler({"ru_reference": "77700000001"}, '')
 print(x)

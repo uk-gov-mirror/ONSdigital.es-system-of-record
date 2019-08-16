@@ -7,6 +7,6 @@ def main(direction, revision):
     subprocess.run(["alembic", direction, revision], cwd=path)
 
 
-main("upgrade", "7e4c6b9e5a5d")
+main("upgrade", "base_migration_model")
 # The direction can be 'upgrade'  or 'downgrade'
-# The basic revisions for create/drop are 'Empty_Database' and '7e4c6b9e5a5d'
+# The basic revisions for create/drop are 'empty_database' and 'base_migration_model'
