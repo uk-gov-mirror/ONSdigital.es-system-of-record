@@ -1,12 +1,16 @@
 import json
+import logging
 import os
 
 import sqlalchemy as db
 from marshmallow import ValidationError
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import DatabaseError
 
 import alchemy_functions
 import io_validation
+
+logger = logging.getLogger("find_query")
 
 
 def lambda_handler(event, context):
@@ -25,10 +29,12 @@ def lambda_handler(event, context):
                    'query_status']
 
     try:
+        logger.info("Connecting to the database")
         engine = db.create_engine(database)
         session = Session(engine)
         metadata = db.MetaData()
-    except:
+    except db.exc.DatabaseError as exc:
+        logger.error("Error: Failed to connect to the database: {}".format(exc))
         return json.loads('{"contributor_name":"Failed To Connect To Database."}')
 
     table_model = alchemy_functions.table_model(engine, metadata, "query")
@@ -66,8 +72,8 @@ def lambda_handler(event, context):
         survey = curr_query['survey_code'].iloc[0]
 
         try:
-
             for current_table in table_list:
+                logger.info("Selecting query data from table: {}".format(current_table))
                 table_model = alchemy_functions.table_model(engine, metadata, current_table)
 
                 # Can't use a single select for the 5 tables as two use different criteria. Will meed to change.
@@ -88,7 +94,8 @@ def lambda_handler(event, context):
                 table_data = alchemy_functions.select(statement, session)
                 table_list[current_table] = table_data
 
-        except:
+        except Exception as exc:
+            logger.error("Error finding query: {}".format(exc))
             return json.loads('{"query_reference":"Error","query_type":"Error selecting query from database"}')
 
         curr_query = json.dumps(curr_query.to_dict(orient='records'), sort_keys=True, default=str)

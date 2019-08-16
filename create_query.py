@@ -6,11 +6,12 @@ import sqlalchemy as db
 from marshmallow import ValidationError
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import DatabaseError
 
 import alchemy_functions
 import io_validation
 
-logger = logging.getLogger("createQuery")
+logger = logging.getLogger("create_query")
 
 with open('test_data.txt') as infile:
     test_data = json.load(infile)
@@ -19,7 +20,7 @@ with open('test_data.txt') as infile:
 def lambda_handler(event, context):
     database = os.environ['Database_Location']
 
-    logger.warning("INPUT DATA: {}".format(event))
+    logger.info("INPUT DATA: {}".format(event))
 
 #    try:
 #        ioValidation.Query(strict=True).load(test_data.txt)
@@ -27,14 +28,16 @@ def lambda_handler(event, context):
 #        return err.messages
 
     try:
+        logger.info("Connecting to the database")
         engine = db.create_engine(database)
         session = Session(engine)
         metadata = db.MetaData()
-    except:
+    except db.exc.DatabaseError as exc:
+        logger.error("Error: Failed to connect to the database: {}".format(exc))
         return json.loads('{"contributor_name":"Failed To Connect To Database."}')
 
     try:
-        logger.warning("Inserting into query {}")
+        logger.info("Inserting into query table {}")
         table_model = alchemy_functions.table_model(engine, metadata, 'query')
         statement = insert(table_model).values(query_type=event['query_type'],
                                                ru_reference=event['ru_reference'],
@@ -55,14 +58,15 @@ def lambda_handler(event, context):
         alchemy_functions.update(statement, session)
 
     except Exception as exc:
-        logging.warning("Error inserting into table: {}".format(exc))
+        logger.error("Error inserting into query table: {}".format(exc))
         return json.loads('{"query_type":"Failed to create query in Query table."}')
 
     try:
         if "Exceptions" in event.keys():
+            logger.info("Inserting into step_exceptions table {}")
             exceptions = event["Exceptions"]
             for count, exception in enumerate(exceptions):
-                logger.warning("Inserting into step_exception {}".format(count))
+                logger.info("Inserting into step_exception table {}".format(count))
                 table_model = alchemy_functions.table_model(engine, metadata, 'step_exception')
                 statement = insert(table_model).values(query_reference=exception['query_reference'],
                                                        survey_period=exception['survey_period'],
@@ -76,9 +80,10 @@ def lambda_handler(event, context):
                 alchemy_functions.update(statement, session)
                 try:
                     if "Anomalies" in exception.keys():
+                        logger.info("Inserting into question_anomaly table {}")
                         anomalies = exception["Anomalies"]
                         for count, anomaly in enumerate(anomalies):
-                            logging.warning("inserting into question_anomaly {}".format(count))
+                            logging.info("inserting into question_anomaly {}".format(count))
                             table_model = alchemy_functions.table_model(engine, metadata, 'question_anomaly')
                             statement = insert(table_model).values(survey_period=anomaly['survey_period'],
                                                                    question_number=anomaly['question_number'],
@@ -92,6 +97,7 @@ def lambda_handler(event, context):
 
                             try:
                                 if "FailedVETs" in anomaly.keys():
+                                    logger.info("Inserting into failed_vet table {}")
                                     failed_vets = anomaly["FailedVETs"]
                                     for count, vets in enumerate(failed_vets):
                                         logging.warning("inserting into failed_vet {}".format(count))
@@ -106,18 +112,21 @@ def lambda_handler(event, context):
                                             on_conflict_do_nothing(constraint=table_model.primary_key)
                                         alchemy_functions.update(statement, session)
 
-                            except:
+                            except Exception as exc:
+                                logger.error("Error inserting into failed_VET table: {}".format(exc))
                                 return json.loads('{"query_type":"Failed To Create Query in Failed_VET Table."}')
-                except:
+                except Exception as exc:
+                    logger.error("Error inserting into question_anomaly table: {}".format(exc))
                     return json.loads('{"query_type":"Failed To Create Query in Question_Anomaly Table."}')
-    except:
+    except Exception as exc:
+        logger.error("Error inserting into step_exception table: {}".format(exc))
         return json.loads('{"query_type":"Failed To Update Query in Step_Exception Table."}')
 
     try:
         if "QueryTasks" in event.keys():
             tasks = event["QueryTasks"]
             for count, task in enumerate(tasks):
-                logging.warning("inserting into query_task {}".format(count))
+                logger.info("inserting into query_task {}".format(count))
                 table_model = alchemy_functions.table_model(engine, metadata, 'query_task')
                 statement = insert(table_model).values(task_sequence_number=task['task_sequence_number'],
                                                        query_reference=task['query_reference'],
@@ -134,7 +143,7 @@ def lambda_handler(event, context):
                     if "QueryTaskUpdates" in task.keys():
                         update_task = task["QueryTaskUpdates"]
                         for count, query_task in enumerate(update_task):
-                            logging.warning("inserting into query task updates {}".format(count))
+                            logger.info("inserting into query task updates {}".format(count))
                             table_model = alchemy_functions.table_model(engine, metadata, 'query_task_update')
                             statement = insert(table_model).values(task_sequence_number=query_task
                                                                    ['task_sequence_number'],
@@ -146,18 +155,22 @@ def lambda_handler(event, context):
                                 on_conflict_do_nothing(constraint=table_model.primary_key)
                             alchemy_functions.update(statement, session)
 
-                except:
+                except Exception as exc:
+                    logger.error("Error inserting into step_exception table: {}".format(exc))
                     return json.loads('{"query_type":"Failed To Create Query in Query_Task_Update Table."}')
-    except:
+    except Exception as exc:
+        logger.error("Error inserting into step_exception table: {}".format(exc))
         return json.loads('{"query_type":"Failed To Create Query in Query_Task Table."}')
     try:
         session.commit()
-    except:
+    except db.exc.DatabaseError as exc:
+        logger.error("Error: Failed to commit changes to the database: {}".format(exc))
         return json.loads('{"query_type":"Failed To Commit Changes To The Database."}')
 
     try:
         session.close()
-    except:
+    except db.exc.DatabaseError as exc:
+        logger.error("Error: Failed to commit changes to the database: {}".format(exc))
         return json.loads('{"query_type":"Connection To Database Closed Badly."}')
 
     return json.loads('{"query_type":"Query created successfully"}')
