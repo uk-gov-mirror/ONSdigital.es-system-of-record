@@ -14,6 +14,13 @@ logger = logging.getLogger("find_query")
 
 
 def lambda_handler(event, context):
+    """Collects data on a passed in Reference from seven tables and combines them into a single Json.
+    Parameters:
+      event (Dict):A series of key value pairs used in the search.
+    Returns:
+      out_json (Json):Nested Json responce of the seven tables data.
+    """
+
     database = os.environ['Database_Location']
 
 #    try:
@@ -106,6 +113,7 @@ def lambda_handler(event, context):
             curr_step = table_list['step_exception'][(table_list['step_exception']['step'] == row_step)
                                                      & (table_list['step_exception']['run_id'] == step_row['run_id'])]
             if curr_step.empty:
+                logger.info("No query information in step_exception table")
                 continue
 
             curr_step = json.dumps(curr_step.to_dict(orient='records'), sort_keys=True, default=str)
@@ -117,6 +125,7 @@ def lambda_handler(event, context):
                                                              ano_row['question_number'])
                                                           & (table_list['question_anomaly']['step'] == row_step)]
                 if curr_ano.empty:
+                    logger.info("No query information in question_anomaly table")
                     continue
 
                 curr_ano = json.dumps(curr_ano.to_dict(orient='records'), sort_keys=True, default=str)
@@ -139,6 +148,7 @@ def lambda_handler(event, context):
                                                  tas_row['query_reference']) & (
                     table_list['query_task']['task_sequence_number'] == tas_row['task_sequence_number'])]
             if curr_tas.empty:
+                logger.info("No query information in query_task table")
                 continue
             curr_tas = json.dumps(curr_tas.to_dict(orient='records'), sort_keys=True, default=str)
             curr_tas = curr_tas[1:-2]
@@ -160,7 +170,8 @@ def lambda_handler(event, context):
 
     try:
         session.close()
-    except:
+    except db.exc.DatabaseError as exc:
+        logger.error("Error: Failed to close the database: {}".format(exc))
         return json.loads('{"query_reference":"Connection To Database Closed Badly."}')
 
     out_json = out_json[:-1]
