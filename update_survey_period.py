@@ -13,6 +13,11 @@ def lambda_handler(event, context):
     database = os.environ['Database_Location']
 
     try:
+        io_validation.SurveyPeriod(strict=True, many=True).loads(event)
+    except ValidationError as err:
+        return err.messages
+
+    try:
         engine = db.create_engine(database)
         session = Session(engine)
         metadata = db.MetaData()

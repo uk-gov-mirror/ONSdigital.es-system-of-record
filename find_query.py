@@ -178,18 +178,12 @@ def lambda_handler(event, context):
     out_json = out_json.replace("NaN", "null")
 
     try:
-        io_validation.QueryReference(strict=True).loads(out_json)
-        io_validation.Query(strict=True).loads(out_json)
+        io_validation.Queries(strict=True).loads(out_json)
     except ValidationError as err:
         return err.messages
 
     return json.loads(out_json)
 
 
-x = lambda_handler({'query_reference': 1,
-                    'survey_period': '',
-                    'query_type': '',
-                    'ru_reference': '',
-                    'survey_code': '',
-                    'query_status': ''}, '')
+x = lambda_handler({'query_reference': 1}, '')
 print(x)

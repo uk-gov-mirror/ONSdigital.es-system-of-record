@@ -2,9 +2,11 @@ import json
 import os
 
 import sqlalchemy as db
+from marshmallow import ValidationError
 from sqlalchemy.orm import Session
 
 import alchemy_functions
+import io_validation
 
 
 def lambda_handler(event, context):
@@ -50,6 +52,11 @@ def lambda_handler(event, context):
     out_json += ',"GorRegions":'
     out_json += json.dumps(table_list["gor_regions"].to_dict(orient='records'), sort_keys=True, default=str)
     out_json += '}'
+
+    try:
+        io_validation.AllReferenceData(strict=True).loads(out_json)
+    except ValidationError as err:
+        return err.messages
 
     return json.loads(out_json)
 
