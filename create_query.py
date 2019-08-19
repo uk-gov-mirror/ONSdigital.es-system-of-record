@@ -13,9 +13,6 @@ import io_validation
 
 logger = logging.getLogger("create_query")
 
-with open('test_data.txt') as infile:
-    test_data = json.load(infile)
-
 
 def lambda_handler(event, context):
     database = os.environ['Database_Location']
@@ -175,6 +172,7 @@ def lambda_handler(event, context):
 
     return json.loads('{"query_type":"Query created successfully"}')
 
-
+with open('test_data.txt') as infile:
+    test_data = json.load(infile)
 x = lambda_handler(test_data, '')
 print(x)

@@ -106,7 +106,7 @@ class CombinedVETs(Schema):
     ru_reference = fields.Str(required=True)
     step = fields.Str(required=True)
     survey_code = fields.Str(required=True)
-    vet_description = fields.Str(required=True)
+    vet_description = fields.Str()
 
 
 class Anomalies(Schema):

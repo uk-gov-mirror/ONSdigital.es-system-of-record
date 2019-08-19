@@ -12,9 +12,6 @@ import io_validation
 
 logger = logging.getLogger("updateQuery")
 
-with open('test_data.txt') as infile:
-    test_data = json.load(infile)
-
 
 def lambda_handler(event, context):
     database = os.environ['Database_Location']
@@ -169,6 +166,7 @@ def lambda_handler(event, context):
 
     return json.loads('{"UpdateData":"Successfully Updated The Tables."}')
 
-
+with open('test_data.txt') as infile:
+    test_data = json.load(infile)
 x = lambda_handler(test_data, '')
 print(x)
