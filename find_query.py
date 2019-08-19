@@ -23,10 +23,10 @@ def lambda_handler(event, context):
 
     database = os.environ['Database_Location']
 
-#    try:
-#        ioValidation.QuerySearch(strict=True).load(test_data.txt)
-#    except ValidationError as err:
-#        return err.messages
+    try:
+        io_validation.QuerySearch(strict=True).load(event)
+    except ValidationError as err:
+        return err.messages
 
     search_list = ['query_reference',
                    'survey_period',
@@ -50,10 +50,9 @@ def lambda_handler(event, context):
     added_query_sql = 0
 
     for criteria in search_list:
-        if event[criteria] is None:
+        if criteria not in event.keys():
             continue
-        if event[criteria] == "":
-            continue
+
         added_query_sql += 1
         all_query_sql = all_query_sql.where(getattr(table_model.columns, criteria) == event[criteria])
 
@@ -179,6 +178,7 @@ def lambda_handler(event, context):
     out_json = out_json.replace("NaN", "null")
 
     try:
+        io_validation.QueryReference(strict=True).loads(out_json)
         io_validation.Query(strict=True).loads(out_json)
     except ValidationError as err:
         return err.messages

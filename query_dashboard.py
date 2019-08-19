@@ -13,10 +13,10 @@ import io_validation
 def lambda_handler(event, context):
     database = os.environ['Database_Location']
 
-#    try:
-#        ioValidation.QuerySearch(strict=True).load(test_data.txt)
-#    except ValidationError as err:
-#        return err.messages
+    try:
+        io_validation.QuerySearch(strict=True).load(event)
+    except ValidationError as err:
+        return err.messages
 
     search_list = ['query_reference',
                    'survey_period',
@@ -165,10 +165,10 @@ def lambda_handler(event, context):
     out_json += ']}'
     out_json = out_json.replace("NaN", "null")
 
-#    try:
-#        ioValidation.Query(strict=True).loads(out_json)
-#    except ValidationError as err:
-#        return err.messages
+    try:
+        io_validation.Query(strict=True).loads(out_json)
+    except ValidationError as err:
+        return err.messages
 
     return json.loads(out_json)
 

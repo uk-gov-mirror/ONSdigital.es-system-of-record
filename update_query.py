@@ -21,10 +21,11 @@ def lambda_handler(event, context):
 
     logger.warning("Input {}".format(event))
 
-#    try:
-#        ioValidation.Query(strict=True).load(test_data.txt)
-#    except ValidationError as err:
-#        return err.messages
+    try:
+        io_validation.QueryReference(strict=True).load(event)
+        io_validation.Query(strict=True).load(event)
+    except ValidationError as err:
+        return err.messages
 
     try:
         engine = db.create_engine(database)

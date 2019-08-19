@@ -12,10 +12,10 @@ import io_validation
 def lambda_handler(event, context):
     database = os.environ['Database_Location']
 
-    # try:
-    #     ioValidation.ContributorSearch(strict=True).load(test_data.txt)
-    # except ValidationError as err:
-    #     return err.messages
+    try:
+        io_validation.ContributorSearch(strict=True).load(event)
+    except ValidationError as err:
+        return err.messages
 
     ref = event['ru_reference']
 
@@ -77,6 +77,12 @@ def lambda_handler(event, context):
 
     out_json = out_json[:-1]
     out_json += ']}'
+
+    # try:
+    #     io_validation.Contributor(strict=True).load(event)
+    # except ValidationError as err:
+    #     return err.messages
+
     return json.loads(out_json)
 
 

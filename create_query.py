@@ -22,10 +22,10 @@ def lambda_handler(event, context):
 
     logger.info("INPUT DATA: {}".format(event))
 
-#    try:
-#        ioValidation.Query(strict=True).load(test_data.txt)
-#    except ValidationError as err:
-#        return err.messages
+    try:
+        io_validation.Query(strict=True).load(event)
+    except ValidationError as err:
+        return err.messages
 
     try:
         logger.info("Connecting to the database")
