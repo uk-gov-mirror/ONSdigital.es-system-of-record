@@ -18,6 +18,13 @@ with open('test_data.txt') as infile:
 
 
 def lambda_handler(event, context):
+    """Takes a query dictonary and inserts new data into the query tables with the run information.
+    Parameters:
+      event (Dict):A series of key value pairs nested to match table structure.
+    Returns:
+      Json message reporting the success of the update alongside the new queries reference number.
+    """
+
     database = os.environ['Database_Location']
 
     logger.info("INPUT DATA: {}".format(event))
@@ -156,10 +163,10 @@ def lambda_handler(event, context):
                             alchemy_functions.update(statement, session)
 
                 except Exception as exc:
-                    logger.error("Error inserting into step_exception table: {}".format(exc))
+                    logger.error("Error inserting into query_task_update table: {}".format(exc))
                     return json.loads('{"query_type":"Failed To Create Query in Query_Task_Update Table."}')
     except Exception as exc:
-        logger.error("Error inserting into step_exception table: {}".format(exc))
+        logger.error("Error inserting into query_task table: {}".format(exc))
         return json.loads('{"query_type":"Failed To Create Query in Query_Task Table."}')
     try:
         session.commit()
@@ -170,7 +177,7 @@ def lambda_handler(event, context):
     try:
         session.close()
     except db.exc.DatabaseError as exc:
-        logger.error("Error: Failed to commit changes to the database: {}".format(exc))
+        logger.error("Error: Failed to close the database session: {}".format(exc))
         return json.loads('{"query_type":"Connection To Database Closed Badly."}')
 
     return json.loads('{"query_type":"Query created successfully"}')

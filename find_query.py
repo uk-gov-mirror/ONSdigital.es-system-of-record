@@ -23,10 +23,10 @@ def lambda_handler(event, context):
 
     database = os.environ['Database_Location']
 
-#    try:
-#        ioValidation.QuerySearch(strict=True).load(test_data.txt)
-#    except ValidationError as err:
-#        return err.messages
+    try:
+        ioValidation.QuerySearch(strict=True).load(test_data.txt)
+    except ValidationError as err:
+        return err.messages
 
     search_list = ['query_reference',
                    'survey_period',
@@ -171,7 +171,7 @@ def lambda_handler(event, context):
     try:
         session.close()
     except db.exc.DatabaseError as exc:
-        logger.error("Error: Failed to close the database: {}".format(exc))
+        logger.error("Error: Failed to close the database session: {}".format(exc))
         return json.loads('{"query_reference":"Connection To Database Closed Badly."}')
 
     out_json = out_json[:-1]

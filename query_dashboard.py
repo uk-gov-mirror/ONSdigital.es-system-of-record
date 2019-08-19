@@ -1,5 +1,6 @@
 import json
 import os
+import logging
 
 import sqlalchemy as db
 from marshmallow import ValidationError
@@ -7,7 +8,9 @@ from sqlalchemy.orm import Session
 
 import alchemy_functions
 import io_validation
+from sqlalchemy.exc import DatabaseError
 
+logger = logging.getLogger("query_dashboard")
 
 # Same as findQuery but with one extra return key/value pair.
 def lambda_handler(event, context):
@@ -26,10 +29,12 @@ def lambda_handler(event, context):
                    'query_status']
 
     try:
+        logger.info("Connecting to the database")
         engine = db.create_engine(database)
         session = Session(engine)
         metadata = db.MetaData()
-    except:
+    except db.exc.DatabaseError as exc:
+        logger.error("Error: Failed to connect to the database: {}".format(exc))
         return json.loads('{"contributor_name":"Failed To Connect To Database."}')
 
     table_model = alchemy_functions.table_model(engine, metadata, "query")
@@ -41,8 +46,10 @@ def lambda_handler(event, context):
 
     for criteria in search_list:
         if event[criteria] is None:
+            logger.info("No query data in table: ".format(criteria))
             continue
         if event[criteria] == "":
+            logger.info("No query data in table: ".format(criteria))
             continue
         added_query_sql += 1
         all_query_sql = all_query_sql.where(getattr(table_model.columns, criteria) == event[criteria])
@@ -62,6 +69,7 @@ def lambda_handler(event, context):
     for index, query_row in query.iterrows():
         curr_query = query[query['query_reference'] == query_row['query_reference']]
         if curr_query.empty:
+            logger.info("No open queries")
             continue
         ref = int(curr_query['query_reference'].iloc[0])
         ru = curr_query['ru_reference'].iloc[0]
@@ -70,6 +78,7 @@ def lambda_handler(event, context):
 
         try:
             for current_table in table_list:
+                logger.info("Fetching data from table: {}".format(current_table))
                 table_model = alchemy_functions.table_model(engine, metadata, current_table)
 
                 # Can't use a single select for the 5 tables as two use different criteria. Will meed to change.
@@ -90,7 +99,8 @@ def lambda_handler(event, context):
                 table_data = alchemy_functions.select(statement, session)
                 table_list[current_table] = table_data
 
-        except:
+        except Exception as exc:
+            logger.error("Error selecting data from table: {}".format(exc))
             return json.loads('{"query_reference":"Error","query_type":"Error selecting query from database"}')
 
         curr_query = json.dumps(curr_query.to_dict(orient='records'), sort_keys=True, default=str)
@@ -101,6 +111,7 @@ def lambda_handler(event, context):
             curr_step = table_list['step_exception'][(table_list['step_exception']['step'] == row_step) & (
                         table_list['step_exception']['run_id'] == step_row['run_id'])]
             if curr_step.empty:
+                logger.info("No query data in step_exceptions table")
                 continue
 
             curr_step = json.dumps(curr_step.to_dict(orient='records'), sort_keys=True, default=str)
@@ -113,6 +124,7 @@ def lambda_handler(event, context):
                     & (table_list['question_anomaly']['step'] == row_step)]
 
                 if curr_ano.empty:
+                    logger.info("No query data in question_anomaly table")
                     continue
 
                 curr_ano = json.dumps(curr_ano.to_dict(orient='records'), sort_keys=True, default=str)
@@ -137,6 +149,7 @@ def lambda_handler(event, context):
                                                         table_list['query_task']['task_sequence_number']
                                                         == tas_row['task_sequence_number'])]
             if curr_tas.empty:
+                logger.info("No query data in query_task table")
                 continue
             curr_tas = json.dumps(curr_tas.to_dict(orient='records'), sort_keys=True, default=str)
             curr_tas = curr_tas[1:-2]
@@ -158,7 +171,8 @@ def lambda_handler(event, context):
 
     try:
         session.close()
-    except:
+    except db.exc.DatabaseError as exc:
+        logger.error("Error: Failed to close the database session: {}".format(exc))
         return json.loads('{"query_reference":"session To Database Closed Badly."}')
 
     out_json = out_json[:-1]
