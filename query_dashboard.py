@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 
 import sqlalchemy as db
@@ -8,9 +9,17 @@ from sqlalchemy.orm import Session
 import alchemy_functions
 import io_validation
 
-
+logger = logging.getLogger("QueryDashboard")
 # Same as findQuery but with one extra return key/value pair.
+
 def lambda_handler(event, context):
+    """Collects data on a passed in References from eight tables and combines them into a single Json.
+    Parameters:
+      event (Dict):A series of key value pairs used in the search.
+    Returns:
+      out_json (Json):Nested Json responce of the eight tables data.
+    """
+
     database = os.environ['Database_Location']
 
 #    try:
@@ -26,16 +35,26 @@ def lambda_handler(event, context):
                    'query_status']
 
     try:
+        logger.info("Connecting to the database")
         engine = db.create_engine(database)
         session = Session(engine)
         metadata = db.MetaData()
-    except:
-        return json.loads('{"contributor_name":"Failed To Connect To Database."}')
+    except db.exc.DatabaseError as exc:
+        logger.error("Error: Failed to connect to the database: {}".format(exc))
+        return {"statusCode": 500, "body":{"contributor_name":"Failed To Connect To Database."}}
 
+    logger.info("Retrieving table model(query)")
     table_model = alchemy_functions.table_model(engine, metadata, "query")
+    logger.info("Retrieving table model(contributor)")
     table_mod2 = alchemy_functions.table_model(engine, metadata, "contributor")
-    all_query_sql = db.select([table_model, table_mod2.columns.contributor_name])\
+
+    try:
+        logger.info("Selecting data")
+        all_query_sql = db.select([table_model, table_mod2.columns.contributor_name])\
         .where(table_model.columns.ru_reference == table_mod2.columns.ru_reference)
+    except Exception as e:
+        logger.error("Failed to select data from database. {}".format(e))
+        return {"statusCode": 500, "body":{"contributor_name":"Failed To select from Database."}}
 
     added_query_sql = 0
 
@@ -70,6 +89,7 @@ def lambda_handler(event, context):
 
         try:
             for current_table in table_list:
+                logger.info("selecting data from "+str(current_table))
                 table_model = alchemy_functions.table_model(engine, metadata, current_table)
 
                 # Can't use a single select for the 5 tables as two use different criteria. Will meed to change.
@@ -91,8 +111,10 @@ def lambda_handler(event, context):
                 table_list[current_table] = table_data
 
         except:
-            return json.loads('{"query_reference":"Error","query_type":"Error selecting query from database"}')
+            logger.error("Error selecting data from "+str(current_table))
+            return {"statusCode": 500, "body":{"query_reference":"Error","query_type":"Error selecting query from database"}}
 
+        logger.info("Wrangling selected data")
         curr_query = json.dumps(curr_query.to_dict(orient='records'), sort_keys=True, default=str)
         curr_query = curr_query[1:-2]
         out_json += curr_query + ',"Exceptions":[ '
@@ -158,8 +180,9 @@ def lambda_handler(event, context):
 
     try:
         session.close()
-    except:
-        return json.loads('{"query_reference":"session To Database Closed Badly."}')
+    except db.exc.DatabaseError as exc:
+        logger.error("Error: Failed to close connection to the database: {}".format(exc))
+        return {"statusCode": 500, "body":{"query_reference":"session To Database Closed Badly."}}
 
     out_json = out_json[:-1]
     out_json += ']}'
@@ -170,7 +193,7 @@ def lambda_handler(event, context):
 #    except ValidationError as err:
 #        return err.messages
 
-    return json.loads(out_json)
+    return {"statusCode": 200, "body":out_json}
 
 
 x = lambda_handler({'query_reference': 1,

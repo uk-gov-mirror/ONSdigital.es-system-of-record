@@ -17,9 +17,16 @@ with open('test_data.txt') as infile:
 
 
 def lambda_handler(event, context):
+    """Takes a query dictionary and updates the related query tables and inserts the new run information.
+    Parameters:
+      event (Dict):A series of key value pairs nested to match table structure.
+    Returns:
+      Json message reporting the success of the update.
+    """
+
     database = os.environ['Database_Location']
 
-    logger.warning("Input {}".format(event))
+
 
 #    try:
 #        ioValidation.Query(strict=True).load(test_data.txt)
@@ -27,14 +34,18 @@ def lambda_handler(event, context):
 #        return err.messages
 
     try:
+        logger.info("Connecting to the database")
         engine = db.create_engine(database)
         session = Session(engine)
         metadata = db.MetaData()
-    except:
-        return json.loads('{"Update_Data":"Failed To Connect To Database."}')
+    except db.exc.DatabaseError as exc:
+        logger.error("Error: Failed to connect to the database: {}".format(exc))
+        return {"statusCode": 500, "body":{"Update_Data":"Failed To Connect To Database."}}
 
     try:
+        logger.info("Retrieving table model(query)")
         table_model = alchemy_functions.table_model(engine, metadata, 'query')
+        logger.info("Updating Table(query)")
         statement = db.update(table_model).values(query_type=event['query_type'],
                                                   current_period=event['current_period'],
                                                   general_specific_flag=event['general_specific_flag'],
@@ -47,16 +58,21 @@ def lambda_handler(event, context):
             where(table_model.columns.query_reference == event['query_reference'])
         alchemy_functions.update(statement, session)
 
+    except db.exc.OperationalError as exc:
+        logger.error("Error updating the database." + str(type(exc)))
+        return {"statusCode": 500, "body":{"query_type":"Failed To Create Query in Query Table."}}
     except Exception as exc:
-        logging.warning("Error inserting into table: {}".format(exc))
-        return json.loads('{"query_type":"Failed To Create Query in Query Table."}')
+        logger.error("Error updating the database." + str(type(exc)))
+        return {"statusCode": 500, "body":{"query_type":"Failed To Create Query in Query Table."}}
 
     try:
         if "Exceptions" in event.keys():
             exceptions = event["Exceptions"]
             for count, exception in enumerate(exceptions):
-                logger.warning("Inserting step_exception {}".format(count))
+                logger.info("Inserting step_exception {}".format(count))
+                logger.info("Retrieving table model(step_exception)")
                 table_model = alchemy_functions.table_model(engine, metadata, 'step_exception')
+                logger.info("Inserting into table(step_exception)")
                 statement = insert(table_model).values(query_reference=exception['query_reference'],
                                                        survey_period=exception['survey_period'],
                                                        run_id=exception['run_id'],
@@ -72,8 +88,10 @@ def lambda_handler(event, context):
                     if "Anomalies" in exception.keys():
                         anomalies = exception["Anomalies"]
                         for count, anomaly in enumerate(anomalies):
-                            logging.warning("inserting into question_anomaly {}".format(count))
+                            logger.info("inserting into question_anomaly {}".format(count))
+                            logger.info("Retrieving table model(question_anomaly)")
                             table_model = alchemy_functions.table_model(engine, metadata, 'question_anomaly')
+                            logger.info("Inserting into table(question_anomaly)")
                             statement = insert(table_model).values(survey_period=anomaly['survey_period'],
                                                                    question_number=anomaly['question_number'],
                                                                    run_id=anomaly['run_id'],
@@ -88,8 +106,10 @@ def lambda_handler(event, context):
                                 if "Failed_VETs" in anomaly.keys():
                                     failed_vets = anomaly["Failed_VETs"]
                                     for count, vets in enumerate(failed_vets):
-                                        logging.warning("inserting into failed_vet {}".format(count))
+                                        logger.info("inserting into failed_vet {}".format(count))
+                                        logger.info("Retrieving table model(failed_vet)")
                                         table_model = alchemy_functions.table_model(engine, metadata, 'failed_vet')
+                                        logger.info("Inserting into table(failed vet)")
                                         statement = insert(table_model).values(failed_vet=anomaly['failed_vet'],
                                                                                survey_period=anomaly[
                                                                                       'survey_period'],
@@ -104,21 +124,26 @@ def lambda_handler(event, context):
                                             on_conflict_do_nothing(constraint=table_model.primary_key)
                                         alchemy_functions.update(statement, session)
 
-                            except:
-                                return json.loads('{"UpdateData":"Failed To Update Query in Failed_VET Table."}')
+                            except Exception as e:
+                                logger.error("Failed to insert into failed_vet table: {}".format(e))
+                                return {"statusCode": 500, "body":{"UpdateData":"Failed To Update Query in Failed_VET Table."}}
 
-                except:
-                    return json.loads('{"UpdateData":"Failed To Update Query in Question_Anomaly Table."}')
+                except Exception as e:
+                    logger.error("Failed to insert into question anomaly table: {}".format(e))
+                    return {"statusCode": 500, "body":{"UpdateData":"Failed To Update Query in Question_Anomaly Table."}}
 
-    except:
-        return json.loads('{"UpdateData":"Failed To Update Query in Step_Exception Table."}')
+    except Exception as e:
+        logger.error("Failed to update step_exception table: {}".format(e))
+        return {"statusCode": 500, "body":{"UpdateData":"Failed To Update Query in Step_Exception Table."}}
 
     try:
         if "QueryTasks" in event.keys():
             tasks = event["QueryTasks"]
             for count, task in enumerate(tasks):
-                logging.warning("Updating query_tasks {}".format(count))
+                logger.info("Updating query_tasks {}".format(count))
+                logger.info("Retrieving table model(query_task)")
                 table_model = alchemy_functions.table_model(engine, metadata, 'query_task')
+                logger.info("Updating table(query_task)")
                 statement = db.update(table_model).values(response_required_by=task['response_required_by'],
                                                           task_description=task['task_description'],
                                                           task_responsibility=task['task_responsibility'],
@@ -134,8 +159,10 @@ def lambda_handler(event, context):
                     if "QueryTaskUpdates" in task.keys():
                         update_task = task["QueryTaskUpdates"]
                         for count, query_task in enumerate(update_task):
-                            logging.warning("inserting into query task updates {}".format(count))
+                            logger.info("inserting into query task updates {}".format(count))
+                            logger.info("Retrieving table model(query_task_update)")
                             table_model = alchemy_functions.table_model(engine, metadata, 'query_task_update')
+                            logger.info("Inserting into table(query_task_update)")
                             statement = insert(table_model).values(
                                 task_sequence_number=query_task['task_sequence_number'],
                                 query_reference=query_task['query_reference'],
@@ -145,28 +172,29 @@ def lambda_handler(event, context):
                                 on_conflict_do_nothing(constraint=table_model.primary_key)
                             alchemy_functions.update(statement, session)
 
-                except:
-                    return json.loads('{"querytype":"Failed To Create Query in Query_Task_Update Table."}')
+                except Exception as e:
+                    logger.error("Failed to insert into query_tasks_updates table")
+                    return {"statusCode": 500, "body":{"querytype":"Failed To Create Query in Query_Task_Update Table."}}
 
-    except:
-        return json.loads('{"querytype":"Failed To Create Query in Query_Task Table."}')
-
-    try:
-        session.commit()
-    except:
-        return json.loads('{"UpdateData":"Failed To Commit Changes To The Database."}')
+    except Exception as e:
+        logger.error("Failed to update query in query_task table")
+        return {"statusCode": 500, "body":{"querytype":"Failed To Create Query in Query_Task Table."}}
 
     try:
         session.commit()
-    except:
-        return json.loads('{"UpdateData.":"Failed To Commit."}')
+    except db.exc.DatabaseError as exc:
+        logger.error("Error: Failed to commit changes to the database: {}".format(exc))
+
+        return {"statusCode": 500, "body":{"UpdateData":"Failed To Commit Changes To The Database."}}
 
     try:
         session.close()
-    except:
-        return json.loads('{"UpdateData":"Connection To Database Closed Badly."}')
+    except db.exc.DatabaseError as exc:
+        logger.error("Error: Failed to close connection to the database: {}".format(exc))
+        return {"statusCode": 500, "body":{"UpdateData":"Connection To Database Closed Badly."}}
 
-    return json.loads('{"UpdateData":"Successfully Updated The Tables."}')
+    logger.info("Successfully completed query update")
+    return {"statusCode": 200, "body":{"UpdateData":"Successfully Updated The Tables."}}
 
 
 x = lambda_handler(test_data, '')

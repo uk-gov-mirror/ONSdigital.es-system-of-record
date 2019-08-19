@@ -1,4 +1,5 @@
 alabaster==0.7.12
+alembic
 appdirs==1.4.3
 aspy.yaml==1.3.0
 atomicwrites==1.3.0
@@ -35,6 +36,7 @@ jedi==0.14.0
 Jinja2==2.10.1
 jmespath==0.9.4
 MarkupSafe==1.1.1
+marshmallow==2.19.5
 mccabe==0.6.1
 more-itertools==7.1.0
 nodeenv==1.3.3
@@ -54,6 +56,7 @@ py==1.8.0
 pyasn1==0.4.5
 pycodestyle==2.5.0
 pyflakes==2.1.1
+psycopg2
 Pygments==2.4.2
 pyparsing==2.4.0
 pytest==4.5.0
