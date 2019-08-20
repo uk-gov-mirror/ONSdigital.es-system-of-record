@@ -14,8 +14,12 @@ depends_on = None
 
 
 def upgrade():
+    """Base empty function used during the alembic upgrade process."""
+
     pass
 
 
 def downgrade():
+    """Base empty function used during the alembic downgrade proccess."""
+
     pass
