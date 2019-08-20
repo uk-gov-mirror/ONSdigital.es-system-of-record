@@ -23,8 +23,6 @@ def lambda_handler(event, context):
 
     database = os.environ['Database_Location']
 
-
-
     try:
         io_validation.QueryReference(strict=True).load(event)
         io_validation.Query(strict=True).load(event)
@@ -46,7 +44,6 @@ def lambda_handler(event, context):
     except Exception as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
         return {"statusCode": 500, "body": {"Update_Data": "Failed To Connect To Database."}}
-
 
     try:
         logger.info("Retrieving table model(query)")
@@ -132,29 +129,29 @@ def lambda_handler(event, context):
                             except db.exc.OperationalError as e:
                                 logger.error("Failed to insert into failed_vet table: {}".format(e))
                                 return {"statusCode": 500, "body":
-                                    {"UpdateData": "Failed To Update Query in Failed_VET Table."}}
+                                        {"UpdateData": "Failed To Update Query in Failed_VET Table."}}
                             except Exception as e:
                                 logger.error("Failed to insert into failed_vet table: {}".format(e))
                                 return {"statusCode": 500, "body":
-                                    {"UpdateData": "Failed To Update Query in Failed_VET Table."}}
+                                        {"UpdateData": "Failed To Update Query in Failed_VET Table."}}
 
                 except db.exc.OperationalError as e:
                     logger.error("Failed to insert into question anomaly table: {}".format(e))
                     return {"statusCode": 500, "body":
-                        {"UpdateData": "Failed To Update Query in Question_Anomaly Table."}}
+                            {"UpdateData": "Failed To Update Query in Question_Anomaly Table."}}
                 except Exception as e:
                     logger.error("Failed to insert into question anomaly table: {}".format(e))
                     return {"statusCode": 500, "body":
-                        {"UpdateData":"Failed To Update Query in Question_Anomaly Table."}}
+                            {"UpdateData": "Failed To Update Query in Question_Anomaly Table."}}
 
     except db.exc.OperationalError as e:
         logger.error("Failed to update step_exception table: {}".format(e))
         return {"statusCode": 500, "body":
-            {"UpdateData": "Failed To Update Query in Step_Exception Table."}}
+                {"UpdateData": "Failed To Update Query in Step_Exception Table."}}
     except Exception as e:
         logger.error("Failed to update step_exception table: {}".format(e))
         return {"statusCode": 500, "body":
-            {"UpdateData": "Failed To Update Query in Step_Exception Table."}}
+                {"UpdateData": "Failed To Update Query in Step_Exception Table."}}
 
     try:
         if "QueryTasks" in event.keys():
@@ -194,19 +191,19 @@ def lambda_handler(event, context):
                 except db.exc.OperationalError as e:
                     logger.error("Failed to insert into query_tasks_updates table")
                     return {"statusCode": 500, "body":
-                        {"querytype":"Failed To Create Query in Query_Task_Update Table."}}
+                            {"querytype": "Failed To Create Query in Query_Task_Update Table."}}
                 except Exception as e:
                     logger.error("Failed to insert into query_tasks_updates table")
                     return {"statusCode": 500, "body":
-                        {"querytype":"Failed To Create Query in Query_Task_Update Table."}}
+                            {"querytype": "Failed To Create Query in Query_Task_Update Table."}}
     except db.exc.OperationalError as e:
         logger.error("Failed to update query in query_task table")
         return {"statusCode": 500, "body":
-            {"querytype":"Failed To Create Query in Query_Task Table."}}
+                {"querytype": "Failed To Create Query in Query_Task Table."}}
     except Exception as e:
         logger.error("Failed to update query in query_task table")
         return {"statusCode": 500, "body":
-            {"querytype": "Failed To Create Query in Query_Task Table."}}
+                {"querytype": "Failed To Create Query in Query_Task Table."}}
 
     try:
         session.commit()
@@ -228,6 +225,7 @@ def lambda_handler(event, context):
 
     logger.info("Successfully completed query update")
     return {"statusCode": 200, "body": {"UpdateData": "Successfully Updated The Tables."}}
+
 
 with open('test_data.txt') as infile:
     test_data = json.load(infile)

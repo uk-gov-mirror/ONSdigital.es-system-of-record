@@ -1,11 +1,9 @@
-import json
 import os
 from datetime import datetime
 import logging
 import sqlalchemy as db
 from marshmallow import ValidationError
 from sqlalchemy.orm import Session
-import psycopg2
 import alchemy_functions
 import io_validation
 
@@ -35,13 +33,13 @@ def lambda_handler(event, context):
 
     except db.exc.NoSuchModuleError as exc:
         logger.error("Error: Failed to connect to the database(driver error): {}".format(exc))
-        return {"statusCode": 500, "body":{"ContributorData":"Failed To Connect To Database." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"ContributorData": "Failed To Connect To Database." + str(type(exc))}}
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body":{"ContributorData":"Failed To Connect To Database." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"ContributorData": "Failed To Connect To Database." + str(type(exc))}}
     except Exception as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body":{"ContributorData":"Failed To Connect To Database." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"ContributorData": "Failed To Connect To Database." + str(type(exc))}}
 
     current_time = str(datetime.now())
 
@@ -61,35 +59,35 @@ def lambda_handler(event, context):
 
     except db.exc.OperationalError as exc:
         logger.error("Error updating the database.{}".format(type(exc)))
-        return {"statusCode": 500, "body":{"ContributorData":"Failed To Update The Database."}}
+        return {"statusCode": 500, "body": {"ContributorData": "Failed To Update The Database."}}
     except Exception as exc:
         logger.error("Error updating the database." + str(type(exc)))
-        return {"statusCode": 500, "body":{"ContributorData":"Failed To Update The Database."}}
+        return {"statusCode": 500, "body": {"ContributorData": "Failed To Update The Database."}}
 
     try:
         session.commit()
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to commit changes to the database: {}".format(exc))
-        return {"statusCode": 500, "body":{"ContributorData":"Failed To Commit Changes To The Database."}}
+        return {"statusCode": 500, "body": {"ContributorData": "Failed To Commit Changes To The Database."}}
     except Exception as exc:
         logger.error("Error updating the database." + str(type(exc)))
-        return {"statusCode": 500, "body":{"ContributorData":"Failed To Update The Database."}}
+        return {"statusCode": 500, "body": {"ContributorData": "Failed To Update The Database."}}
 
     try:
         session.close()
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to close connection to the database: {}".format(exc))
-        return {"statusCode": 500, "body":{"ContributorData":"Connection To Database Closed Badly."}}
+        return {"statusCode": 500, "body": {"ContributorData": "Connection To Database Closed Badly."}}
     except Exception as exc:
         logger.error("Error updating the database." + str(type(exc)))
-        return {"statusCode": 500, "body":{"ContributorData":"Failed To Update The Database."}}
+        return {"statusCode": 500, "body": {"ContributorData": "Failed To Update The Database."}}
     logger.info("Successfully completed contributor update")
-    return {"statusCode": 200, "body":{"ContributorData":"Successfully Updated The Table."}}
+    return {"statusCode": 200, "body": {"ContributorData": "Successfully Updated The Table."}}
 
 
-x = lambda_handler({"additional_comments": 6,#"Hello",
-                    "contributor_comments": 666,#"Contributor says hello!",
-                    "survey_period": 666,#"201712",
-                    "survey_code": 666,#"066",
+x = lambda_handler({"additional_comments": 6,  # "Hello",
+                    "contributor_comments": 666,  # "Contributor says hello!",
+                    "survey_period": 666,  # "201712",
+                    "survey_code": 666,  # "066",
                     "ru_reference": "77700000001"}, "")
 print(x)

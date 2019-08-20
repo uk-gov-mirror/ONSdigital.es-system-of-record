@@ -12,6 +12,7 @@ import io_validation
 
 logger = logging.getLogger("get_all_reference_data")
 
+
 def lambda_handler(event, context):
     """Pull back from a database all reference data from five tables."""
     database = os.environ['Database_Location']
@@ -31,7 +32,6 @@ def lambda_handler(event, context):
         logger.error("Error: Failed to connect to the database: {}".format(exc))
         return {"statusCode": 500, "body": {"query_type": "Failed To Connect To Database." + str(type(exc))}}
 
-
     try:
         table_list = {'query_type': None,
                       'vet': None,
@@ -50,10 +50,10 @@ def lambda_handler(event, context):
 
     except db.exc.OperationalError as exc:
         logger.error("Error selecting data from table: {}".format(exc))
-        return {"statusCode": 500, "body": {"ru_reference":"' + ref + '","query_type":"Failed To Retrieve Data."}}
+        return {"statusCode": 500, "body": {"query_type": "Failed To Retrieve Data."}}
     except Exception as exc:
         logger.error("Error selecting data from table: {}".format(exc))
-        return {"statusCode": 500, "body": {"ru_reference":"' + ref + '","query_type":"Failed To Retrieve Data."}}
+        return {"statusCode": 500, "body": {"query_type": "Failed To Retrieve Data."}}
 
     try:
         session.close()

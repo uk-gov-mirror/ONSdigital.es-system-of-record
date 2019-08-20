@@ -12,6 +12,7 @@ from sqlalchemy.exc import DatabaseError
 
 logger = logging.getLogger("get_contributor")
 
+
 def lambda_handler(event, context):
     """Collects data on a passed in Reference from six tables and combines them into a single Json.
     Parameters:
@@ -65,19 +66,19 @@ def lambda_handler(event, context):
             table_list[current_table] = table_data
     except db.exc.OperationalError as exc:
         logger.error("Error selecting data from table: {}".format(exc))
-        return {"statusCode": 500, "body": {"ru_reference":"' + ref + '","contributor_name":"Failed To Retrieve Data."}}
+        return {"statusCode": 500, "body": {"contributor_name": "Failed To Retrieve Data."}}
     except Exception as exc:
         logger.error("Error selecting data from table: {}".format(exc))
-        return {"statusCode": 500, "body": {"ru_reference":"' + ref + '","contributor_name":"Failed To Retrieve Data."}}
+        return {"statusCode": 500, "body": {"contributor_name": "Failed To Retrieve Data."}}
 
     try:
         session.close()
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to close the database session: {}".format(exc))
-        return {"statusCode": 500, "body": {"contributor_name":"Database Session Closed Badly."}}
+        return {"statusCode": 500, "body": {"contributor_name": "Database Session Closed Badly."}}
     except Exception as exc:
         logger.error("Error: Failed to close the database session: {}".format(exc))
-        return {"statusCode": 500, "body": {"contributor_name":"Database Session Closed Badly."}}
+        return {"statusCode": 500, "body": {"contributor_name": "Database Session Closed Badly."}}
 
     out_json = json.dumps(table_list["contributor"].to_dict(orient='records'), sort_keys=True, default=str)
     out_json = out_json[1:-2]

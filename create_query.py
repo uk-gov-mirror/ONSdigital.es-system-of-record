@@ -144,7 +144,6 @@ def lambda_handler(event, context):
         logger.error("Error: Failed to insert into Step_Exception table: {}".format(exc))
         return {"statusCode": 500, "body": {"query_type": "Failed to insert into Step_Exception table." + str(type(exc))}}
 
-
     try:
         if "QueryTasks" in event.keys():
             tasks = event["QueryTasks"]
@@ -191,7 +190,6 @@ def lambda_handler(event, context):
         logger.error("Error: Failed to insert into Query_Task_Update table: {}".format(exc))
         return {"statusCode": 500, "body": {"query_type": "Failed to insert into Query_Task_Update table." + str(type(exc))}}
 
-
     try:
         session.commit()
     except db.exc.OperationalError as exc:
@@ -205,12 +203,13 @@ def lambda_handler(event, context):
         session.close()
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to close the database session: {}".format(exc))
-        return {"statusCode": 500, "body": {"contributor_name":"Database Session Closed Badly."}}
+        return {"statusCode": 500, "body": {"contributor_name": "Database Session Closed Badly."}}
     except Exception as exc:
         logger.error("Error: Failed to close the database session: {}".format(exc))
-        return {"statusCode": 500, "body": {"contributor_name":"Database Session Closed Badly."}}
+        return {"statusCode": 500, "body": {"contributor_name": "Database Session Closed Badly."}}
     logger.info("Successfully completed create query")
-    return {"statusCode": 201, "body": {"query_type":"Query created successfully"}}
+    return {"statusCode": 201, "body": {"query_type": "Query created successfully"}}
+
 
 with open('test_data.txt') as infile:
     test_data = json.load(infile)

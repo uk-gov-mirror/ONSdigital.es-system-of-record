@@ -12,6 +12,7 @@ import io_validation
 
 logger = logging.getLogger("find_survey_periods")
 
+
 def lambda_handler(event, context):
     """Collects data on a passed in Reference from a tablea and returns a single Json.
     Parameters:
@@ -71,10 +72,10 @@ def lambda_handler(event, context):
         session.close()
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to close the database session: {}".format(exc))
-        return {"statusCode": 500, "body": {"ru_reference":"' + ref + '","contributor_name":"Database Session Closed Badly."}}
+        return {"statusCode": 500, "body": {"contributor_name": "Database Session Closed Badly."}}
     except Exception as exc:
         logger.error("Error: Failed to close the database session: {}".format(exc))
-        return {"statusCode": 500, "body": {"ru_reference":"' + ref + '","contributor_name":"Database Session Closed Badly."}}
+        return {"statusCode": 500, "body": {"contributor_name": "Database Session Closed Badly."}}
 
     try:
         io_validation.SurveyPeriod(strict=True, many=True).loads(out_json)
