@@ -74,10 +74,10 @@ def lambda_handler(event, context):
         session.close()
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to close the database session: {}".format(exc))
-        return {"statusCode": 500, "body": {"ru_reference":"' + ref + '","contributor_name":"Database Session Closed Badly."}}
+        return {"statusCode": 500, "body": {"contributor_name":"Database Session Closed Badly."}}
     except Exception as exc:
         logger.error("Error: Failed to close the database session: {}".format(exc))
-        return {"statusCode": 500, "body": {"ru_reference":"' + ref + '","contributor_name":"Database Session Closed Badly."}}
+        return {"statusCode": 500, "body": {"contributor_name":"Database Session Closed Badly."}}
 
     out_json = json.dumps(table_list["contributor"].to_dict(orient='records'), sort_keys=True, default=str)
     out_json = out_json[1:-2]
