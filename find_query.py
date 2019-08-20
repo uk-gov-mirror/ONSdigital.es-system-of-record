@@ -40,9 +40,15 @@ def lambda_handler(event, context):
         engine = db.create_engine(database)
         session = Session(engine)
         metadata = db.MetaData()
-    except db.exc.DatabaseError as exc:
+    except db.exc.NoSuchModuleError as exc:
+        logger.error("Error: Failed to connect to the database(driver error): {}".format(exc))
+        return {"statusCode": 500, "body": {"ContributorData": "Failed To Connect To Database." + str(type(exc))}}
+    except db.exc.OperationalError as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return json.loads('{"contributor_name":"Failed To Connect To Database."}')
+        return {"statusCode": 500, "body": {"Update_Data": "Failed To Connect To Database."}}
+    except Exception as exc:
+        logger.error("Error: Failed to connect to the database: {}".format(exc))
+        return {"statusCode": 500, "body": {"Update_Data": "Failed To Connect To Database."}}
 
     table_model = alchemy_functions.table_model(engine, metadata, "query")
     all_query_sql = db.select([table_model])
@@ -170,7 +176,7 @@ def lambda_handler(event, context):
     try:
         session.close()
     except db.exc.DatabaseError as exc:
-        logger.error("Error: Failed to close the database: {}".format(exc))
+        logger.error("Error: Failed to close the database session: {}".format(exc))
         return json.loads('{"query_reference":"Connection To Database Closed Badly."}')
 
     out_json = out_json[:-1]

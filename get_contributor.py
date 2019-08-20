@@ -1,5 +1,6 @@
 import json
 import os
+import logging
 
 import sqlalchemy as db
 from marshmallow import ValidationError
@@ -7,9 +8,17 @@ from sqlalchemy.orm import Session
 
 import alchemy_functions
 import io_validation
+from sqlalchemy.exc import DatabaseError
 
+logger = logging.getLogger("get_contributor")
 
 def lambda_handler(event, context):
+    """Collects data on a passed in Reference from six tables and combines them into a single Json.
+    Parameters:
+      event (Dict):A single key value pair of ru_reference and a string number.
+    Returns:
+      out_json (Json):Nested Json responce of the six tables data.
+    """
     database = os.environ['Database_Location']
 
     try:
@@ -20,10 +29,12 @@ def lambda_handler(event, context):
     ref = event['ru_reference']
 
     try:
+        logger.info("Connecting to the database")
         engine = db.create_engine(database)
         session = Session(engine)
         metadata = db.MetaData()
-    except:
+    except db.exc.DatabaseError as exc:
+        logger.error("Error: Failed to connect to the database: {}".format(exc))
         return json.loads('{"ru_reference":"' + ref + '","contributor_name":"Failed To Connect To Database."}')
 
     try:
@@ -33,6 +44,7 @@ def lambda_handler(event, context):
                       'contributor_survey_period': None}
 
         for current_table in table_list:
+            logger.info("Fetching data from table: {}".format(current_table))
             table_model = alchemy_functions.table_model(engine, metadata, current_table)
 
             statement = db.select([table_model]).where(table_model.columns.ru_reference == ref)
@@ -45,12 +57,14 @@ def lambda_handler(event, context):
             table_data = alchemy_functions.select(statement, session)
             table_list[current_table] = table_data
 
-    except:
+    except Exception as exc:
+        logger.error("Error selecting data from table: {}".format(exc))
         return json.loads('{"ru_reference":"' + ref + '","contributor_name":"Failed To Retrieve Data."}')
 
     try:
         session.close()
-    except:
+    except db.exc.DatabaseError as exc:
+        logger.error("Error: Failed to close the database session: {}".format(exc))
         return json.loads('{"ru_reference":"' + ref + '","contributor_name":"Database Session Closed Badly."}')
 
     out_json = json.dumps(table_list["contributor"].to_dict(orient='records'), sort_keys=True, default=str)

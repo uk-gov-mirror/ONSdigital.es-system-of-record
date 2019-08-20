@@ -17,6 +17,8 @@ schema_name = 'es_db_test'
 
 
 def upgrade():
+    """All tables to be created during the alembic upgrade process."""
+
     op.create_table('ssr_old_regions',
                     sa.Column('idbr_region', sa.CHAR(length=2), autoincrement=False, nullable=False),
                     sa.Column('ssr_reference', sa.SMALLINT(), autoincrement=False, nullable=False),
@@ -242,6 +244,7 @@ def upgrade():
 
 
 def downgrade():
+    """All tables to be dropped during the alembic downgrade process."""
     op.drop_table('failed_vet', schema=schema_name)
     op.drop_table('question_anomaly', schema=schema_name)
     op.drop_table('step_exception', schema=schema_name)
