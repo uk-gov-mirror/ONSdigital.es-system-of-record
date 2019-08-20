@@ -22,11 +22,10 @@ def lambda_handler(event, context):
     database = os.environ['Database_Location']
 
     logger.info("INPUT DATA: {}".format(event))
-
-#    try:
-#        ioValidation.FindSurvey(strict=True).load(test_data.txt)
-#    except ValidationError as err:
-#        return err.messages
+    try:
+        io_validation.SurveySearch(strict=True).load(event)
+    except ValidationError as err:
+        return err.messages
 
     search_list = ['survey_period',
                    'survey_code']
@@ -44,12 +43,8 @@ def lambda_handler(event, context):
     all_query_sql = db.select([table_model])
 
     for criteria in search_list:
-        if event[criteria] is None:
-            logger.info("No parameters have been passed")
-            continue
-
-        if event[criteria] == "":
-            logger.info("No parameters have been passed")
+        if criteria not in event.keys():
+            logger.info("No parameters have been passed for {}.".format(criteria))
             continue
 
         all_query_sql = all_query_sql.where(getattr(table_model.columns, criteria) == event[criteria])
@@ -64,14 +59,13 @@ def lambda_handler(event, context):
         logger.error("Error: Failed to close the database session: {}".format(exc))
         return json.loads('{"query_reference":"Connection To Database Closed Badly."}')
 
-#    try:
-#        ioValidation.SurveyPeriod(strict=True, many=True).loads(out_json)
-#    except ValidationError as err:
-#        return err.messages
+    try:
+        io_validation.SurveyPeriod(strict=True, many=True).loads(out_json)
+    except ValidationError as err:
+        return err.messages
 
     return json.loads(out_json)
 
 
-x = lambda_handler({'survey_period': '',
-                   'survey_code': '066'}, '')
+x = lambda_handler({'survey_code': '066'}, '')
 print(x)

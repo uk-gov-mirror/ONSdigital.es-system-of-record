@@ -57,10 +57,9 @@ def lambda_handler(event, context):
     added_query_sql = 0
 
     for criteria in search_list:
-        if event[criteria] is None:
+        if criteria not in event.keys():
             continue
-        if event[criteria] == "":
-            continue
+
         added_query_sql += 1
         all_query_sql = all_query_sql.where(getattr(table_model.columns, criteria) == event[criteria])
 
@@ -198,7 +197,7 @@ def lambda_handler(event, context):
     out_json = out_json.replace("NaN", "null")
 
     try:
-        io_validation.Contributor(strict=True).loads(out_json)
+        io_validation.Queries(strict=True).loads(out_json)
     except ValidationError as err:
         logger.error("Failed to validate output: {}".format(err.messages))
         return {"statusCode": 500, "body": {err.messages}}
@@ -207,10 +206,5 @@ def lambda_handler(event, context):
     return {"statusCode": 200, "body": {"UpdateData": "Successfully ran find_query."}}
 
 
-x = lambda_handler({'query_reference': 1,
-                    'survey_period': '',
-                    'query_type': '',
-                    'ru_reference': '',
-                    'survey_code': '',
-                    'query_status': ''}, '')
+x = lambda_handler({'query_reference': 1}, '')
 print(x)

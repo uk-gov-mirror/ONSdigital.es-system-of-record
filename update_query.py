@@ -12,9 +12,6 @@ import io_validation
 
 logger = logging.getLogger("updateQuery")
 
-with open('test_data.txt') as infile:
-    test_data = json.load(infile)
-
 
 def lambda_handler(event, context):
     """Takes a query dictionary and updates the related query tables and inserts the new run information.
@@ -26,10 +23,14 @@ def lambda_handler(event, context):
 
     database = os.environ['Database_Location']
 
+
+
     try:
+        io_validation.QueryReference(strict=True).load(event)
         io_validation.Query(strict=True).load(event)
     except ValidationError as err:
-        return err.messages
+        logger.error("Failed to validate input: {}".format(err.messages))
+        return {"statusCode": 500, "body": {err.messages}}
 
     try:
         logger.info("Connecting to the database")
@@ -228,6 +229,7 @@ def lambda_handler(event, context):
     logger.info("Successfully completed query update")
     return {"statusCode": 200, "body": {"UpdateData": "Successfully Updated The Tables."}}
 
-
+with open('test_data.txt') as infile:
+    test_data = json.load(infile)
 x = lambda_handler(test_data, '')
 print(x)

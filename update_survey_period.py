@@ -20,6 +20,11 @@ def lambda_handler(event, context):
     database = os.environ['Database_Location']
 
     try:
+        io_validation.SurveyPeriod(strict=True).load(event)
+    except ValidationError as err:
+        return err.messages
+
+    try:
         engine = db.create_engine(database)
         session = Session(engine)
         metadata = db.MetaData()
@@ -77,7 +82,7 @@ def lambda_handler(event, context):
     return {"statusCode": 200, "body":{"SurveyPeriod":"Successfully Updated The Table."}}
 
 
-x = lambda_handler({"active_period": True, "number_of_responses": 2, "number_cleared": 2,
-                    "number_cleared_first_time": 1, "sample_size": 2, "survey_period": "201712",
-                    "survey_code": "066"}, '')
+x = lambda_handler({'active_period': True, 'number_of_responses': 2, 'number_cleared': 2,
+                    'number_cleared_first_time': 1, 'sample_size': 2, 'survey_period': '201712',
+                    'survey_code': '066'}, '')
 print(x)
