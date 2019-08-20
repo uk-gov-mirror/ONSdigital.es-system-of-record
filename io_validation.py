@@ -49,7 +49,7 @@ class SurveyEnrolment(Schema):
     number_of_consecutive_non_response = fields.Int(required=True)
     number_of_periods_without_queries = fields.Int(required=True)
     period_of_enrolment = fields.Str(required=True)
-    Period = fields.Nested(CombinedContributorSurveyPeriod(many=True), required=True)
+    Periods = fields.Nested(CombinedContributorSurveyPeriod(many=True), required=True)
     Contacts = fields.Nested(CombinedContact(many=True), required=True)
 
 

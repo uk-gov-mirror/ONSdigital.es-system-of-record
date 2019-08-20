@@ -10,7 +10,7 @@ from sqlalchemy.exc import DatabaseError
 import alchemy_functions
 import io_validation
 
-logger = logging.getLogger("find_query")
+logger = logging.getLogger("get_query")
 
 
 def lambda_handler(event, context):
