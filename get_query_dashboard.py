@@ -30,7 +30,8 @@ def lambda_handler(event, context):
     try:
         io_validation.QuerySearch(strict=True).load(event)
     except ValidationError as err:
-        return err.messages
+        logger.error("Failed to validate input: {}".format(err.messages))
+        return {"statusCode": 500, "body": {err.messages}}
 
     search_list = ['query_reference',
                    'survey_period',
@@ -220,7 +221,8 @@ def lambda_handler(event, context):
     try:
         io_validation.Queries(strict=True).loads(out_json)
     except ValidationError as err:
-        return err.messages
+        logger.error("Failed to validate output: {}".format(err.messages))
+        return {"statusCode": 500, "body": {err.messages}}
 
     return {"statusCode": 200, "body":out_json}
 

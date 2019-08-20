@@ -29,7 +29,8 @@ def lambda_handler(event, context):
         io_validation.QueryReference(strict=True).load(event)
         io_validation.Query(strict=True).load(event)
     except ValidationError as err:
-        return err.messages
+        logger.error("Failed to validate input: {}".format(err.messages))
+        return {"statusCode": 500, "body": {err.messages}}
 
     try:
         logger.info("Connecting to the database")
