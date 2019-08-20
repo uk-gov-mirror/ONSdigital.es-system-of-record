@@ -3,10 +3,12 @@ import os
 import logging
 
 import sqlalchemy as db
+from marshmallow import ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import DatabaseError
 
 import alchemy_functions
+import io_validation
 
 logger = logging.getLogger("get_all_reference_data")
 
@@ -59,6 +61,11 @@ def lambda_handler(event, context):
     out_json += ',"GorRegions":'
     out_json += json.dumps(table_list["gor_regions"].to_dict(orient='records'), sort_keys=True, default=str)
     out_json += '}'
+
+    try:
+        io_validation.AllReferenceData(strict=True).loads(out_json)
+    except ValidationError as err:
+        return err.messages
 
     return json.loads(out_json)
 

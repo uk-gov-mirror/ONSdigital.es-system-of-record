@@ -13,9 +13,6 @@ import io_validation
 
 logger = logging.getLogger("create_query")
 
-with open('test_data.txt') as infile:
-    test_data = json.load(infile)
-
 
 def lambda_handler(event, context):
     """Takes a query dictonary and inserts new data into the query tables with the run information.
@@ -29,10 +26,10 @@ def lambda_handler(event, context):
 
     logger.info("INPUT DATA: {}".format(event))
 
-#    try:
-#        ioValidation.Query(strict=True).load(test_data.txt)
-#    except ValidationError as err:
-#        return err.messages
+    try:
+        io_validation.Query(strict=True).load(event)
+    except ValidationError as err:
+        return err.messages
 
     try:
         logger.info("Connecting to the database")
@@ -182,6 +179,7 @@ def lambda_handler(event, context):
 
     return json.loads('{"query_type":"Query created successfully"}')
 
-
+with open('test_data.txt') as infile:
+    test_data = json.load(infile)
 x = lambda_handler(test_data, '')
 print(x)
