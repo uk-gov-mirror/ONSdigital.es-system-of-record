@@ -21,10 +21,16 @@ def lambda_handler(event, context):
         engine = db.create_engine(database)
         session = Session(engine)
         metadata = db.MetaData()
-
-    except db.exc.DatabaseError as exc:
+    except db.exc.NoSuchModuleError as exc:
+        logger.error("Error: Failed to connect to the database(driver error): {}".format(exc))
+        return {"statusCode": 500, "body": {"query_type": "Failed To Connect To Database." + str(type(exc))}}
+    except db.exc.OperationalError as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return json.loads('{"QueryTypes":"Failed To Connect To Database."}')
+        return {"statusCode": 500, "body": {"query_type": "Failed To Connect To Database." + str(type(exc))}}
+    except Exception as exc:
+        logger.error("Error: Failed to connect to the database: {}".format(exc))
+        return {"statusCode": 500, "body": {"query_type": "Failed To Connect To Database." + str(type(exc))}}
+
 
     try:
         table_list = {'query_type': None,
@@ -42,15 +48,21 @@ def lambda_handler(event, context):
             table_data = alchemy_functions.select(statement, session)
             table_list[current_table] = table_data
 
+    except db.exc.OperationalError as exc:
+        logger.error("Error selecting data from table: {}".format(exc))
+        return {"statusCode": 500, "body": {"ru_reference":"' + ref + '","query_type":"Failed To Retrieve Data."}}
     except Exception as exc:
         logger.error("Error selecting data from table: {}".format(exc))
-        return json.loads('{"QueryTypes":"Failed To Retrieve Data."}')
+        return {"statusCode": 500, "body": {"ru_reference":"' + ref + '","query_type":"Failed To Retrieve Data."}}
 
     try:
         session.close()
-    except db.exc.DatabaseError as exc:
+    except db.exc.OperationalError as exc:
         logger.error("Error: Failed to close the database session: {}".format(exc))
-        return json.loads('{"query_type":"Connection To Database Closed Badly."}')
+        return {"statusCode": 500, "body": {"ru_reference": "' + ref + '", "query_type": "Database Session Closed Badly."}}
+    except Exception as exc:
+        logger.error("Error: Failed to close the database session: {}".format(exc))
+        return {"statusCode": 500, "body": {"ru_reference": "' + ref + '", "query_type": "Database Session Closed Badly."}}
 
     out_json = '{"QueryTypes":'
     out_json += json.dumps(table_list["query_type"].to_dict(orient='records'), sort_keys=True, default=str)
@@ -65,9 +77,11 @@ def lambda_handler(event, context):
     try:
         io_validation.AllReferenceData(strict=True).loads(out_json)
     except ValidationError as err:
-        return err.messages
+        logger.error("Failed to validate output: {}".format(err.messages))
+        return {"statusCode": 500, "body": {err.messages}}
+    logger.info("Successfully completed get_all_ref_data")
 
-    return json.loads(out_json)
+    return {"statusCode": 200, "body": {out_json}}
 
 
 x = lambda_handler('', '')

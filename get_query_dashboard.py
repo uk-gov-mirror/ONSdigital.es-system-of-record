@@ -223,7 +223,7 @@ def lambda_handler(event, context):
     except ValidationError as err:
         logger.error("Failed to validate output: {}".format(err.messages))
         return {"statusCode": 500, "body": {err.messages}}
-
+    logger.info("Succesfully completed get_query_dashboard")
     return {"statusCode": 200, "body":out_json}
 
 
