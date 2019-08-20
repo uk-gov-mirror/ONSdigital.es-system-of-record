@@ -77,7 +77,7 @@ def lambda_handler(event, context):
 
     out_json = out_json[:-1]
     out_json += ']}'
-    print(out_json)
+
     try:
         io_validation.Contributor(strict=True).loads(out_json)
     except ValidationError as err:
