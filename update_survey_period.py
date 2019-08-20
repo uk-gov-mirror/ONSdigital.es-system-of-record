@@ -23,8 +23,13 @@ def lambda_handler(event, context):
         engine = db.create_engine(database)
         session = Session(engine)
         metadata = db.MetaData()
-
-    except db.exc.DatabaseError as exc:
+    except db.exc.NoSuchModuleError as exc:
+        logger.error("Error: Failed to connect to the database(driver error): {}".format(exc))
+        return {"statusCode": 500, "body":{"ContributorData":"Failed To Connect To Database." + str(type(exc))}}
+    except db.exc.OperationalError as exc:
+        logger.error("Error: Failed to connect to the database: {}".format(exc))
+        return {"statusCode": 500, "body":{"QueryTypes":"Failed To Connect To Database."}}
+    except Exception as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
         return {"statusCode": 500, "body":{"QueryTypes":"Failed To Connect To Database."}}
 
@@ -43,19 +48,29 @@ def lambda_handler(event, context):
                   table_model.columns.survey_code ==
                   event['survey_code']))
         alchemy_functions.update(statement, session)
+    except db.exc.OperationalError as exc:
+        logger.error("Error updating the database." + str(type(exc)))
+        return {"statusCode": 500, "body":{"SurveyPeriod":"Failed To Update Survey_Period."}}
     except Exception as exc:
         logger.error("Error updating the database." + str(type(exc)))
         return {"statusCode": 500, "body":{"SurveyPeriod":"Failed To Update Survey_Period."}}
 
+
     try:
         session.commit()
-    except db.exc.DatabaseError as exc:
+    except db.exc.OperationalError as exc:
+        logger.error("Error: Failed to commit changes to the database: {}".format(exc))
+        return {"statusCode": 500, "body":{"SurveyPeriod":"Failed To Commit Changes To The Database."}}
+    except Exception as exc:
         logger.error("Error: Failed to commit changes to the database: {}".format(exc))
         return {"statusCode": 500, "body":{"SurveyPeriod":"Failed To Commit Changes To The Database."}}
 
     try:
         session.close()
-    except db.exc.DatabaseError as exc:
+    except db.exc.OperationalError as exc:
+        logger.error("Error: Failed to close connection to the database: {}".format(exc))
+        return {"statusCode": 500, "body":{"SurveyPeriod":"Connection To Database Closed Badly."}}
+    except Exception as exc:
         logger.error("Error: Failed to close connection to the database: {}".format(exc))
         return {"statusCode": 500, "body":{"SurveyPeriod":"Connection To Database Closed Badly."}}
     logger.info("Successfully survey_period update")

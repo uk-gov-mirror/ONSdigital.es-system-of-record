@@ -68,16 +68,21 @@ def lambda_handler(event, context):
 
     try:
         session.commit()
-    except db.exc.DatabaseError as exc:
+    except db.exc.OperationalError as exc:
         logger.error("Error: Failed to commit changes to the database: {}".format(exc))
-
         return {"statusCode": 500, "body":{"ContributorData":"Failed To Commit Changes To The Database."}}
+    except Exception as exc:
+        logger.error("Error updating the database." + str(type(exc)))
+        return {"statusCode": 500, "body":{"ContributorData":"Failed To Update The Database."}}
 
     try:
         session.close()
-    except db.exc.DatabaseError as exc:
+    except db.exc.OperationalError as exc:
         logger.error("Error: Failed to close connection to the database: {}".format(exc))
         return {"statusCode": 500, "body":{"ContributorData":"Connection To Database Closed Badly."}}
+    except Exception as exc:
+        logger.error("Error updating the database." + str(type(exc)))
+        return {"statusCode": 500, "body":{"ContributorData":"Failed To Update The Database."}}
     logger.info("Successfully completed contributor update")
     return {"statusCode": 200, "body":{"ContributorData":"Successfully Updated The Table."}}
 
