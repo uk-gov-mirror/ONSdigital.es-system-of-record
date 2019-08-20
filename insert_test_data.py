@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 import alchemy_functions as af
 from sqlalchemy.exc import DatabaseError
 
-logger = logging.getLogger("create_query")
+logger = logging.getLogger("insert_test_data")
 
 
 # If this fails to complete, you need to drop and recreate the database to fix the query tables serialisation.
