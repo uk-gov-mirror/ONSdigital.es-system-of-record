@@ -65,8 +65,8 @@ def lambda_handler(event, context):
                                                raised_by=event['raised_by'],
                                                results_state=event['results_state'],
                                                target_resolution_date=event['target_resolution_date']).\
-            on_conflict_do_nothing(constraint=table_model.primary_key)
-        alchemy_functions.update(statement, session)
+            returning(table_model.columns.query_reference).on_conflict_do_nothing(constraint=table_model.primary_key)
+        new_query = alchemy_functions.update(statement, session).fetchone()[0]
 
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to insert into query table: {}".format(exc))
@@ -82,7 +82,7 @@ def lambda_handler(event, context):
             for count, exception in enumerate(exceptions):
                 logger.info("Inserting into step_exception table {}".format(count))
                 table_model = alchemy_functions.table_model(engine, metadata, 'step_exception')
-                statement = insert(table_model).values(query_reference=exception['query_reference'],
+                statement = insert(table_model).values(query_reference=new_query,
                                                        survey_period=exception['survey_period'],
                                                        run_id=exception['run_id'],
                                                        ru_reference=exception['ru_reference'],
@@ -151,7 +151,7 @@ def lambda_handler(event, context):
                 logger.info("inserting into query_task {}".format(count))
                 table_model = alchemy_functions.table_model(engine, metadata, 'query_task')
                 statement = insert(table_model).values(task_sequence_number=task['task_sequence_number'],
-                                                       query_reference=task['query_reference'],
+                                                       query_reference=new_query,
                                                        response_required_by=task['response_required_by'],
                                                        task_description=task['task_description'],
                                                        task_responsibility=task['task_responsibility'],
@@ -169,7 +169,7 @@ def lambda_handler(event, context):
                             table_model = alchemy_functions.table_model(engine, metadata, 'query_task_update')
                             statement = insert(table_model).values(task_sequence_number=query_task
                                                                    ['task_sequence_number'],
-                                                                   query_reference=query_task['query_reference'],
+                                                                   query_reference=new_query,
                                                                    last_updated=query_task['last_updated'],
                                                                    task_update_description=query_task
                                                                    ['task_update_description'],
@@ -209,6 +209,7 @@ def lambda_handler(event, context):
         return {"statusCode": 500, "body": {"contributor_name": "Database Session Closed Badly."}}
     logger.info("Successfully completed create query")
     return {"statusCode": 201, "body": {"query_type": "Query created successfully"}}
+
 
 
 with open('test_data.txt') as infile:

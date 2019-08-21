@@ -59,8 +59,19 @@ def lambda_handler(event, context):
 
             if current_table == "survey_contact":
                 other_model = alchemy_functions.table_model(engine, metadata, "contact")
-                joined = table_model.join(other_model)
-                statement = statement.select_from(joined)
+                statement = db.select([table_model.columns.ru_reference, table_model.columns.survey_code,
+                                       table_model.columns.effective_start_date,
+                                       table_model.columns.effective_end_date, other_model])\
+                    .where(db.and_(table_model.columns.contact_reference == other_model.columns.contact_reference,
+                                   table_model.columns.ru_reference == ref))
+            elif current_table == "contributor_survey_period":
+                other_model = alchemy_functions.table_model(engine, metadata, "survey_period")
+                statement = db.select([table_model, other_model.columns.active_period, other_model.columns.sample_size,
+                                       other_model.columns.number_cleared, other_model.columns.number_cleared_first_time,
+                                       other_model.columns.number_of_responses])\
+                    .where(db.and_(table_model.columns.survey_code == other_model.columns.survey_code,
+                                   table_model.columns.survey_period == other_model.columns.survey_period,
+                                   table_model.columns.ru_reference == ref))
 
             table_data = alchemy_functions.select(statement, session)
             table_list[current_table] = table_data
@@ -114,5 +125,5 @@ def lambda_handler(event, context):
     return {"statusCode": 200, "body": {out_json}}
 
 
-x = lambda_handler({"ru_reference": "77700000001"}, '')
+x = lambda_handler({"ru_reference": "77700000006"}, '')
 print(x)

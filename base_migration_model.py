@@ -62,7 +62,7 @@ def upgrade():
                     sa.Column('town_city', sa.VARCHAR(length=30), autoincrement=False, nullable=False),
                     sa.Column('county', sa.VARCHAR(length=30), autoincrement=False, nullable=False),
                     sa.Column('country', sa.VARCHAR(length=30), autoincrement=False, nullable=True),
-                    sa.Column('post_code', sa.VARCHAR(length=9), autoincrement=False, nullable=False),
+                    sa.Column('postcode', sa.VARCHAR(length=9), autoincrement=False, nullable=False),
                     sa.Column('birth_date', sa.DATE(), autoincrement=False, nullable=False),
                     sa.Column('business_profiling_team_case', sa.BOOLEAN(), autoincrement=False, nullable=True),
                     sa.Column('contact', sa.VARCHAR(length=60), autoincrement=False, nullable=True),

@@ -10,8 +10,7 @@ import alchemy_functions
 import io_validation
 from sqlalchemy.exc import DatabaseError
 
-
-logger = logging.getLogger("query_dashboard")
+logger = logging.getLogger("get_query_dashboard")
 
 
 # Same as findQuery but with one extra return key/value pair.
