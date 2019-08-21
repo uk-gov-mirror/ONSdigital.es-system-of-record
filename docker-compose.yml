@@ -24,6 +24,12 @@ services:
       context: .
     volumes:
       - .:/usr/src/app
+  postgres:
+    image: postgres:11
+    volumes:
+      - ./docker/files/postgres:/docker-entrypoint-initdb.d
+
+
 volumes:
   pre_commit_cache:
     external: false
