@@ -24,9 +24,10 @@ def lambda_handler(event, context):
     database = os.environ['Database_Location']
 
     try:
-        io_validation.QuerySearch(strict=True).load(event)
+        io_validation.ContributorSearch(strict=True).load(event)
     except ValidationError as err:
-        return err.messages
+        logger.error("Failed to validate input: {}".format(err.messages))
+        return {"statusCode": 500, "body": {err.messages}}
 
     search_list = ['query_reference',
                    'survey_period',
@@ -106,9 +107,12 @@ def lambda_handler(event, context):
                 table_data = alchemy_functions.select(statement, session)
                 table_list[current_table] = table_data
 
+        except db.exc.OperationalError as exc:
+            logger.error("Error updating the database." + str(type(exc)))
+            return {"statusCode": 500, "body": {"query_type": "Failed To Find Query."}}
         except Exception as exc:
             logger.error("Error finding query: {}".format(exc))
-            return json.loads('{"query_reference":"Error","query_type":"Error selecting query from database"}')
+            return {"statusCode": 500, "body": {"query_type": "Failed To Find Query."}}
 
         curr_query = json.dumps(curr_query.to_dict(orient='records'), sort_keys=True, default=str)
         curr_query = curr_query[1:-2]
@@ -177,7 +181,16 @@ def lambda_handler(event, context):
         session.close()
     except db.exc.DatabaseError as exc:
         logger.error("Error: Failed to close the database session: {}".format(exc))
-        return json.loads('{"query_reference":"Connection To Database Closed Badly."}')
+        return {'{"query_reference":"Connection To Database Closed Badly."}'}
+
+    try:
+        session.close()
+    except db.exc.OperationalError as exc:
+        logger.error("Error: Failed to close connection to the database: {}".format(exc))
+        return {"statusCode": 500, "body": {"UpdateData": "Connection To Database Closed Badly."}}
+    except Exception as exc:
+        logger.error("Error: Failed to close connection to the database: {}".format(exc))
+        return {"statusCode": 500, "body": {"UpdateData": "Connection To Database Closed Badly."}}
 
     out_json = out_json[:-1]
     out_json += ']}'
@@ -186,9 +199,11 @@ def lambda_handler(event, context):
     try:
         io_validation.Queries(strict=True).loads(out_json)
     except ValidationError as err:
-        return err.messages
+        logger.error("Failed to validate output: {}".format(err.messages))
+        return {"statusCode": 500, "body": {err.messages}}
 
-    return json.loads(out_json)
+    logger.info("Successfully completed find query")
+    return {"statusCode": 200, "body": {"UpdateData": "Successfully ran find_query."}}
 
 
 x = lambda_handler({'query_reference': 1}, '')

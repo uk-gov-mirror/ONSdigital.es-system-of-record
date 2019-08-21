@@ -29,16 +29,23 @@ def lambda_handler(event, context):
     try:
         io_validation.Query(strict=True).load(event)
     except ValidationError as err:
-        return err.messages
+        logger.error("Failed to validate input: {}".format(err.messages))
+        return {"statusCode": 500, "body": {err.messages}}
 
     try:
         logger.info("Connecting to the database")
         engine = db.create_engine(database)
         session = Session(engine)
         metadata = db.MetaData()
-    except db.exc.DatabaseError as exc:
+    except db.exc.NoSuchModuleError as exc:
+        logger.error("Error: Failed to connect to the database(driver error): {}".format(exc))
+        return {"statusCode": 500, "body": {"contributor_name": "Failed To Connect To Database." + str(type(exc))}}
+    except db.exc.OperationalError as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return json.loads('{"contributor_name":"Failed To Connect To Database."}')
+        return {"statusCode": 500, "body": {"contributor_name": "Failed To Connect To Database." + str(type(exc))}}
+    except Exception as exc:
+        logger.error("Error: Failed to connect to the database: {}".format(exc))
+        return {"statusCode": 500, "body": {"contributor_name": "Failed To Connect To Database." + str(type(exc))}}
 
     try:
         logger.info("Inserting into query table {}")
@@ -61,9 +68,12 @@ def lambda_handler(event, context):
             returning(table_model.columns.query_reference).on_conflict_do_nothing(constraint=table_model.primary_key)
         new_query = alchemy_functions.update(statement, session).fetchone()[0]
 
+    except db.exc.OperationalError as exc:
+        logger.error("Error: Failed to insert into query table: {}".format(exc))
+        return {"statusCode": 500, "body": {"query_type": "Failed to insert into query table." + str(type(exc))}}
     except Exception as exc:
-        logger.error("Error inserting into query table: {}".format(exc))
-        return json.loads('{"query_type":"Failed to create query in Query table."}')
+        logger.error("Error: Failed to insert into query table: {}".format(exc))
+        return {"statusCode": 500, "body": {"query_type": "Failed to insert into query table." + str(type(exc))}}
 
     try:
         if "Exceptions" in event.keys():
@@ -115,16 +125,24 @@ def lambda_handler(event, context):
                                                                                survey_code=vets['survey_code']).\
                                             on_conflict_do_nothing(constraint=table_model.primary_key)
                                         alchemy_functions.update(statement, session)
-
+                            except db.exc.OperationalError as exc:
+                                logger.error("Error: Failed to insert into failed_VET table: {}".format(exc))
+                                return {"statusCode": 500, "body": {"query_type": "Failed to insert into failed_VET table." + str(type(exc))}}
                             except Exception as exc:
-                                logger.error("Error inserting into failed_VET table: {}".format(exc))
-                                return json.loads('{"query_type":"Failed To Create Query in Failed_VET Table."}')
+                                logger.error("Error: Failed to insert into failed_VET table: {}".format(exc))
+                                return {"statusCode": 500, "body": {"query_type": "Failed to insert into failed_VET table." + str(type(exc))}}
+                except db.exc.OperationalError as exc:
+                    logger.error("Error: Failed to insert into Question_Anomaly table: {}".format(exc))
+                    return {"statusCode": 500, "body": {"query_type": "Failed to insert into Question_Anomaly table." + str(type(exc))}}
                 except Exception as exc:
-                    logger.error("Error inserting into question_anomaly table: {}".format(exc))
-                    return json.loads('{"query_type":"Failed To Create Query in Question_Anomaly Table."}')
+                    logger.error("Error: Failed to insert into Question_Anomaly table: {}".format(exc))
+                    return {"statusCode": 500, "body": {"query_type": "Failed to insert into Question_Anomaly table." + str(type(exc))}}
+    except db.exc.OperationalError as exc:
+        logger.error("Error: Failed to insert into Step_Exception table: {}".format(exc))
+        return {"statusCode": 500, "body": {"query_type": "Failed to insert into Step_Exception table." + str(type(exc))}}
     except Exception as exc:
-        logger.error("Error inserting into step_exception table: {}".format(exc))
-        return json.loads('{"query_type":"Failed To Update Query in Step_Exception Table."}')
+        logger.error("Error: Failed to insert into Step_Exception table: {}".format(exc))
+        return {"statusCode": 500, "body": {"query_type": "Failed to insert into Step_Exception table." + str(type(exc))}}
 
     try:
         if "QueryTasks" in event.keys():
@@ -159,25 +177,39 @@ def lambda_handler(event, context):
                                 on_conflict_do_nothing(constraint=table_model.primary_key)
                             alchemy_functions.update(statement, session)
 
+                except db.exc.OperationalError as exc:
+                    logger.error("Error: Failed to insert into Query_Task_Update table: {}".format(exc))
+                    return {"statusCode": 500, "body": {"query_type": "Failed to insert into Query_Task_Update table." + str(type(exc))}}
                 except Exception as exc:
-                    logger.error("Error inserting into query_task_update table: {}".format(exc))
-                    return json.loads('{"query_type":"Failed To Create Query in Query_Task_Update Table."}')
+                    logger.error("Error: Failed to insert into Query_Task_Update table: {}".format(exc))
+                    return {"statusCode": 500, "body": {"query_type": "Failed to insert into Query_Task_Update table." + str(type(exc))}}
+    except db.exc.OperationalError as exc:
+        logger.error("Error: Failed to insert into Query_Task_Update table: {}".format(exc))
+        return {"statusCode": 500, "body": {"query_type": "Failed to insert into Query_Task_Update table." + str(type(exc))}}
     except Exception as exc:
-        logger.error("Error inserting into query_task table: {}".format(exc))
-        return json.loads('{"query_type":"Failed To Create Query in Query_Task Table."}')
+        logger.error("Error: Failed to insert into Query_Task_Update table: {}".format(exc))
+        return {"statusCode": 500, "body": {"query_type": "Failed to insert into Query_Task_Update table." + str(type(exc))}}
+
     try:
         session.commit()
-    except db.exc.DatabaseError as exc:
+    except db.exc.OperationalError as exc:
         logger.error("Error: Failed to commit changes to the database: {}".format(exc))
-        return json.loads('{"query_type":"Failed To Commit Changes To The Database."}')
+        return {"statusCode": 500, "body": {"UpdateData": "Failed To Commit Changes To The Database."}}
+    except Exception as exc:
+        logger.error("Error: Failed to commit changes to the database: {}".format(exc))
+        return {"statusCode": 500, "body": {"UpdateData": "Failed To Commit Changes To The Database."}}
 
     try:
         session.close()
-    except db.exc.DatabaseError as exc:
+    except db.exc.OperationalError as exc:
         logger.error("Error: Failed to close the database session: {}".format(exc))
-        return json.loads('{"query_type":"Connection To Database Closed Badly."}')
+        return {"statusCode": 500, "body": {"contributor_name": "Database Session Closed Badly."}}
+    except Exception as exc:
+        logger.error("Error: Failed to close the database session: {}".format(exc))
+        return {"statusCode": 500, "body": {"contributor_name": "Database Session Closed Badly."}}
+    logger.info("Successfully completed create query")
+    return {"statusCode": 201, "body": {"query_type": "Query created successfully"}}
 
-    return json.loads('{"query_type":"Query created successfully"}')
 
 
 with open('test_data.txt') as infile:
