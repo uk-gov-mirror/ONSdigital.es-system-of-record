@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 
@@ -10,6 +9,8 @@ import alchemy_functions
 import io_validation
 
 logger = logging.getLogger("updateSurveyPeriod")
+
+
 def lambda_handler(event, context):
     """Takes a survey_period dictonary and updates the MI information based in the new run.
     Parameters:

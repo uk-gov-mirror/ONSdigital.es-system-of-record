@@ -126,30 +126,30 @@ def lambda_handler(event, context):
                                                                                       'survey_code']).\
                                             on_conflict_do_nothing(constraint=table_model.primary_key)
                                         alchemy_functions.update(statement, session)
-                            except db.exc.OperationalError as e:
-                                logger.error("Failed to insert into failed_vet table: {}".format(e))
+                            except db.exc.OperationalError as exc:
+                                logger.error("Failed to insert into failed_vet table: {}".format(exc))
                                 return {"statusCode": 500, "body":
                                         {"UpdateData": "Failed To Update Query in Failed_VET Table."}}
-                            except Exception as e:
-                                logger.error("Failed to insert into failed_vet table: {}".format(e))
+                            except Exception as exc:
+                                logger.error("Failed to insert into failed_vet table: {}".format(exc))
                                 return {"statusCode": 500, "body":
                                         {"UpdateData": "Failed To Update Query in Failed_VET Table."}}
 
-                except db.exc.OperationalError as e:
-                    logger.error("Failed to insert into question anomaly table: {}".format(e))
+                except db.exc.OperationalError as exc:
+                    logger.error("Failed to insert into question anomaly table: {}".format(exc))
                     return {"statusCode": 500, "body":
                             {"UpdateData": "Failed To Update Query in Question_Anomaly Table."}}
-                except Exception as e:
-                    logger.error("Failed to insert into question anomaly table: {}".format(e))
+                except Exception as exc:
+                    logger.error("Failed to insert into question anomaly table: {}".format(exc))
                     return {"statusCode": 500, "body":
                             {"UpdateData": "Failed To Update Query in Question_Anomaly Table."}}
 
-    except db.exc.OperationalError as e:
-        logger.error("Failed to update step_exception table: {}".format(e))
+    except db.exc.OperationalError as exc:
+        logger.error("Failed to update step_exception table: {}".format(exc))
         return {"statusCode": 500, "body":
                 {"UpdateData": "Failed To Update Query in Step_Exception Table."}}
-    except Exception as e:
-        logger.error("Failed to update step_exception table: {}".format(e))
+    except Exception as exc:
+        logger.error("Failed to update step_exception table: {}".format(exc))
         return {"statusCode": 500, "body":
                 {"UpdateData": "Failed To Update Query in Step_Exception Table."}}
 
@@ -188,20 +188,20 @@ def lambda_handler(event, context):
                                 updated_by=query_task['updated_by']).\
                                 on_conflict_do_nothing(constraint=table_model.primary_key)
                             alchemy_functions.update(statement, session)
-                except db.exc.OperationalError as e:
-                    logger.error("Failed to insert into query_tasks_updates table")
+                except db.exc.OperationalError as exc:
+                    logger.error("Failed to insert into query_tasks_updates table: {}".format(exc))
                     return {"statusCode": 500, "body":
                             {"querytype": "Failed To Create Query in Query_Task_Update Table."}}
-                except Exception as e:
-                    logger.error("Failed to insert into query_tasks_updates table")
+                except Exception as exc:
+                    logger.error("Failed to insert into query_tasks_updates table: {}".format(exc))
                     return {"statusCode": 500, "body":
                             {"querytype": "Failed To Create Query in Query_Task_Update Table."}}
-    except db.exc.OperationalError as e:
-        logger.error("Failed to update query in query_task table")
+    except db.exc.OperationalError as exc:
+        logger.error("Failed to update query in query_task table: {}".format(exc))
         return {"statusCode": 500, "body":
                 {"querytype": "Failed To Create Query in Query_Task Table."}}
-    except Exception as e:
-        logger.error("Failed to update query in query_task table")
+    except Exception as exc:
+        logger.error("Failed to update query in query_task table: {}".format(exc))
         return {"statusCode": 500, "body":
                 {"querytype": "Failed To Create Query in Query_Task Table."}}
 

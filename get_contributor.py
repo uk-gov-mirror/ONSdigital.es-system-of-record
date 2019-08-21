@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 
 import alchemy_functions
 import io_validation
-from sqlalchemy.exc import DatabaseError
 
 logger = logging.getLogger("get_contributor")
 
