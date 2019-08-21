@@ -6,7 +6,6 @@ import sqlalchemy as db
 from sqlalchemy.orm import Session
 
 import alchemy_functions as af
-from sqlalchemy.exc import DatabaseError
 
 logger = logging.getLogger("insert_test_data")
 
@@ -25,10 +24,10 @@ def main():
         input_file = open('data.json').read()
         input_json = json.loads(input_file)
     except IOError as exc:
-        logger.error("Failed to load from file")
+        logger.error("Failed to load from file: {}".format(exc))
         return
     except Exception as exc:
-        logger.error("Failed to load from file")
+        logger.error("Failed to load from file: {}".format(exc))
         return
 
     try:
@@ -93,5 +92,6 @@ def insert(engine, session, metadata, table_name, table_data):
         table_model = af.table_model(engine, metadata, table_name)
         insert_sql = db.insert(table_model)
         session.execute(insert_sql, table_data)
+
 
 main()

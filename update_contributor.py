@@ -18,10 +18,10 @@ def lambda_handler(event, context):
       Json message reporting the success of the update.
     """
 
-    # try:
-    #     ioValidation.ContributorUpdate(strict=True).load("test_data.txt")
-    # except ValidationError as err:
-    #     return err.messages
+    try:
+        io_validation.ContributorUpdate(strict=True).load(event)
+    except ValidationError as err:
+        return err.messages
 
     database = os.environ['Database_Location']
 
@@ -85,9 +85,9 @@ def lambda_handler(event, context):
     return {"statusCode": 200, "body": {"ContributorData": "Successfully Updated The Table."}}
 
 
-x = lambda_handler({"additional_comments": 6,  # "Hello",
-                    "contributor_comments": 666,  # "Contributor says hello!",
-                    "survey_period": 666,  # "201712",
-                    "survey_code": 666,  # "066",
+x = lambda_handler({"additional_comments": "6",  # "Hello",
+                    "contributor_comments": "666",  # "Contributor says hello!",
+                    "survey_period": "201712",  # "201712",
+                    "survey_code": "066",  # "066",
                     "ru_reference": "77700000001"}, "")
 print(x)

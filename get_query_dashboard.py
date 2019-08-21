@@ -8,13 +8,11 @@ from sqlalchemy.orm import Session
 
 import alchemy_functions
 import io_validation
-from sqlalchemy.exc import DatabaseError
 
 logger = logging.getLogger("get_query_dashboard")
 
 
 # Same as findQuery but with one extra return key/value pair.
-
 def lambda_handler(event, context):
     """Collects data on a passed in References from eight tables and combines them into a single Json.
     Parameters:
@@ -208,7 +206,7 @@ def lambda_handler(event, context):
         return {"statusCode": 500, "body": {"query_reference": "session To Database Closed Badly."}}
 
     out_json = out_json[:-1]
-    
+
     out_json += ']}'
     out_json = out_json.replace("NaN", "null")
 

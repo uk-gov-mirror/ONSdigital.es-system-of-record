@@ -5,7 +5,6 @@ import logging
 import sqlalchemy as db
 from marshmallow import ValidationError
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import DatabaseError
 
 import alchemy_functions
 import io_validation

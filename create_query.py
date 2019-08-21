@@ -6,7 +6,6 @@ import sqlalchemy as db
 from marshmallow import ValidationError
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import DatabaseError
 
 import alchemy_functions
 import io_validation
@@ -209,7 +208,6 @@ def lambda_handler(event, context):
         return {"statusCode": 500, "body": {"contributor_name": "Database Session Closed Badly."}}
     logger.info("Successfully completed create query")
     return {"statusCode": 201, "body": {"query_type": "Query created successfully"}}
-
 
 
 with open('test_data.txt') as infile:

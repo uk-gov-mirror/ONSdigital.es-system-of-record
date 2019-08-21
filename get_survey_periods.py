@@ -6,13 +6,11 @@ import sqlalchemy as db
 from marshmallow import ValidationError
 from sqlalchemy import func
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import DatabaseError
 
 import alchemy_functions
 import io_validation
 
 logger = logging.getLogger("get_survey_periods")
-
 
 
 def lambda_handler(event, context):
@@ -61,7 +59,7 @@ def lambda_handler(event, context):
         added_query_sql += 1
 
         all_query_sql = all_query_sql.where(getattr(table_model.columns, criteria) == event[criteria])
-        
+
     if added_query_sql == 0:
         all_query_sql = all_query_sql.where(table_model.columns.survey_period == db.select([func.max(table_model.columns.survey_period)]))
 
