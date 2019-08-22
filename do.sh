@@ -80,6 +80,12 @@ exec() {
 run() {
     $DOCKER_COMPOSE run --rm -e HUID=$HUID -w //usr/src/app "$@"
 }
+start() {
+    $DOCKER_COMPOSE up -d "$@"
+}
+stop() {
+    $DOCKER_COMPOSE down "$@"
+}
 
 serverless() {
    run serverless serverless "$@"
