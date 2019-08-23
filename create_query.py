@@ -3,6 +3,7 @@ import logging
 import os
 
 import sqlalchemy as db
+
 from marshmallow import ValidationError
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
@@ -20,16 +21,19 @@ def lambda_handler(event, context):
     Returns:
       Json message reporting the success of the update alongside the new queries reference number.
     """
-
-    database = os.environ['Database_Location']
+    database = os.environ.get('Database_Location', None)
+    if database is None:
+        logger.error("Database_Location env not set")
+        return {"statusCode": 500, "body": "Configuration error"}
 
     logger.info("INPUT DATA: {}".format(event))
 
     try:
         io_validation.Query(strict=True).load(event)
+
     except ValidationError as err:
         logger.error("Failed to validate input: {}".format(err.messages))
-        return {"statusCode": 500, "body": {err.messages}}
+        return {"statusCode": 500, "body": {str(err.messages)}}
 
     try:
         logger.info("Connecting to the database")
@@ -38,13 +42,13 @@ def lambda_handler(event, context):
         metadata = db.MetaData()
     except db.exc.NoSuchModuleError as exc:
         logger.error("Error: Failed to connect to the database(driver error): {}".format(exc))
-        return {"statusCode": 500, "body": {"contributor_name": "Failed To Connect To Database." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"contributor_name": "Failed To Connect To Database." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
     except Exception as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"contributor_name": "Failed To Connect To Database." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
 
     try:
         logger.info("Inserting into query table {}")
@@ -69,10 +73,10 @@ def lambda_handler(event, context):
 
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to insert into query table: {}".format(exc))
-        return {"statusCode": 500, "body": {"query_type": "Failed to insert into query table." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed to insert into query table." + str(type(exc))}}
     except Exception as exc:
         logger.error("Error: Failed to insert into query table: {}".format(exc))
-        return {"statusCode": 500, "body": {"query_type": "Failed to insert into query table." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed to insert into query table." + str(type(exc))}}
 
     try:
         if "Exceptions" in event.keys():
@@ -126,22 +130,22 @@ def lambda_handler(event, context):
                                         alchemy_functions.update(statement, session)
                             except db.exc.OperationalError as exc:
                                 logger.error("Error: Failed to insert into failed_VET table: {}".format(exc))
-                                return {"statusCode": 500, "body": {"query_type": "Failed to insert into failed_VET table." + str(type(exc))}}
+                                return {"statusCode": 500, "body": {"Error": "Failed to insert into failed_VET table." + str(type(exc))}}
                             except Exception as exc:
                                 logger.error("Error: Failed to insert into failed_VET table: {}".format(exc))
-                                return {"statusCode": 500, "body": {"query_type": "Failed to insert into failed_VET table." + str(type(exc))}}
+                                return {"statusCode": 500, "body": {"Error": "Failed to insert into failed_VET table." + str(type(exc))}}
                 except db.exc.OperationalError as exc:
                     logger.error("Error: Failed to insert into Question_Anomaly table: {}".format(exc))
-                    return {"statusCode": 500, "body": {"query_type": "Failed to insert into Question_Anomaly table." + str(type(exc))}}
+                    return {"statusCode": 500, "body": {"Error": "Failed to insert into Question_Anomaly table." + str(type(exc))}}
                 except Exception as exc:
                     logger.error("Error: Failed to insert into Question_Anomaly table: {}".format(exc))
-                    return {"statusCode": 500, "body": {"query_type": "Failed to insert into Question_Anomaly table." + str(type(exc))}}
+                    return {"statusCode": 500, "body": {"Error": "Failed to insert into Question_Anomaly table." + str(type(exc))}}
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to insert into Step_Exception table: {}".format(exc))
-        return {"statusCode": 500, "body": {"query_type": "Failed to insert into Step_Exception table." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed to insert into Step_Exception table." + str(type(exc))}}
     except Exception as exc:
         logger.error("Error: Failed to insert into Step_Exception table: {}".format(exc))
-        return {"statusCode": 500, "body": {"query_type": "Failed to insert into Step_Exception table." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed to insert into Step_Exception table." + str(type(exc))}}
 
     try:
         if "QueryTasks" in event.keys():
@@ -178,39 +182,40 @@ def lambda_handler(event, context):
 
                 except db.exc.OperationalError as exc:
                     logger.error("Error: Failed to insert into Query_Task_Update table: {}".format(exc))
-                    return {"statusCode": 500, "body": {"query_type": "Failed to insert into Query_Task_Update table." + str(type(exc))}}
+                    return {"statusCode": 500, "body": {"Error": "Failed to insert into Query_Task_Update table." + str(type(exc))}}
                 except Exception as exc:
                     logger.error("Error: Failed to insert into Query_Task_Update table: {}".format(exc))
-                    return {"statusCode": 500, "body": {"query_type": "Failed to insert into Query_Task_Update table." + str(type(exc))}}
+                    return {"statusCode": 500, "body": {"Error": "Failed to insert into Query_Task_Update table." + str(type(exc))}}
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to insert into Query_Task_Update table: {}".format(exc))
-        return {"statusCode": 500, "body": {"query_type": "Failed to insert into Query_Task_Update table." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed to insert into Query_Task_Update table." + str(type(exc))}}
     except Exception as exc:
         logger.error("Error: Failed to insert into Query_Task_Update table: {}".format(exc))
-        return {"statusCode": 500, "body": {"query_type": "Failed to insert into Query_Task_Update table." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed to insert into Query_Task_Update table." + str(type(exc))}}
 
     try:
         session.commit()
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to commit changes to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"UpdateData": "Failed To Commit Changes To The Database."}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Commit Changes To The Database."}}
     except Exception as exc:
         logger.error("Error: Failed to commit changes to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"UpdateData": "Failed To Commit Changes To The Database."}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Commit Changes To The Database."}}
 
     try:
         session.close()
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to close the database session: {}".format(exc))
-        return {"statusCode": 500, "body": {"contributor_name": "Database Session Closed Badly."}}
+        return {"statusCode": 500, "body": {"Error": "Database Session Closed Badly."}}
     except Exception as exc:
+
         logger.error("Error: Failed to close the database session: {}".format(exc))
-        return {"statusCode": 500, "body": {"contributor_name": "Database Session Closed Badly."}}
+        return {"statusCode": 500, "body": {"Error": "Database Session Closed Badly."}}
     logger.info("Successfully completed create query")
     return {"statusCode": 201, "body": {"query_type": "Query created successfully"}}
 
 
-with open('test_data.txt') as infile:
-    test_data = json.load(infile)
-x = lambda_handler(test_data, '')
-print(x)
+# with open('test_data.txt') as infile:
+#     test_data = json.load(infile)
+# x = lambda_handler(test_data, '')
+# print(x)
