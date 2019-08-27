@@ -11,14 +11,6 @@ sys.path.append(os.path.realpath(os.path.dirname(__file__)+"/.."))
 import get_all_reference_data as get_all_reference_data
 
 
-def try_me(*args):
-    print(args)
-    if "query_type" in args[0]:
-        return pd.DataFrame({'query_type': ['Register'], 'query_type_description': ['Queries raised to manage register change requests']})
-    else:
-        return "A"
-
-
 class test_get_all_reference_data(unittest.TestCase):
 
     @mock.patch("get_all_reference_data.db.create_engine")
@@ -28,25 +20,18 @@ class test_get_all_reference_data(unittest.TestCase):
         with mock.patch.dict(
             get_all_reference_data.os.environ, {"Database_Location": "MyPostgresDatase"}
         ):
+            with mock.patch("get_all_reference_data.alchemy_functions") as mock_alchemy_functions:
+                mock_alchemy_functions.return_value.table_model.return_value = 'I Am A Table'
+                mock_alchemy_functions.select.side_effect = [pd.DataFrame({"query_type": ["Register"], "query_type_description": ["Queries raised to manage register change requests"]}),
+                                                             pd.DataFrame({"vet_code": [1], "vet_description": ["Value Present"]}),
+                                                             pd.DataFrame({"survey_code": ["066"], "survey_name": ["Sand & Gravel {Land Won}"]}),
+                                                             pd.DataFrame({"gor_reference": [1], "idbr_region": ["AA"], "region_name": ["North East"]}),
+                                                             {}]
 
-            with mock.patch("get_all_reference_data.Session") as mock_sesh:
-                mock_session = AlchemyMagicMock()
-                mock_sesh.return_value = mock_session
-                with mock.patch("get_all_reference_data.alchemy_functions") as mock_alchemy_functions:
-                    mock_session.commit.return_value = "Committed"
-                    mock_session.close.return_value = "Closed"
-                    mock_select.return_value.where.side_effect = "Give Me Stuff"
-                    mock_alchemy_functions.return_value.table_model.return_value = 'I Am A Table'
-                    mock_alchemy_functions.select.side_effect = [pd.DataFrame({"query_type": ["Register"], "query_type_description": ["Queries raised to manage register change requests"]}),
-                                                                 pd.DataFrame({"vet_code": [1], "vet_description": ["Value Present"]}),
-                                                                 pd.DataFrame({"survey_code": ["066"], "survey_name": ["Sand & Gravel {Land Won}"]}),
-                                                                 pd.DataFrame({"gor_reference": [1], "idbr_region": ["AA"], "region_name": ["North East"]}),
-                                                                 {}]
+                x = get_all_reference_data.lambda_handler('', '')
 
-                    x = get_all_reference_data.lambda_handler('', '')
-
-                    assert(x["statusCode"] == 200)
-                    assert ("QueryTypes" in x['body'])
+                assert(x["statusCode"] == 200)
+                assert ("QueryTypes" in x['body'])
 
     @mock.patch("get_all_reference_data.db.create_engine")
     @mock.patch("get_all_reference_data.db.select")
@@ -56,15 +41,11 @@ class test_get_all_reference_data(unittest.TestCase):
         with mock.patch.dict(
             get_all_reference_data.os.environ, {"Database_Location": "MyPostgresDatase"}
         ):
+            mock_select.side_effect = sqlalchemy.exc.OperationalError
+            x = get_all_reference_data.lambda_handler('', '')
 
-            with mock.patch("get_all_reference_data.Session") as mock_sesh:
-                mock_session = AlchemyMagicMock()
-                mock_sesh.return_value = mock_session
-                mock_select.side_effect = sqlalchemy.exc.OperationalError
-                x = get_all_reference_data.lambda_handler('', '')
-
-                assert(x["statusCode"] == 500)
-                assert ("Failed To Retrieve Data." in x['body']['Error'])
+            assert(x["statusCode"] == 500)
+            assert ("Failed To Retrieve Data." in x['body']['Error'])
 
     @mock.patch("get_all_reference_data.db.create_engine")
     @mock.patch("get_all_reference_data.db.select")
@@ -73,24 +54,16 @@ class test_get_all_reference_data(unittest.TestCase):
         with mock.patch.dict(
             get_all_reference_data.os.environ, {"Database_Location": "MyPostgresDatase"}
         ):
+            with mock.patch("get_all_reference_data.alchemy_functions") as mock_alchemy_functions:
+                mock_alchemy_functions.select.side_effect = [pd.DataFrame({"query_type": [1]}),
+                                                             pd.DataFrame({"vet_code": ["W"]}),
+                                                             pd.DataFrame({"survey_code": [66]}),
+                                                             pd.DataFrame({"gor_reference": ["W"]}),
+                                                             {}]
 
-            with mock.patch("get_all_reference_data.Session") as mock_sesh:
-                mock_session = AlchemyMagicMock()
-                mock_sesh.return_value = mock_session
-                with mock.patch("get_all_reference_data.alchemy_functions") as mock_alchemy_functions:
-                    mock_session.commit.return_value = "Committed"
-                    mock_session.close.return_value = "Closed"
-                    mock_select.return_value.where.side_effect = "Give Me Stuff"
-                    mock_alchemy_functions.return_value.table_model.return_value = 'I Am A Table'
-                    mock_alchemy_functions.select.side_effect = [pd.DataFrame({"query_type": [1]}),
-                                                                 pd.DataFrame({"vet_code": ["W"]}),
-                                                                 pd.DataFrame({"survey_code": [66]}),
-                                                                 pd.DataFrame({"gor_reference": ["W"]}),
-                                                                 {}]
-
-                    x = get_all_reference_data.lambda_handler('', '')
-                    assert(x["statusCode"] == 500)
-                    assert ("Missing" in str(x['body']))
+                x = get_all_reference_data.lambda_handler('', '')
+                assert(x["statusCode"] == 500)
+                assert ("Missing" in str(x['body']))
 
     def test_environment_variable_exception(self):
         x = get_all_reference_data.lambda_handler('', '')

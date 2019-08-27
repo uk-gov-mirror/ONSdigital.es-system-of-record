@@ -94,29 +94,30 @@ def lambda_handler(event, context):
         return {"statusCode": 500, "body": {"Error": "Database Session Closed Badly."}}
 
     out_json = json.dumps(table_list["contributor"].to_dict(orient='records'), sort_keys=True, default=str)
-    out_json = out_json[1:-2]
-    out_json += ',"Surveys":[ '
+    if not out_json == "[]":
+        out_json = out_json[1:-2]
+        out_json += ',"Surveys":[ '
 
-    for index, row in table_list['survey_enrolment'].iterrows():
-        curr_row = table_list['survey_enrolment'][(table_list['survey_enrolment']['survey_code']
-                                                   == row['survey_code'])]
-        curr_row = json.dumps(curr_row.to_dict(orient='records'), sort_keys=True, default=str)
-        curr_row = curr_row[2:-2]
+        for index, row in table_list['survey_enrolment'].iterrows():
+            curr_row = table_list['survey_enrolment'][(table_list['survey_enrolment']['survey_code']
+                                                       == row['survey_code'])]
+            curr_row = json.dumps(curr_row.to_dict(orient='records'), sort_keys=True, default=str)
+            curr_row = curr_row[2:-2]
 
-        out_json = out_json + "{" + curr_row + ',"Contacts":'
-        curr_con = table_list['survey_contact'][(table_list['survey_contact']['survey_code']
-                                                 == row['survey_code'])]
-        curr_con = json.dumps(curr_con.to_dict(orient='records'), sort_keys=True, default=str)
-        out_json += curr_con
+            out_json = out_json + "{" + curr_row + ',"Contacts":'
+            curr_con = table_list['survey_contact'][(table_list['survey_contact']['survey_code']
+                                                     == row['survey_code'])]
+            curr_con = json.dumps(curr_con.to_dict(orient='records'), sort_keys=True, default=str)
+            out_json += curr_con
 
-        out_json = out_json + ',"Periods":'
-        curr_per = table_list['contributor_survey_period'][(table_list['contributor_survey_period']['survey_code']
-                                                            == row['survey_code'])]
-        curr_per = json.dumps(curr_per.to_dict(orient='records'), sort_keys=True, default=str)
-        out_json += curr_per + '},'
+            out_json = out_json + ',"Periods":'
+            curr_per = table_list['contributor_survey_period'][(table_list['contributor_survey_period']['survey_code']
+                                                                == row['survey_code'])]
+            curr_per = json.dumps(curr_per.to_dict(orient='records'), sort_keys=True, default=str)
+            out_json += curr_per + '},'
 
-    out_json = out_json[:-1]
-    out_json += ']}'
+        out_json = out_json[:-1]
+        out_json += ']}'
 
     try:
         io_validation.Contributor(strict=True).loads(out_json)
