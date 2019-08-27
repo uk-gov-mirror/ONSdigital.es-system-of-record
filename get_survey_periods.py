@@ -20,14 +20,17 @@ def lambda_handler(event, context):
     Returns:
       out_json (Json):Json responce of the table data.
     """
-    database = os.environ['Database_Location']
+    database = os.environ.get('Database_Location', None)
+    if database is None:
+        logger.error("Database_Location env not set")
+        return {"statusCode": 500, "body": {"Error": "Configuration Error."}}
 
     logger.info("INPUT DATA: {}".format(event))
     try:
         io_validation.SurveySearch(strict=True).load(event)
     except ValidationError as err:
         logger.error("Failed to validate input: {}".format(err.messages))
-        return {"statusCode": 500, "body": {err.messages}}
+        return {"statusCode": 500, "body": err.messages}
 
     search_list = ['survey_period',
                    'survey_code']
@@ -39,13 +42,13 @@ def lambda_handler(event, context):
         metadata = db.MetaData()
     except db.exc.NoSuchModuleError as exc:
         logger.error("Error: Failed to connect to the database(driver error): {}".format(exc))
-        return {"statusCode": 500, "body": {"contributor_name": "Failed To Connect To Database." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"contributor_name": "Failed To Connect To Database." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
     except Exception as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"contributor_name": "Failed To Connect To Database." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
 
     table_model = alchemy_functions.table_model(engine, metadata, "survey_period")
     all_query_sql = db.select([table_model])
@@ -67,10 +70,10 @@ def lambda_handler(event, context):
         query = alchemy_functions.select(all_query_sql, session)
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed To select data: {}".format(exc))
-        return {"statusCode": 500, "body": {"contributor_name": "Failed To select data." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed To select data." + str(type(exc))}}
     except Exception as exc:
         logger.error("Error: Failed To select data: {}".format(exc))
-        return {"statusCode": 500, "body": {"contributor_name": "Failed To select data." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed To select data." + str(type(exc))}}
 
     out_json = json.dumps(query.to_dict(orient='records'), sort_keys=True, default=str)
 
@@ -78,16 +81,17 @@ def lambda_handler(event, context):
         session.close()
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to close the database session: {}".format(exc))
-        return {"statusCode": 500, "body": {"contributor_name": "Database Session Closed Badly."}}
+        return {"statusCode": 500, "body": {"Error": "Database Session Closed Badly."}}
     except Exception as exc:
         logger.error("Error: Failed to close the database session: {}".format(exc))
-        return {"statusCode": 500, "body": {"contributor_name": "Database Session Closed Badly."}}
+        return {"statusCode": 500, "body": {"Error": "Database Session Closed Badly."}}
 
     try:
         io_validation.SurveyPeriod(strict=True, many=True).loads(out_json)
     except ValidationError as err:
         logger.error("Failed to validate output: {}".format(err.messages))
-        return {"statusCode": 500, "body": {err.messages}}
+        return {"statusCode": 500, "body": err.messages}
+
     logger.info("Successfully completed get_query")
     return {"statusCode": 200, "body": {out_json}}
 

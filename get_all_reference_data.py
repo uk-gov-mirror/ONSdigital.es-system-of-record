@@ -47,9 +47,7 @@ def lambda_handler(event, context):
             statement = db.select([table_model])
             table_data = alchemy_functions.select(statement, session)
             table_list[current_table] = table_data
-            print(table_data)
     except db.exc.OperationalError as exc:
-        print(exc)
         logger.error("Error selecting data from table: {}".format(exc))
         return {"statusCode": 500, "body": {"Error": "Failed To Retrieve Data."}}
     except Exception as exc:
@@ -79,12 +77,12 @@ def lambda_handler(event, context):
         io_validation.AllReferenceData(strict=True).loads(out_json)
     except ValidationError as err:
         logger.error("Failed to validate output: {}".format(err.messages))
-        return {"statusCode": 500, "body": {str(err.messages)}}
+        return {"statusCode": 500, "body": err.messages}
 
     logger.info("Successfully completed get_all_ref_data")
 
-    return {"statusCode": 200, "body": {out_json}}
+    return {"statusCode": 200, "body": json.loads(out_json)}
 
 
-x = lambda_handler('', '')
-print(x)
+#x = lambda_handler('', '')
+#print(x)

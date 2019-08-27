@@ -20,13 +20,16 @@ def lambda_handler(event, context):
       out_json (Json):Nested Json responce of the seven tables data.
     """
 
-    database = os.environ['Database_Location']
+    database = os.environ.get('Database_Location', None)
+    if database is None:
+        logger.error("Database_Location env not set")
+        return {"statusCode": 500, "body": {"Error": "Configuration Error."}}
 
     try:
         io_validation.ContributorSearch(strict=True).load(event)
     except ValidationError as err:
         logger.error("Failed to validate input: {}".format(err.messages))
-        return {"statusCode": 500, "body": {err.messages}}
+        return {"statusCode": 500, "body": err.messages}
 
     search_list = ['query_reference',
                    'survey_period',
@@ -42,13 +45,13 @@ def lambda_handler(event, context):
         metadata = db.MetaData()
     except db.exc.NoSuchModuleError as exc:
         logger.error("Error: Failed to connect to the database(driver error): {}".format(exc))
-        return {"statusCode": 500, "body": {"ContributorData": "Failed To Connect To Database." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"Update_Data": "Failed To Connect To Database."}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database."}}
     except Exception as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"Update_Data": "Failed To Connect To Database."}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database."}}
 
     table_model = alchemy_functions.table_model(engine, metadata, "query")
     all_query_sql = db.select([table_model])
@@ -108,10 +111,10 @@ def lambda_handler(event, context):
 
         except db.exc.OperationalError as exc:
             logger.error("Error updating the database." + str(type(exc)))
-            return {"statusCode": 500, "body": {"query_type": "Failed To Find Query."}}
+            return {"statusCode": 500, "body": {"Error": "Failed To Find Query."}}
         except Exception as exc:
             logger.error("Error finding query: {}".format(exc))
-            return {"statusCode": 500, "body": {"query_type": "Failed To Find Query."}}
+            return {"statusCode": 500, "body": {"Error": "Failed To Find Query."}}
 
         curr_query = json.dumps(curr_query.to_dict(orient='records'), sort_keys=True, default=str)
         curr_query = curr_query[1:-2]
@@ -178,18 +181,12 @@ def lambda_handler(event, context):
 
     try:
         session.close()
-    except db.exc.DatabaseError as exc:
-        logger.error("Error: Failed to close the database session: {}".format(exc))
-        return {'{"query_reference":"Connection To Database Closed Badly."}'}
-
-    try:
-        session.close()
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to close connection to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"UpdateData": "Connection To Database Closed Badly."}}
+        return {"statusCode": 500, "body": {"Error": "Connection To Database Closed Badly."}}
     except Exception as exc:
         logger.error("Error: Failed to close connection to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"UpdateData": "Connection To Database Closed Badly."}}
+        return {"statusCode": 500, "body": {"Error": "Connection To Database Closed Badly."}}
 
     out_json = out_json[:-1]
     out_json += ']}'
@@ -199,10 +196,10 @@ def lambda_handler(event, context):
         io_validation.Queries(strict=True).loads(out_json)
     except ValidationError as err:
         logger.error("Failed to validate output: {}".format(err.messages))
-        return {"statusCode": 500, "body": {err.messages}}
+        return {"statusCode": 500, "body": err.messages}
 
     logger.info("Successfully completed find query")
-    return {"statusCode": 200, "body": {"UpdateData": "Successfully ran find_query."}}
+    return {"statusCode": 200, "body": {"Error": "Successfully ran find_query."}}
 
 
 x = lambda_handler({'query_reference': 1}, '')
