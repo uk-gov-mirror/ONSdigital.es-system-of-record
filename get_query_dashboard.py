@@ -21,13 +21,16 @@ def lambda_handler(event, context):
       out_json (Json):Nested Json responce of the eight tables data.
     """
 
-    database = os.environ['Database_Location']
+    database = os.environ.get('Database_Location', None)
+    if database is None:
+        logger.error("Database_Location env not set")
+        return {"statusCode": 500, "body": {"Error": "Configuration Error."}}
 
     try:
         io_validation.QuerySearch(strict=True).load(event)
     except ValidationError as err:
         logger.error("Failed to validate input: {}".format(err.messages))
-        return {"statusCode": 500, "body": {err.messages}}
+        return {"statusCode": 500, "body": err.messages}
 
     search_list = ['query_reference',
                    'survey_period',
@@ -43,13 +46,13 @@ def lambda_handler(event, context):
         metadata = db.MetaData()
     except db.exc.NoSuchModuleError as exc:
         logger.error("Error: Failed to connect to the database(driver error): {}".format(exc))
-        return {"statusCode": 500, "body": {"ContributorData": "Failed To Connect To Database." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"ContributorData": "Failed To Connect To Database." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
     except Exception as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"ContributorData": "Failed To Connect To Database." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
 
     logger.info("Retrieving table model(query)")
     table_model = alchemy_functions.table_model(engine, metadata, "query")
@@ -60,26 +63,27 @@ def lambda_handler(event, context):
         logger.info("Selecting data")
         all_query_sql = db.select([table_model, table_mod2.columns.contributor_name])\
             .where(table_model.columns.ru_reference == table_mod2.columns.ru_reference)
-    except db.exc.OperationalError as e:
-        logger.error("Failed to select data from database. {}".format(e))
-        return {"statusCode": 500, "body": {"contributor_name": "Failed To select from Database."}}
-    except Exception as e:
-        logger.error("Failed to select data from database. {}".format(e))
-        return {"statusCode": 500, "body": {"contributor_name": "Failed To select from Database."}}
 
-    added_query_sql = 0
+        added_query_sql = 0
 
-    for criteria in search_list:
-        if criteria not in event.keys():
-            logger.info("No query data in table: {}".format(criteria))
-            continue
-        added_query_sql += 1
-        all_query_sql = all_query_sql.where(getattr(table_model.columns, criteria) == event[criteria])
+        for criteria in search_list:
+            if criteria not in event.keys():
+                logger.info("No query data in table: {}".format(criteria))
+                continue
+            added_query_sql += 1
+            all_query_sql = all_query_sql.where(getattr(table_model.columns, criteria) == event[criteria])
 
-    if added_query_sql == 0:
-        all_query_sql = all_query_sql.where(table_model.columns.query_status == 'Open')
+        if added_query_sql == 0:
+            all_query_sql = all_query_sql.where(table_model.columns.query_status == 'Open')
 
-    query = alchemy_functions.select(all_query_sql, session)
+        query = alchemy_functions.select(all_query_sql, session)
+
+    except db.exc.OperationalError as exc:
+        logger.error("Failed to select data from database. {}".format(exc))
+        return {"statusCode": 500, "body": {"Error": "Failed To Retrieve Data."}}
+    except Exception as exc:
+        logger.error("Failed to select data from database. {}".format(exc))
+        return {"statusCode": 500, "body": {"Error": "Failed To Retrieve Data."}}
 
     table_list = {'step_exception': None,
                   'question_anomaly': None,
@@ -124,10 +128,10 @@ def lambda_handler(event, context):
                 table_list[current_table] = table_data
         except db.exc.OperationalError as esc:
             logger.error("Error selecting data from table: {}".format(esc))
-            return {"statusCode": 500, "body": {"query_reference": "Error", "query_type": "Error selecting query from database"}}
+            return {"statusCode": 500, "body": {"Error": "Failed To Find Query."}}
         except Exception as esc:
             logger.error("Error selecting data from table: {}".format(esc))
-            return {"statusCode": 500, "body": {"query_reference": "Error", "query_type": "Error selecting query from database"}}
+            return {"statusCode": 500, "body": {"Error": "Failed To Find Query."}}
 
         logger.info("Wrangling selected data")
         curr_query = json.dumps(curr_query.to_dict(orient='records'), sort_keys=True, default=str)
@@ -200,10 +204,10 @@ def lambda_handler(event, context):
         session.close()
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to close connection to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"query_reference": "session To Database Closed Badly."}}
+        return {"statusCode": 500, "body": {"Error": "Database Session Closed Badly."}}
     except Exception as exc:
         logger.error("Error: Failed to close connection to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"query_reference": "session To Database Closed Badly."}}
+        return {"statusCode": 500, "body": {"Error": "Database Session Closed Badly."}}
 
     out_json = out_json[:-1]
 
@@ -214,10 +218,11 @@ def lambda_handler(event, context):
         io_validation.Queries(strict=True).loads(out_json)
     except ValidationError as err:
         logger.error("Failed to validate output: {}".format(err.messages))
-        return {"statusCode": 500, "body": {err.messages}}
+        return {"statusCode": 500, "body": err.messages}
+
     logger.info("Succesfully completed get_query_dashboard")
-    return {"statusCode": 200, "body": out_json}
+    return {"statusCode": 200, "body": json.loads(out_json)}
 
 
-x = lambda_handler({'query_reference': 1}, '')
-print(x)
+# x = lambda_handler({'query_reference': 1}, '')
+# print(x)
