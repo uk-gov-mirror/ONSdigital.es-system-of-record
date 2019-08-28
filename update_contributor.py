@@ -64,6 +64,7 @@ def lambda_handler(event, context):
         logger.error("Error updating the database.{}".format(type(exc)))
         return {"statusCode": 500, "body": {"ContributorData": "Failed To Update The Database."}}
     except Exception as exc:
+        print(exc)
         logger.error("Error updating the database." + str(type(exc)))
         return {"statusCode": 500, "body": {"ContributorData": "Failed To Update The Database."}}
 
