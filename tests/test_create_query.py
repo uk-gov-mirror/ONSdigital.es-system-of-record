@@ -22,19 +22,11 @@ class test_create_query(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            with mock.patch("create_query.Session") as mock_sesh:
-                mock_session = AlchemyMagicMock()
-                mock_sesh.return_value = mock_session
-                mock_session.commit.return_value = "potatoes"
-                mock_session.close.return_value = "cheese"
-                mock_insert.return_value.values.return_value.returning.return_value.on_conflict_do_nothing.return_value = "bob"
-                mock_alchemy_funks.table_model.return_value = "moo"
-                mock_alchemy_funks.update.return_value = "baa"
+            mock_insert.return_value.values.return_value.returning.return_value.on_conflict_do_nothing.return_value = "bob"
+            x = create_query.lambda_handler(test_data, '')
 
-                x = create_query.lambda_handler(test_data, '')
-
-                assert(x["statusCode"] == 201)
-                assert ("successfully" in x['body']['query_type'])
+            assert(x["statusCode"] == 201)
+            assert ("successfully" in x['body']['query_type'])
 
     def test_environment_variable_exception(self):
         x = create_query.lambda_handler("MIKE", '')
@@ -78,19 +70,12 @@ class test_create_query(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            with mock.patch("create_query.Session") as mock_sesh:
-                mock_session = AlchemyMagicMock()
-                mock_sesh.return_value = mock_session
-                mock_session.commit.return_value = "potatoes"
-                mock_session.close.return_value = "cheese"
-                mock_insert.side_effect = db.exc.OperationalError("Misser Mike, ee say no", "", "")
-                mock_alchemy_funks.table_model.return_value = "moo"
-                mock_alchemy_funks.update.return_value = "baa"
+            mock_insert.side_effect = db.exc.OperationalError("Misser Mike, ee say no", "", "")
 
-                x = create_query.lambda_handler(test_data, '')
+            x = create_query.lambda_handler(test_data, '')
 
-                assert(x["statusCode"] == 500)
-                assert ("Failed to insert into query" in x['body']['Error'])
+            assert(x["statusCode"] == 500)
+            assert ("Failed to insert into query" in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.alchemy_functions")
@@ -100,18 +85,13 @@ class test_create_query(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            with mock.patch("create_query.Session") as mock_sesh:
-                mock_session = AlchemyMagicMock()
-                mock_sesh.return_value = mock_session
-                mock_session.commit.return_value = "potatoes"
-                mock_session.close.return_value = "cheese"
-                with mock.patch("create_query.insert") as mock_insert:
-                    mock_therest = mock.Mock()
-                    mock_therest.values.return_value.returning.return_value.on_conflict_do_nothing.return_value = "bob"
-                    mock_insert.side_effect = [mock_therest, db.exc.OperationalError("Misser Mike, ee say no", "", "")]
-                    mock_alchemy_funks.table_model.return_value = "moo"
-                    mock_alchemy_funks.update.return_value = "baa"
-                    x = create_query.lambda_handler(test_data, '')
+
+            with mock.patch("create_query.insert") as mock_insert:
+                mock_therest = mock.Mock()
+                mock_therest.values.return_value.returning.return_value.on_conflict_do_nothing.return_value = "bob"
+                mock_insert.side_effect = [mock_therest, db.exc.OperationalError("Misser Mike, ee say no", "", "")]
+
+                x = create_query.lambda_handler(test_data, '')
 
                 assert(x["statusCode"] == 500)
                 assert ("Failed to insert into Step_Exception" in x['body']['Error'])
@@ -124,22 +104,14 @@ class test_create_query(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            #  with mock.patch("create_query.db.create_engine") as bob:
-            with mock.patch("create_query.Session") as mock_sesh:
-                mock_session = AlchemyMagicMock()
-                mock_sesh.return_value = mock_session
-                mock_session.commit.return_value = "potatoes"
-                mock_session.close.return_value = "cheese"
-                with mock.patch("create_query.insert") as mock_insert:
-                    mock_therest = mock.Mock()
-                    mock_therest.values.return_value.returning.return_value.on_conflict_do_nothing.return_value = "bob"
-                    mock_insert.side_effect = [mock_therest, mock_therest, db.exc.OperationalError("Misser Mike, ee say no", "", "")]
-                    mock_alchemy_funks.table_model.return_value = "moo"
-                    mock_alchemy_funks.update.return_value = "baa"
-                    x = create_query.lambda_handler(test_data, '')
+            with mock.patch("create_query.insert") as mock_insert:
+                mock_therest = mock.Mock()
+                mock_therest.values.return_value.returning.return_value.on_conflict_do_nothing.return_value = "bob"
+                mock_insert.side_effect = [mock_therest, mock_therest, db.exc.OperationalError("Misser Mike, ee say no", "", "")]
+                x = create_query.lambda_handler(test_data, '')
 
-                assert(x["statusCode"] == 500)
-                assert ("Failed to insert into Question_Anomaly" in x['body']['Error'])
+            assert(x["statusCode"] == 500)
+            assert ("Failed to insert into Question_Anomaly" in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.alchemy_functions")
@@ -149,24 +121,17 @@ class test_create_query(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            with mock.patch("create_query.Session") as mock_sesh:
-                mock_session = AlchemyMagicMock()
-                mock_sesh.return_value = mock_session
-                mock_session.commit.return_value = "potatoes"
-                mock_session.close.return_value = "cheese"
-                with mock.patch("create_query.insert") as mock_insert:
-                    mock_therest = mock.Mock()
-                    mock_therest.values.return_value.returning.return_value.on_conflict_do_nothing.return_value = "bob"
-                    mock_insert.side_effect = [mock_therest,
-                                               mock_therest,
-                                               mock_therest,
-                                               db.exc.OperationalError("Misser Mike, ee say no", "", "")]
-                    mock_alchemy_funks.table_model.return_value = "moo"
-                    mock_alchemy_funks.update.return_value = "baa"
-                    x = create_query.lambda_handler(test_data, '')
+            with mock.patch("create_query.insert") as mock_insert:
+                mock_therest = mock.Mock()
+                mock_therest.values.return_value.returning.return_value.on_conflict_do_nothing.return_value = "bob"
+                mock_insert.side_effect = [mock_therest,
+                                           mock_therest,
+                                           mock_therest,
+                                           db.exc.OperationalError("Misser Mike, ee say no", "", "")]
+                x = create_query.lambda_handler(test_data, '')
 
-                assert(x["statusCode"] == 500)
-                assert ("Failed to insert into failed_VET" in x['body']['Error'])
+            assert(x["statusCode"] == 500)
+            assert ("Failed to insert into failed_VET" in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.alchemy_functions")
@@ -176,24 +141,17 @@ class test_create_query(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            with mock.patch("create_query.Session") as mock_sesh:
-                mock_session = AlchemyMagicMock()
-                mock_sesh.return_value = mock_session
-                mock_session.commit.return_value = "potatoes"
-                mock_session.close.return_value = "cheese"
-                with mock.patch("create_query.insert") as mock_insert:
-                    mock_therest = mock.Mock()
-                    mock_therest.values.return_value.returning.return_value.on_conflict_do_nothing.return_value = "bob"
+            with mock.patch("create_query.insert") as mock_insert:
+                mock_therest = mock.Mock()
+                mock_therest.values.return_value.returning.return_value.on_conflict_do_nothing.return_value = "bob"
 
-                    #  not sure why i need so many mock_therest, but it wont get there without it
-                    mock_insert.side_effect = [mock_therest, mock_therest,
-                                               mock_therest, mock_therest,
-                                               mock_therest, mock_therest,
-                                               mock_therest,
-                                               db.exc.OperationalError("Misser Mike, ee say no", "", "")]
-                    mock_alchemy_funks.table_model.return_value = "moo"
-                    mock_alchemy_funks.update.return_value = "baa"
-                    x = create_query.lambda_handler(test_data, '')
+                #  not sure why i need so many mock_therest, but it wont get there without it
+                mock_insert.side_effect = [mock_therest, mock_therest,
+                                           mock_therest, mock_therest,
+                                           mock_therest, mock_therest,
+                                           mock_therest,
+                                           db.exc.OperationalError("Misser Mike, ee say no", "", "")]
+                x = create_query.lambda_handler(test_data, '')
 
                 assert(x["statusCode"] == 500)
                 assert ("Failed to insert into Query_Task" in x['body']['Error'])
@@ -206,26 +164,25 @@ class test_create_query(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            with mock.patch("create_query.Session") as mock_sesh:
-                mock_session = AlchemyMagicMock()
-                mock_sesh.return_value = mock_session
-                mock_session.commit.return_value = "potatoes"
-                mock_session.close.return_value = "cheese"
-                with mock.patch("create_query.insert") as mock_insert:
-                    mock_therest = mock.Mock()
-                    mock_therest.values.return_value.returning.return_value.on_conflict_do_nothing.return_value = "bob"
-                    #  not sure why i need so many mock_therest, but it wont get there without it
-                    mock_insert.side_effect = [mock_therest, mock_therest,
-                                               mock_therest, mock_therest,
-                                               mock_therest, mock_therest,
-                                               mock_therest, mock_therest,
-                                               db.exc.OperationalError("Misser Mike, ee say no", "", "")]
-                    mock_alchemy_funks.table_model.return_value = "moo"
-                    mock_alchemy_funks.update.return_value = "baa"
-                    x = create_query.lambda_handler(test_data, '')
+            # with mock.patch("create_query.Session") as mock_sesh:
+            #     mock_session = AlchemyMagicMock()
+            #     mock_sesh.return_value = mock_session
+            #     mock_session.commit.return_value = "potatoes"
+            #     mock_session.close.return_value = "cheese"
+            with mock.patch("create_query.insert") as mock_insert:
+                mock_therest = mock.Mock()
+                mock_therest.values.return_value.returning.return_value.on_conflict_do_nothing.return_value = "bob"
+                #  not sure why i need so many mock_therest, but it wont get there without it
+                mock_insert.side_effect = [mock_therest, mock_therest,
+                                           mock_therest, mock_therest,
+                                           mock_therest, mock_therest,
+                                           mock_therest, mock_therest,
+                                           db.exc.OperationalError("Misser Mike, ee say no", "", "")]
 
-                assert(x["statusCode"] == 500)
-                assert ("Failed to insert into Query_Task" in x['body']['Error'])
+                x = create_query.lambda_handler(test_data, '')
+
+            assert(x["statusCode"] == 500)
+            assert ("Failed to insert into Query_Task" in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.insert")
@@ -240,11 +197,7 @@ class test_create_query(unittest.TestCase):
                 mock_session = AlchemyMagicMock()
                 mock_sesh.return_value = mock_session
                 mock_session.commit.side_effect = db.exc.OperationalError("Misser Mike, ee say no", "", "")
-                mock_session.close.return_value = "cheese"
                 mock_insert.return_value.values.return_value.returning.return_value.on_conflict_do_nothing.return_value = "bob"
-                mock_alchemy_funks.table_model.return_value = "moo"
-                mock_alchemy_funks.update.return_value = "baa"
-
                 x = create_query.lambda_handler(test_data, '')
 
                 assert(x["statusCode"] == 500)
@@ -262,11 +215,8 @@ class test_create_query(unittest.TestCase):
             with mock.patch("create_query.Session") as mock_sesh:
                 mock_session = AlchemyMagicMock()
                 mock_sesh.return_value = mock_session
-                mock_session.commit.return_value = "Sherpoopie"
                 mock_session.close.side_effect = db.exc.OperationalError("Misser Mike, ee say no", "", "")
                 mock_insert.return_value.values.return_value.returning.return_value.on_conflict_do_nothing.return_value = "bob"
-                mock_alchemy_funks.table_model.return_value = "moo"
-                mock_alchemy_funks.update.return_value = "baa"
 
                 x = create_query.lambda_handler(test_data, '')
 
