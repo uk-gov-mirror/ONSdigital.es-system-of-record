@@ -206,7 +206,7 @@ def lambda_handler(event, context):
         return {"statusCode": 500, "body": err.messages}
 
     logger.info("Successfully completed find query")
-    return {"statusCode": 200, "body": {"Error": "Successfully ran find_query."}}
+    return {"statusCode": 200, "body": json.loads(out_json)}
 
 
 # x = lambda_handler({'query_reference': 1}, '')

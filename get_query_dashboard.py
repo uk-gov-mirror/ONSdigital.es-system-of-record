@@ -221,7 +221,7 @@ def lambda_handler(event, context):
         return {"statusCode": 500, "body": err.messages}
 
     logger.info("Succesfully completed get_query_dashboard")
-    return {"statusCode": 200, "body": out_json}
+    return {"statusCode": 200, "body": json.loads(out_json)}
 
 
 # x = lambda_handler({'query_reference': 1}, '')

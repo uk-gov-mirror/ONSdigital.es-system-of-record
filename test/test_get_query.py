@@ -22,16 +22,64 @@ class test_get_query(unittest.TestCase):
         ):
             with mock.patch("get_query.alchemy_functions") as mock_alchemy_functions:
                 mock_alchemy_functions.return_value.table_model.return_value = 'I Am A Table'
-                mock_alchemy_functions.select.side_effect = [pd.DataFrame(),
-                                                             pd.DataFrame(),
-                                                             pd.DataFrame(),
-                                                             pd.DataFrame(),
-                                                             pd.DataFrame()]
+                mock_alchemy_functions.select.side_effect = [pd.DataFrame({"query_reference": [123456],
+                                                                           "ru_reference": ["xxxxx"],
+                                                                           "survey_code": ["xxxx"],
+                                                                           "survey_period": ["xxxxx"],
+                                                                           "current_period": ["xxxxx"],
+                                                                           "date_raised": ["2007-05-04"],
+                                                                           "industry_group": ["xxxx"],
+                                                                           "last_query_update": ["1999-12-16"],
+                                                                           "query_active": [True],
+                                                                           "query_description": ["xxxxx"],
+                                                                           "query_status": ["xxxxxx"],
+                                                                           "raised_by": ["xxxxxx"],
+                                                                           "results_state": ["xxxx"],
+                                                                           "query_type": ["Data Cleaning"],
+                                                                           "query_type_description": ["xxxxxxxxxxx"],
+                                                                           "general_specific_flag": [False],
+                                                                           "target_resolution_date": ["2000-09-11"]}),
+                                                             pd.DataFrame({"run_id": [1],
+                                                                           "step": ["VETs"],
+                                                                           "error_code": ["xxxxx"],
+                                                                           "error_description": ["xxxxxxx"],
+                                                                           "query_reference": [123456],
+                                                                           "survey_code": ["xxxx"],
+                                                                           "survey_period": ["xxxx"],
+                                                                           "ru_reference": ["xxxx"]}),
+                                                             pd.DataFrame({"question_number": ["1"],
+                                                                           "anomaly_description": ["xxxxx"],
+                                                                           "step": ["VETs"],
+                                                                           "run_id": [1],
+                                                                           "survey_code": ["xxxx"],
+                                                                           "survey_period": ["xxxx"],
+                                                                           "ru_reference": ["xxxx"]}),
+                                                             pd.DataFrame({"failed_vet": [1],
+                                                                           "vet_description": ["xxxx"],
+                                                                           "step": ["VETs"],
+                                                                           "question_number": ["1"],
+                                                                           "run_id": [1],
+                                                                           "survey_code": ["xxxx"],
+                                                                           "survey_period": ["xxxx"],
+                                                                           "ru_reference": ["xxxx"]}),
+                                                             pd.DataFrame({"query_reference": [123456],
+                                                                           "task_sequence_number": [1],
+                                                                           "next_planned_action": ["xxxxx"],
+                                                                           "response_required_by": ["2007-11-28"],
+                                                                           "task_description": ["xxxx"],
+                                                                           "task_responsibility": ["xxxx"],
+                                                                           "task_status": ["xxxxx"],
+                                                                           "when_action_required": ["2006-01-18"]}),
+                                                             pd.DataFrame({"query_reference": [123456],
+                                                                           "task_sequence_number": [1],
+                                                                           "last_updated": ["2002-06-11"],
+                                                                           "task_update_description": ["xxxx"],
+                                                                           "updated_by": ["xxxx"]})]
 
                 x = get_query.lambda_handler({"query_reference": 0}, '')
 
                 assert(x["statusCode"] == 200)
-                assert ("query_reference" in x['body'])
+                assert ("Queries" in x['body'])
 
     @mock.patch("get_query.db.create_engine")
     @mock.patch("get_query.db.select")
