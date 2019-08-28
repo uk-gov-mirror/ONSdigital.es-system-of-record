@@ -1,0 +1,102 @@
+{
+  "industry_group": "Con",
+  "query_active": false,
+  "query_description": "Validation Exception Test",
+  "current_period": "200001",
+  "survey_period": "201803",
+  "ru_reference": "77700000002",
+  "query_reference": 5,
+  "last_query_update": "2018-01-01",
+  "QueryTasks": [
+    {
+      "task_sequence_number": 1,
+      "task_description": "Clerical Investigation",
+      "task_status": "Open",
+      "query_reference": 5,
+      "response_required_by": "2019-07-11",
+      "QueryTaskUpdates": [
+        {
+          "task_sequence_number": 1,
+          "query_reference": 5,
+          "updated_by": "Us",
+          "last_updated": "2019-07-11",
+          "task_update_description": "Test"
+        }
+      ],
+      "when_action_required": "2019-07-11",
+      "next_planned_action": "2017-03-01",
+      "task_responsibility": "BMI Survey Team"
+    }
+  ],
+  "results_state": "Not Run",
+  "date_raised": "2019-07-11",
+  "query_status": "open",
+  "target_resolution_date": "2019-07-11",
+  "survey_code": "066",
+  "Exceptions": [
+    {
+      "error_description": "Desc",
+      "query_reference": 5,
+      "survey_period": "201803",
+      "survey_code": "066",
+      "step": "Vets",
+      "run_id": 1,
+      "ru_reference": "77700000002",
+      "error_code": "01",
+      "Anomalies": [
+        {
+          "survey_period": "201803",
+          "question_number": "602",
+          "survey_code": "066",
+          "anomaly_description": "Desc Question",
+          "FailedVETs": [
+            {
+              "survey_period": "201803",
+              "question_number": "602",
+              "failed_vet": 1,
+              "survey_code": "066",
+              "step": "Vets",
+              "run_id": 1,
+              "ru_reference": "77700000002"
+            },
+            {
+              "survey_period": "201803",
+              "question_number": "602",
+              "failed_vet": 1,
+              "survey_code": "066",
+              "step": "Vets",
+              "run_id": 1,
+              "ru_reference": "77700000002"
+            }
+          ],
+          "step": "Vets",
+          "run_id": 1,
+          "ru_reference": "77700000002"
+        },
+        {
+          "survey_period": "201803",
+          "question_number": "601",
+          "survey_code": "066",
+          "anomaly_description": "Desc Question",
+          "FailedVETs": [
+            {
+              "survey_period": "201803",
+              "question_number": "601",
+              "failed_vet": 1,
+              "survey_code": "066",
+              "step": "Vets",
+              "run_id": 1,
+              "ru_reference": "77700000002"
+            }
+          ],
+          "step": "Vets",
+          "run_id": 1,
+          "ru_reference": "77700000002"
+        }
+      ]
+    }
+  ],
+  "general_specific_flag": false,
+  "raised_by": "System Generated",
+  "query_type": "Data Cleaning"
+}

@@ -18,12 +18,15 @@ def lambda_handler(event, context):
       Json message reporting the success of the update.
     """
 
+    database = os.environ.get('Database_Location', None)
+    if database is None:
+        logger.error("Database_Location env not set")
+        return {"statusCode": 500, "body": "Should say something else"}
+
     try:
         io_validation.ContributorUpdate(strict=True).load(event)
     except ValidationError as err:
-        return err.messages
-
-    database = os.environ['Database_Location']
+        return {"statusCode": 500, "body": {str(err.messages)}}
 
     try:
         logger.info("Connecting to the database")
@@ -61,6 +64,7 @@ def lambda_handler(event, context):
         logger.error("Error updating the database.{}".format(type(exc)))
         return {"statusCode": 500, "body": {"ContributorData": "Failed To Update The Database."}}
     except Exception as exc:
+        print(exc)
         logger.error("Error updating the database." + str(type(exc)))
         return {"statusCode": 500, "body": {"ContributorData": "Failed To Update The Database."}}
 
