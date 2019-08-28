@@ -15,7 +15,7 @@ logger = logging.getLogger("create_query")
 
 
 def lambda_handler(event, context):
-    """Takes a query dictonary and inserts new data into the query tables with the run information.
+    """Takes a query dictionary and inserts new data into the query tables with the run information.
     Parameters:
       event (Dict):A series of key value pairs nested to match table structure.
     Returns:
