@@ -50,30 +50,30 @@ def lambda_handler(event, context):
         logger.error("Error: Failed to connect to the database: {}".format(exc))
         return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
 
-    table_model = alchemy_functions.table_model(engine, metadata, "survey_period")
-    all_query_sql = db.select([table_model])
-
-    added_query_sql = 0
-
-    for criteria in search_list:
-        if criteria not in event.keys():
-            logger.info("No parameters have been passed for {}.".format(criteria))
-            continue
-        added_query_sql += 1
-
-        all_query_sql = all_query_sql.where(getattr(table_model.columns, criteria) == event[criteria])
-
-    if added_query_sql == 0:
-        all_query_sql = all_query_sql.where(table_model.columns.survey_period == db.select([func.max(table_model.columns.survey_period)]))
-
     try:
+        table_model = alchemy_functions.table_model(engine, metadata, "survey_period")
+        all_query_sql = db.select([table_model])
+
+        added_query_sql = 0
+
+        for criteria in search_list:
+            if criteria not in event.keys():
+                logger.info("No parameters have been passed for {}.".format(criteria))
+                continue
+            added_query_sql += 1
+
+            all_query_sql = all_query_sql.where(getattr(table_model.columns, criteria) == event[criteria])
+
+        if added_query_sql == 0:
+            all_query_sql = all_query_sql.where(table_model.columns.survey_period == db.select([func.max(table_model.columns.survey_period)]))
+
         query = alchemy_functions.select(all_query_sql, session)
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed To select data: {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Failed To select data." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Retrieve Data." + str(type(exc))}}
     except Exception as exc:
         logger.error("Error: Failed To select data: {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Failed To select data." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Retrieve Data." + str(type(exc))}}
 
     out_json = json.dumps(query.to_dict(orient='records'), sort_keys=True, default=str)
 
@@ -93,8 +93,8 @@ def lambda_handler(event, context):
         return {"statusCode": 500, "body": err.messages}
 
     logger.info("Successfully completed get_query")
-    return {"statusCode": 200, "body": {out_json}}
+    return {"statusCode": 200, "body": json.loads(out_json)}
 
 
-x = lambda_handler({"survey_code": "066"}, '')
-print(x)
+# x = lambda_handler({"survey_code": "066"}, '')
+# print(x)

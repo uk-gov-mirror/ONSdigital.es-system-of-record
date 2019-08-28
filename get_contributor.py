@@ -125,8 +125,8 @@ def lambda_handler(event, context):
         logger.error("Failed to validate output: {}".format(err.messages))
         return {"statusCode": 500, "body": err.messages}
     logger.info("Successfully completed get_contributor")
-    return {"statusCode": 200, "body": {out_json}}
+    return {"statusCode": 200, "body": json.loads(out_json)}
 
 
-x = lambda_handler({"ru_reference": "77700000006"}, '')
-print(x)
+# x = lambda_handler({"ru_reference": "77700000006"}, '')
+# print(x)

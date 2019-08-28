@@ -63,26 +63,27 @@ def lambda_handler(event, context):
         logger.info("Selecting data")
         all_query_sql = db.select([table_model, table_mod2.columns.contributor_name])\
             .where(table_model.columns.ru_reference == table_mod2.columns.ru_reference)
-    except db.exc.OperationalError as e:
-        logger.error("Failed to select data from database. {}".format(e))
-        return {"statusCode": 500, "body": {"Error": "Failed To select from Database."}}
-    except Exception as e:
-        logger.error("Failed to select data from database. {}".format(e))
-        return {"statusCode": 500, "body": {"Error": "Failed To select from Database."}}
 
-    added_query_sql = 0
+        added_query_sql = 0
 
-    for criteria in search_list:
-        if criteria not in event.keys():
-            logger.info("No query data in table: {}".format(criteria))
-            continue
-        added_query_sql += 1
-        all_query_sql = all_query_sql.where(getattr(table_model.columns, criteria) == event[criteria])
+        for criteria in search_list:
+            if criteria not in event.keys():
+                logger.info("No query data in table: {}".format(criteria))
+                continue
+            added_query_sql += 1
+            all_query_sql = all_query_sql.where(getattr(table_model.columns, criteria) == event[criteria])
 
-    if added_query_sql == 0:
-        all_query_sql = all_query_sql.where(table_model.columns.query_status == 'Open')
+        if added_query_sql == 0:
+            all_query_sql = all_query_sql.where(table_model.columns.query_status == 'Open')
 
-    query = alchemy_functions.select(all_query_sql, session)
+        query = alchemy_functions.select(all_query_sql, session)
+
+    except db.exc.OperationalError as exc:
+        logger.error("Failed to select data from database. {}".format(exc))
+        return {"statusCode": 500, "body": {"Error": "Failed To Retrieve Data."}}
+    except Exception as exc:
+        logger.error("Failed to select data from database. {}".format(exc))
+        return {"statusCode": 500, "body": {"Error": "Failed To Retrieve Data."}}
 
     table_list = {'step_exception': None,
                   'question_anomaly': None,
@@ -203,10 +204,10 @@ def lambda_handler(event, context):
         session.close()
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to close connection to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Session To Database Closed Badly."}}
+        return {"statusCode": 500, "body": {"Error": "Database Session Closed Badly."}}
     except Exception as exc:
         logger.error("Error: Failed to close connection to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Session To Database Closed Badly."}}
+        return {"statusCode": 500, "body": {"Error": "Database Session Closed Badly."}}
 
     out_json = out_json[:-1]
 
@@ -223,5 +224,5 @@ def lambda_handler(event, context):
     return {"statusCode": 200, "body": out_json}
 
 
-x = lambda_handler({'query_reference': 1}, '')
-print(x)
+# x = lambda_handler({'query_reference': 1}, '')
+# print(x)
