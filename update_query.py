@@ -33,10 +33,10 @@ def lambda_handler(event, context):
         io_validation.QueryReference(strict=True).load(event)
         io_validation.Query(strict=True).load(event)
 
-    except ValidationError as err:
+    except ValidationError as exc:
         logger.error("Input: {}".format(event))
         logger.error("Failed To Validate The Input: {}".format(exc.messages))
-        return {"statusCode": 500, "body": {"Error": err.messages}}
+        return {"statusCode": 500, "body": {"Error": exc.messages}}
 
     try:
         logger.info("Connecting To The Database.")
@@ -298,12 +298,12 @@ def lambda_handler(event, context):
                      .format(exc))
         return {"statusCode": 500,
                 "body": {"Error": "Operation Error, Failed To Update Data: {}"
-                         .format("step_exception")}}
+                         .format("query_task")}}
     except Exception as exc:
         logger.error("Problem Updating Data From The Table: {}".format(exc))
         return {"statusCode": 500,
                 "body": {"Error": "Failed To Update Data: {}"
-                         .format("step_exception")}}
+                         .format("query_task")}}
 
     try:
         session.commit()
