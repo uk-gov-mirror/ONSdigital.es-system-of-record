@@ -32,7 +32,7 @@ def lambda_handler(event, context):
         io_validation.QuerySearch(strict=True).load(event)
     except ValidationError as exc:
         logger.error("Input: {}".format(event))
-        logger.error("Failed To Validate The Output: {}".format(exc.messages))
+        logger.error("Failed To Validate The Input: {}".format(exc.messages))
         return {"statusCode": 500, "body": exc.messages}
 
     search_list = ['query_reference',
