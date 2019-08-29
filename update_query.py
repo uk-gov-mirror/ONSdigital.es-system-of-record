@@ -20,10 +20,12 @@ def lambda_handler(event, context):
     Returns:
       Json message reporting the success of the update.
     """
+    logger.info("update_query Has Started Runnign")
+
 
     database = os.environ.get('Database_Location', None)
     if database is None:
-        logger.error("Database_Location env not set")
+        logger.error("Database_Location Environment Variable Has Not Been Set.")
         return {"statusCode": 500, "body": "Configuration error"}
 
     try:
@@ -39,13 +41,13 @@ def lambda_handler(event, context):
         session = Session(engine)
         metadata = db.MetaData()
     except db.exc.NoSuchModuleError as exc:
-        logger.error("Error: Failed to connect to the database(driver error): {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
+        logger.error("Driver Error, Failed To Connect: {}".format(exc))
+        return {"statusCode": 500, "body": {"Error": "Driver Error, Failed To Connect."}}
     except db.exc.OperationalError as exc:
-        logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database."}}
+        logger.error("Operational Error, Failed to connect to the database: {}".format(exc))
+        return {"statusCode": 500, "body": {"Error": "Operational Error, Failed To Connect."}}
     except Exception as exc:
-        logger.error("Error: Failed to connect to the database: {}".format(exc))
+        logger.error("Failed to connect to the database: {}".format(exc))
         return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database."}}
 
     try:
@@ -65,7 +67,7 @@ def lambda_handler(event, context):
         alchemy_functions.update(statement, session)
 
     except db.exc.OperationalError as exc:
-        logger.error("Error updating the database." + str(type(exc)))
+        logger.error("Operational Error, Error updating the database." + str(type(exc)))
         return {"statusCode": 500, "body": {"Error": "Failed To Update Query in Query Table."}}
     except Exception as exc:
         logger.error("Error updating the database." + str(type(exc)))
@@ -94,7 +96,7 @@ def lambda_handler(event, context):
                     if "Anomalies" in exception.keys():
                         anomalies = exception["Anomalies"]
                         for count, anomaly in enumerate(anomalies):
-                            logger.info("inserting into question_anomaly {}".format(count))
+                            logger.info("Inserting into question_anomaly {}".format(count))
                             logger.info("Retrieving table model(question_anomaly)")
                             table_model = alchemy_functions.table_model(engine, metadata, 'question_anomaly')
                             logger.info("Inserting into table(question_anomaly)")
@@ -112,7 +114,7 @@ def lambda_handler(event, context):
                                 if "FailedVETs" in anomaly.keys():
                                     failed_vets = anomaly["FailedVETs"]
                                     for count, vets in enumerate(failed_vets):
-                                        logger.info("inserting into failed_vet {}".format(count))
+                                        logger.info("Inserting into failed_vet {}".format(count))
                                         logger.info("Retrieving table model(failed_vet)")
                                         table_model = alchemy_functions.table_model(engine, metadata, 'failed_vet')
                                         logger.info("Inserting into table(failed vet)")
@@ -130,7 +132,7 @@ def lambda_handler(event, context):
                                             on_conflict_do_nothing(constraint=table_model.primary_key)
                                         alchemy_functions.update(statement, session)
                             except db.exc.OperationalError as exc:
-                                logger.error("Failed to insert into failed_vet table: {}".format(exc))
+                                logger.error("Operational Error, Failed to insert into failed_vet table: {}".format(exc))
                                 return {"statusCode": 500, "body":
                                         {"Error": "Failed To Update Query in Failed_VET Table."}}
                             except Exception as exc:
@@ -139,7 +141,7 @@ def lambda_handler(event, context):
                                         {"Error": "Failed To Update Query in Failed_VET Table."}}
 
                 except db.exc.OperationalError as exc:
-                    logger.error("Failed to insert into question anomaly table: {}".format(exc))
+                    logger.error("Operational Error, Failed to insert into question anomaly table: {}".format(exc))
                     return {"statusCode": 500, "body":
                             {"Error": "Failed To Update Query in Question_Anomaly Table."}}
                 except Exception as exc:
@@ -148,7 +150,7 @@ def lambda_handler(event, context):
                             {"Error": "Failed To Update Query in Question_Anomaly Table."}}
 
     except db.exc.OperationalError as exc:
-        logger.error("Failed to update step_exception table: {}".format(exc))
+        logger.error("Operational Error, Failed to update step_exception table: {}".format(exc))
         return {"statusCode": 500, "body":
                 {"Error": "Failed To Update Query in Step_Exception Table."}}
     except Exception as exc:
@@ -179,7 +181,7 @@ def lambda_handler(event, context):
                     if "QueryTaskUpdates" in task.keys():
                         update_task = task["QueryTaskUpdates"]
                         for count, query_task in enumerate(update_task):
-                            logger.info("inserting into query task updates {}".format(count))
+                            logger.info("Inserting into query task updates {}".format(count))
                             logger.info("Retrieving table model(query_task_update)")
                             table_model = alchemy_functions.table_model(engine, metadata, 'query_task_update')
                             logger.info("Inserting into table(query_task_update)")
@@ -192,15 +194,15 @@ def lambda_handler(event, context):
                                 on_conflict_do_nothing(constraint=table_model.primary_key)
                             alchemy_functions.update(statement, session)
                 except db.exc.OperationalError as exc:
-                    logger.error("Failed to insert into query_tasks_updates table: {}".format(exc))
+                    logger.error("Operational Error, Failed to insert into query_tasks_updates table: {}".format(exc))
                     return {"statusCode": 500, "body":
-                            {"Error": "Failed To Create Query in Query_Task_Update Table."}}
+                            {"Error": "Operation Error, Failed To Create Query in Query_Task_Update Table."}}
                 except Exception as exc:
                     logger.error("Failed to insert into query_tasks_updates table: {}".format(exc))
                     return {"statusCode": 500, "body":
                             {"Error": "Failed To Create Query in Query_Task_Update Table."}}
     except db.exc.OperationalError as exc:
-        logger.error("Failed to update query in query_task table: {}".format(exc))
+        logger.error("Operational Error, Failed to update query in query_task table: {}".format(exc))
         return {"statusCode": 500, "body":
                 {"Error": "Failed To Create Query in Query_Task Table."}}
     except Exception as exc:
@@ -211,22 +213,23 @@ def lambda_handler(event, context):
     try:
         session.commit()
     except db.exc.OperationalError as exc:
-        logger.error("Error: Failed to commit changes to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Failed To Commit Changes To The Database."}}
+        logger.error("Operation Error, Failed to commit changes to the database: {}".format(exc))
+        return {"statusCode": 500, "body": {"Error": "Operation Error, Failed To Commit Changes To The Database."}}
     except Exception as exc:
-        logger.error("Error: Failed to commit changes to the database: {}".format(exc))
+        logger.error("Failed to commit changes to the database: {}".format(exc))
         return {"statusCode": 500, "body": {"Error": "Failed To Commit Changes To The Database."}}
 
     try:
+        logger.info("Closing Session.")
         session.close()
     except db.exc.OperationalError as exc:
-        logger.error("Error: Failed to close connection to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Connection To Database Closed Badly."}}
+        logger.error("Operation Error, Failed To Close The Session: {}".format(exc))
+        return {"statusCode": 500, "body": {"Error": "Operation Error, Database Session Closed Badly."}}
     except Exception as exc:
-        logger.error("Error: Failed to close connection to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Connection To Database Closed Badly."}}
+        logger.error("Failed To Close The Session: {}".format(exc))
+        return {"statusCode": 500, "body": {"Error": "Database Session Closed Badly."}}
 
-    logger.info("Successfully completed query update")
+    logger.info("update_query Has Successfully Run.")
     return {"statusCode": 200, "body": {"UpdateData": "Successfully Updated The Tables."}}
 
 
