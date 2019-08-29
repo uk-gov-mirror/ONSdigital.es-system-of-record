@@ -139,7 +139,7 @@ class test_get_contributor(unittest.TestCase):
             x = get_contributor.lambda_handler({"ru_reference": ""}, '')
 
         assert (x["statusCode"] == 500)
-        assert ("Failed To Connect To Database." in str(x['body']['Error']))
+        assert ("Failed To Connect" in str(x['body']['Error']))
 
     @mock.patch("get_contributor.db.create_engine")
     @mock.patch("get_contributor.db.select")
