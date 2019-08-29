@@ -80,7 +80,7 @@ class test_get_survey_periods(unittest.TestCase):
             x = get_survey_periods.lambda_handler({"survey_period": "", "survey_code": ""}, '')
 
         assert (x["statusCode"] == 500)
-        assert ("Failed To Connect To Database." in str(x['body']['Error']))
+        assert ("Failed To Connect" in str(x['body']['Error']))
 
     @mock.patch("get_survey_periods.db.create_engine")
     @mock.patch("get_survey_periods.db.select")

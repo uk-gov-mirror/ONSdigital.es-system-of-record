@@ -1,14 +1,15 @@
-import alchemy_mock
-import unittest
 import json
-import unittest.mock as mock
-import sqlalchemy.exc as exc
 import sys
 import os
+
+import unittest
+import unittest.mock as mock
+import sqlalchemy as db
+import sqlalchemy.exc as exc
+from alchemy_mock.mocking import AlchemyMagicMock
+
 sys.path.append(os.path.realpath(os.path.dirname(__file__)+"/.."))
 import create_query as create_query
-import sqlalchemy as db
-from alchemy_mock.mocking import AlchemyMagicMock
 
 
 class test_create_query(unittest.TestCase):

@@ -130,7 +130,7 @@ class test_get_query_dashboard(unittest.TestCase):
             x = get_query_dashboard.lambda_handler({"query_reference": 0}, '')
 
         assert (x["statusCode"] == 500)
-        assert ("Failed To Connect To Database." in str(x['body']['Error']))
+        assert ("Failed To Connect" in str(x['body']['Error']))
 
     @mock.patch("get_query_dashboard.db.create_engine")
     @mock.patch("get_query_dashboard.db.select")
