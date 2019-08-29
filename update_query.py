@@ -20,6 +20,7 @@ def lambda_handler(event, context):
     Returns:
       Json message reporting the success of the update.
     """
+
     logger.info("update_query Has Started Running.")
 
     database = os.environ.get('Database_Location', None)
@@ -31,10 +32,11 @@ def lambda_handler(event, context):
     try:
         io_validation.QueryReference(strict=True).load(event)
         io_validation.Query(strict=True).load(event)
-    except ValidationError as exc:
+
+    except ValidationError as err:
         logger.error("Input: {}".format(event))
         logger.error("Failed To Validate The Input: {}".format(exc.messages))
-        return {"statusCode": 500, "body": exc.messages}
+        return {"statusCode": 500, "body": {"Error": err.messages}}
 
     try:
         logger.info("Connecting To The Database.")
