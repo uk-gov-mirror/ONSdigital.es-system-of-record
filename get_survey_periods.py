@@ -14,87 +14,111 @@ logger = logging.getLogger("get_survey_periods")
 
 
 def lambda_handler(event, context):
-    """Collects data on a passed in Reference from a tablea and returns a single Json.
+    """Collects data on a passed in Reference from a table and returns a single
+    Json.
     Parameters:
       event (Dict):Two key value pairs used in the search.
     Returns:
       out_json (Json):Json responce of the table data.
     """
+
+    logger.info("get_survey_periods Has Started Running.")
+
     database = os.environ.get('Database_Location', None)
     if database is None:
-        logger.error("Database_Location env not set")
+        logger.error(
+            "Database_Location Environment Variable Has Not Been Set.")
         return {"statusCode": 500, "body": {"Error": "Configuration Error."}}
 
-    logger.info("INPUT DATA: {}".format(event))
     try:
         io_validation.SurveySearch(strict=True).load(event)
-    except ValidationError as err:
-        logger.error("Failed to validate input: {}".format(err.messages))
-        return {"statusCode": 500, "body": err.messages}
+    except ValidationError as exc:
+        logger.error("Input: {}".format(event))
+        logger.error("Failed To Validate The Output: {}".format(exc.messages))
+        return {"statusCode": 500, "body": exc.messages}
 
     search_list = ['survey_period',
                    'survey_code']
 
     try:
-        logger.info("Connecting to the database")
+        logger.info("Connecting To The Database.")
         engine = db.create_engine(database)
         session = Session(engine)
         metadata = db.MetaData()
     except db.exc.NoSuchModuleError as exc:
-        logger.error("Error: Failed to connect to the database(driver error): {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
+        logger.error("Driver Error, Failed To Connect: {}".format(exc))
+        return {"statusCode": 500,
+                "body": {"Error": "Driver Error, Failed To Connect."}}
     except db.exc.OperationalError as exc:
-        logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
+        logger.error("Operational Error Encountered: {}".format(exc))
+        return {"statusCode": 500,
+                "body": {"Error": "Operational Error, Failed To Connect."}}
     except Exception as exc:
-        logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
+        logger.error("Failed To Connect To The Database: {}".format(exc))
+        return {"statusCode": 500,
+                "body": {"Error": "Failed To Connect To The Database."}}
 
     try:
-        table_model = alchemy_functions.table_model(engine, metadata, "survey_period")
+        logger.info("Fetching Table Model: {}".format("survey_period"))
+        table_model = alchemy_functions.table_model(engine, metadata,
+                                                    "survey_period")
+
+        logger.info("Building SQL Statement: {}".format("survey_period"))
         all_query_sql = db.select([table_model])
 
         added_query_sql = 0
 
         for criteria in search_list:
             if criteria not in event.keys():
-                logger.info("No parameters have been passed for {}.".format(criteria))
+                logger.info("No parameters have been passed for {}."
+                            .format(criteria))
                 continue
-            added_query_sql += 1
 
-            all_query_sql = all_query_sql.where(getattr(table_model.columns, criteria) == event[criteria])
+            added_query_sql += 1
+            all_query_sql = all_query_sql.where(getattr(table_model.columns,
+                                                        criteria) ==
+                                                event[criteria])
 
         if added_query_sql == 0:
-            all_query_sql = all_query_sql.where(table_model.columns.survey_period == db.select([func.max(table_model.columns.survey_period)]))
+            all_query_sql = all_query_sql.where(table_model.columns
+                                                .survey_period == db.select(
+                [func.max(table_model.columns.survey_period)]))
 
+        logger.info("Fetching Table Data: {}".format("survey_period"))
         query = alchemy_functions.select(all_query_sql, session)
     except db.exc.OperationalError as exc:
-        logger.error("Error: Failed To select data: {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Failed To Retrieve Data." + str(type(exc))}}
+        logger.error(
+            "Alchemy Operational Error When Retrieving Data: {}".format(exc))
+        return {"statusCode": 500,
+                "body": {"Error": "Operation Error, Failed To Retrieve Data."}}
     except Exception as exc:
-        logger.error("Error: Failed To select data: {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Failed To Retrieve Data." + str(type(exc))}}
+        logger.error("Problem Retrieving Data From The Table: {}".format(exc))
+        return {"statusCode": 500,
+                "body": {"Error": "Failed To Retrieve Data."}}
 
-    out_json = json.dumps(query.to_dict(orient='records'), sort_keys=True, default=str)
+    logger.info("Creating JSON.")
+    out_json = json.dumps(query.to_dict(orient='records'), sort_keys=True,
+                          default=str)
 
     try:
+        logger.info("Closing Session.")
         session.close()
     except db.exc.OperationalError as exc:
-        logger.error("Error: Failed to close the database session: {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Database Session Closed Badly."}}
+        logger.error(
+            "Operational Error, Failed To Close The Session: {}".format(exc))
+        return {"statusCode": 500,
+                "body": {"Error": "Database Session Closed Badly."}}
     except Exception as exc:
-        logger.error("Error: Failed to close the database session: {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Database Session Closed Badly."}}
+        logger.error("Failed To Close The Session: {}".format(exc))
+        return {"statusCode": 500,
+                "body": {"Error": "Database Session Closed Badly."}}
 
     try:
         io_validation.SurveyPeriod(strict=True, many=True).loads(out_json)
-    except ValidationError as err:
-        logger.error("Failed to validate output: {}".format(err.messages))
-        return {"statusCode": 500, "body": err.messages}
+    except ValidationError as exc:
+        logger.error("Output: {}".format(out_json))
+        logger.error("Failed To Validate The Output: {}".format(exc.messages))
+        return {"statusCode": 500, "body": exc.messages}
 
-    logger.info("Successfully completed get_query")
+    logger.info("get_survey_periods Has Successfully Run.")
     return {"statusCode": 200, "body": json.loads(out_json)}
-
-
-# x = lambda_handler({"survey_code": "066"}, '')
-# print(x)
