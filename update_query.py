@@ -298,12 +298,12 @@ def lambda_handler(event, context):
                      .format(exc))
         return {"statusCode": 500,
                 "body": {"Error": "Operation Error, Failed To Update Data: {}"
-                         .format("step_exception")}}
+                         .format("query_task")}}
     except Exception as exc:
         logger.error("Problem Updating Data From The Table: {}".format(exc))
         return {"statusCode": 500,
                 "body": {"Error": "Failed To Update Data: {}"
-                         .format("step_exception")}}
+                         .format("query_task")}}
 
     try:
         session.commit()

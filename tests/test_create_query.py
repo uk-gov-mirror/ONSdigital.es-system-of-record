@@ -27,13 +27,13 @@ class test_create_query(unittest.TestCase):
             x = create_query.lambda_handler(test_data, '')
 
             assert(x["statusCode"] == 201)
-            assert ("successfully" in x['body']['query_type'])
+            assert ("Successfully" in x['body']['Success'])
 
     def test_environment_variable_exception(self):
         x = create_query.lambda_handler("MIKE", '')
 
         assert (x["statusCode"] == 500)
-        assert ("Configuration error" in x['body'])
+        assert ("Configuration Error." in x['body']['Error'])
 
     def test_input_data_exception(self):
         with open('tests/fixtures/test_data.txt') as infile:
@@ -45,7 +45,7 @@ class test_create_query(unittest.TestCase):
                 x = create_query.lambda_handler("MIKE", '')
 
         assert (x["statusCode"] == 500)
-        assert ("Invalid" in str(x['body']))
+        assert ("Invalid" in str(x['body']['Error']))
 
     @mock.patch("create_query.db.create_engine")
     def test_db_connection_exception(self, mock_create_engine):
@@ -60,7 +60,7 @@ class test_create_query(unittest.TestCase):
                 x = create_query.lambda_handler(test_data, '')
         assert (x["statusCode"] == 500)
         print(x['body'])
-        assert ("Failed To Connect To Database" in str(x['body']['Error']))
+        assert ("Failed To Connect" in str(x['body']['Error']))
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.insert")
@@ -76,7 +76,7 @@ class test_create_query(unittest.TestCase):
             x = create_query.lambda_handler(test_data, '')
 
             assert(x["statusCode"] == 500)
-            assert ("Failed to insert into query" in x['body']['Error'])
+            assert ("Failed To Insert Data: query" in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.alchemy_functions")
@@ -95,7 +95,7 @@ class test_create_query(unittest.TestCase):
                 x = create_query.lambda_handler(test_data, '')
 
                 assert(x["statusCode"] == 500)
-                assert ("Failed to insert into Step_Exception" in x['body']['Error'])
+                assert ("Failed To Insert Data: step_exception" in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.alchemy_functions")
@@ -112,7 +112,7 @@ class test_create_query(unittest.TestCase):
                 x = create_query.lambda_handler(test_data, '')
 
             assert(x["statusCode"] == 500)
-            assert ("Failed to insert into Question_Anomaly" in x['body']['Error'])
+            assert ("Failed To Insert Data: question_anomaly" in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.alchemy_functions")
@@ -132,7 +132,7 @@ class test_create_query(unittest.TestCase):
                 x = create_query.lambda_handler(test_data, '')
 
             assert(x["statusCode"] == 500)
-            assert ("Failed to insert into failed_VET" in x['body']['Error'])
+            assert ("Failed To Insert Data: failed_vet" in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.alchemy_functions")
@@ -155,7 +155,7 @@ class test_create_query(unittest.TestCase):
                 x = create_query.lambda_handler(test_data, '')
 
                 assert(x["statusCode"] == 500)
-                assert ("Failed to insert into Query_Task" in x['body']['Error'])
+                assert ("Failed To Insert Data: query_task" in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.alchemy_functions")
@@ -183,7 +183,7 @@ class test_create_query(unittest.TestCase):
                 x = create_query.lambda_handler(test_data, '')
 
             assert(x["statusCode"] == 500)
-            assert ("Failed to insert into Query_Task" in x['body']['Error'])
+            assert ("Failed To Insert Data: query_task_update" in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.insert")
@@ -202,7 +202,7 @@ class test_create_query(unittest.TestCase):
                 x = create_query.lambda_handler(test_data, '')
 
                 assert(x["statusCode"] == 500)
-                assert ("Failed To Commit Changes" in x['body']['Error'])
+                assert ("Failed To Commit" in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.insert")
