@@ -1,4 +1,3 @@
-import alchemy_mock
 import unittest
 import json
 import unittest.mock as mock
@@ -15,24 +14,14 @@ from alchemy_mock.mocking import AlchemyMagicMock
 class TestUpdateContributor(unittest.TestCase):
     @mock.patch("update_contributor.db.create_engine")
     @mock.patch("update_contributor.db.update")
-    @mock.patch("update_contributor.alchemy_functions")
     @mock.patch("update_contributor.io_validation.ContributorUpdate")
-    def test_lambda_handler_happy_path(self, mock_create_engine, mock_update, mock_alchemy_funks, mock_marsh):
+    @mock.patch("update_contributor.alchemy_functions")
+    def test_lambda_handler_happy_path(self, mock_create_engine, mock_update, mock_marsh, mock_alchemy_funks):
         with mock.patch.dict(
             update_contributor.os.environ, {"Database_Location": "Djibouti"}
         ):
-            with open('tests/fixtures/test_data.txt') as infile:
-                test_data = json.load(infile)
-            ##mock connecting to db
-            #with mock.patch("update_contributor.db.create_engine") as bob:
-#            with mock.patch("update_contributor.Session") as mock_sesh:
-#                mock_session = AlchemyMagicMock()
-#                mock_sesh.return_value = mock_session
-#                mock_session.commit.return_value = "Happy!"
-#                mock_session.close.return_value = "Path!"
-                mock_update.return_value.values.return_value.returning.return_value.on_conflict_do_nothing.return_value = "bob"
-#                mock_alchemy_funks.table_model.return_value = "Happier!"
-#                mock_alchemy_funks.update.return_value = "Pathier!"
+                mock_update.return_value.values.return_value.returning.return_value.on_conflict_do_nothing.return_value\
+                    = "bob"
 
                 x = update_contributor.lambda_handler({"additional_comments": "6",  # "Hello",
                                     "contributor_comments": "666",  # "Contributor says hello!",
@@ -63,48 +52,36 @@ class TestUpdateContributor(unittest.TestCase):
         assert ("Invalid" in str(x['body']))
 
     @mock.patch("update_contributor.db.create_engine")
-    @mock.patch("update_contributor.io_validation.ContributorUpdate")
-    def test_db_connection_exception(self, mock_create_engine, mock_marsh):
-        with open('tests/fixtures/test_data.txt') as infile:
-            test_data = json.load(infile)
-            with mock.patch.dict(
-                    update_contributor.os.environ, {"Database_Location": "Djibouti"}
-            ):
-                mock_marsh.return_value = True
-                mock_create_engine.side_effect = db.exc.OperationalError("Side effect in full effect","","")
-                x = update_contributor.lambda_handler({}, '')
+    def test_db_connection_exception(self, mock_create_engine):
+        with mock.patch.dict(
+                update_contributor.os.environ, {"Database_Location": "Djibouti"}
+        ):
+            mock_create_engine.side_effect = db.exc.OperationalError("Side effect in full effect","","")
+            x = update_contributor.lambda_handler({"additional_comments": "6",  # "Hello",
+                                "contributor_comments": "666",  # "Contributor says hello!",
+                                "survey_period": "201712",  # "201712",
+                                "survey_code": "066",  # "066",
+                                "ru_reference": "77700000001"}, "")
 
         assert (x["statusCode"] == 500)
-        assert ("Failed to connect to the database" in str(x['body']['contributor_name']))
+        assert ("Failed To Connect To Database." in str(x['body']['Error']))
 
     @mock.patch("update_contributor.db.create_engine")
     @mock.patch("update_contributor.alchemy_functions")
-    def test_update_contributor_fail(self, mock_create_engine, mock_alchemy_funks):
+    def test_update_contributor_fail(self, mock_create_engine, mock_alchemy_funcs):
         with mock.patch.dict(
             update_contributor.os.environ, {"Database_Location": "sweden"}
         ):
-            with open('tests/fixtures/test_data.txt') as infile:
-                test_data = json.load(infile)
-            with mock.patch("update_contributor.Session") as mock_sesh:
-                mock_session = AlchemyMagicMock()
-                mock_sesh.return_value = mock_session
-                mock_session.commit.return_value = "Sonny"
-                mock_session.close.return_value = "Cher"
-                with mock.patch("update_contributor.db.update") as mock_update:
-                    mock_therest = mock.Mock()
-                    mock_therest.values.return_value.returning.return_value.on_conflict_do_nothing.return_value = "Bob"
-                    mock_update.side_effect = [mock_therest, db.exc.OperationalError("Side effect in full effect", "",
-                                                                                     "")]
-                    mock_alchemy_funks.table_model.return_value = "Reeves"
-                    mock_alchemy_funks.update.return_value = "Mortimer"
-                    x = update_contributor.lambda_handler({"additional_comments": "6",  # "Hello",
-                                                           "contributor_comments": "666",  # "Contributor says hello!",
-                                                           "survey_period": "201712",  # "201712",
-                                                           "survey_code": "066",  # "066",
-                                                           "ru_reference": "77700000001"}, "")
+            with mock.patch("update_contributor.db.update") as mock_update:
+                mock_update.side_effect = db.exc.OperationalError("Side effect in full effect", "", "")
+                x = update_contributor.lambda_handler({"additional_comments": "6",  # "Hello",
+                                                       "contributor_comments": "666",  # "Contributor says hello!",
+                                                       "survey_period": "201712",  # "201712",
+                                                       "survey_code": "066",  # "066",
+                                                       "ru_reference": "77700000001"}, "")
 
-                assert(x["statusCode"] == 500)
-                assert ("Failed to update the update_contributor table" in x['body']['Error'])
+            assert(x["statusCode"] == 500)
+            assert ("Failed to update the update_contributor table" in x['body']['Error'])
 
     @mock.patch("update_contributor.db.create_engine")
     @mock.patch("update_contributor.db.update")
@@ -113,17 +90,12 @@ class TestUpdateContributor(unittest.TestCase):
         with mock.patch.dict(
                 update_contributor.os.environ, {"Database_Location": "sweden"}
         ):
-            with open('tests/fixtures/test_data.txt') as infile:
-                test_data = json.load(infile)
             with mock.patch("update_contributor.Session") as mock_sesh:
                 mock_session = AlchemyMagicMock()
                 mock_sesh.return_value = mock_session
                 mock_session.commit.side_effect = db.exc.OperationalError("Side effect in full effect", "", "")
-                mock_session.close.return_value = "Anton Rogers"
                 mock_update.return_value.values.return_value.returning.return_value.on_conflict_do_nothing.return_value\
                     = "bob"
-                mock_alchemy_funks.table_model.return_value = "Terry"
-                mock_alchemy_funks.update.return_value = "June"
 
                 x = update_contributor.lambda_handler({"additional_comments": "6",  # "Hello",
                                                        "contributor_comments": "666",  # "Contributor says hello!",
@@ -141,17 +113,12 @@ class TestUpdateContributor(unittest.TestCase):
         with mock.patch.dict(
                 update_contributor.os.environ, {"Database_Location": "sweden"}
         ):
-            with open('tests/fixtures/test_data.txt') as infile:
-                test_data = json.load(infile)
             with mock.patch("update_contributor.Session") as mock_sesh:
                 mock_session = AlchemyMagicMock()
                 mock_sesh.return_value = mock_session
-                mock_session.commit.return_value = "Transmute!!"
                 mock_session.close.side_effect = db.exc.OperationalError("Side effect in full effect", "", "")
-                mock_update.return_value.values.return_value.returning.return_value.on_conflict_do_nothing.return_value \
-                    = "bob"
-                mock_alchemy_funks.table_model.return_value = "PJ"
-                mock_alchemy_funks.update.return_value = "Duncan"
+                mock_update.return_value.values.return_value.returning.return_value.on_conflict_do_nothing.\
+                    return_value = "bob"
 
                 x = update_contributor.lambda_handler({"additional_comments": "6",  # "Hello",
                                                        "contributor_comments": "666",  # "Contributor says hello!",
@@ -162,4 +129,4 @@ class TestUpdateContributor(unittest.TestCase):
                 print(x)
 
                 assert (x["statusCode"] == 500)
-                assert ("Database Session Closed Badly" in x['body']['Error'])
+                assert ("Connection To Database Closed Badly." in x['body']['Error'])
