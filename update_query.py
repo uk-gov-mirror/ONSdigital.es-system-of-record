@@ -20,7 +20,7 @@ def lambda_handler(event, context):
     Returns:
       Json message reporting the success of the update.
     """
-    logger.info("update_query Has Started Runnign")
+    logger.info("update_query Has Started Running")
 
 
     database = os.environ.get('Database_Location', None)
@@ -32,7 +32,7 @@ def lambda_handler(event, context):
         io_validation.QueryReference(strict=True).load(event)
         io_validation.Query(strict=True).load(event)
     except ValidationError as err:
-        logger.error("Failed to validate input: {}".format(err.messages))
+        logger.error("Error: Failed to validate input: {}".format(err.messages))
         return {"statusCode": 500, "body": {"Error": err.messages}}
 
     try:
@@ -67,10 +67,10 @@ def lambda_handler(event, context):
         alchemy_functions.update(statement, session)
 
     except db.exc.OperationalError as exc:
-        logger.error("Operational Error, Error updating the database." + str(type(exc)))
-        return {"statusCode": 500, "body": {"Error": "Failed To Update Query in Query Table."}}
+        logger.error("Operational Error, Failed to Update Query Table: {}".format(exc))
+        return {"statusCode": 500, "body": {"Error": "Operational Error, Failed To Update Query in Query Table."}}
     except Exception as exc:
-        logger.error("Error updating the database." + str(type(exc)))
+        logger.error("Failed to Update Query Table: {}".format(exc))
         return {"statusCode": 500, "body": {"Error": "Failed To Update Query in Query Table."}}
 
     try:
