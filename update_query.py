@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 
@@ -128,14 +127,14 @@ def lambda_handler(event, context):
                                         .format("question_anomaly"))
                             statement = insert(table_model)\
                                 .values(survey_period=anomaly['survey_period'],
-                                        question_number=
-                                        anomaly['question_number'],
+                                        question_number=anomaly[
+                                            'question_number'],
                                         run_id=anomaly['run_id'],
                                         ru_reference=anomaly['ru_reference'],
                                         step=anomaly['step'],
                                         survey_code=anomaly['survey_code'],
-                                        anomaly_description=
-                                        anomaly['anomaly_description'])\
+                                        anomaly_description=anomaly[
+                                            'anomaly_description'])\
                                 .on_conflict_do_nothing(
                                 constraint=table_model.primary_key)
 
@@ -153,8 +152,8 @@ def lambda_handler(event, context):
                                         logger.info("Fetching Table Model: {}"
                                                     .format("failed_vet"))
                                         table_model = alchemy_functions\
-                                            .table_model(
-                                            engine, metadata, 'failed_vet')
+                                            .table_model(engine, metadata,
+                                                         'failed_vet')
 
                                         logger.info(
                                             "Building SQL Statement: {}"
@@ -265,12 +264,12 @@ def lambda_handler(event, context):
                             logger.info("Building SQL Statement: {}"
                                         .format("query_task_update"))
                             statement = insert(table_model).values(
-                                task_sequence_number=
-                                query_task['task_sequence_number'],
+                                task_sequence_number=query_task[
+                                    'task_sequence_number'],
                                 query_reference=query_task['query_reference'],
                                 last_updated=query_task['last_updated'],
-                                task_update_description=
-                                query_task['task_update_description'],
+                                task_update_description=query_task[
+                                    'task_update_description'],
                                 updated_by=query_task['updated_by'])\
                                 .on_conflict_do_nothing(
                                 constraint=table_model.primary_key)

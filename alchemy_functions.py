@@ -10,17 +10,22 @@ def table_model(engine, metadata, table_name):
       metadata (MetaData):Basic Metadata object.
       table_name (String):The name of the table.
     Returns:
-      table (Table):Object describing the table, its columns, relationships, datatypes etc.
+      table (Table):Object describing the table, its columns, relationships,
+      datatypes etc.
     """
 
-    table = db.Table(table_name, metadata, schema='es_db_test', autoload=True, autoload_with=engine)
+    table = db.Table(table_name, metadata, schema='es_db_test', autoload=True,
+                     autoload_with=engine)
     return table
 
 
 def select(select_sql, session):
-    """Fetches all rows from a table based on a prebuilt select statement and returns them in a Dataframe.
-    Data comes back as a ResultProxy, it is then turned into a database with default column headers.
-    Assuming the dataframe isn't empty the correct headers are then added into the dataframe.
+    """Fetches all rows from a table based on a prebuilt select statement
+    and returns them in a Dataframe.
+    Data comes back as a ResultProxy, it is then turned into a database with
+    default column headers.
+    Assuming the dataframe isn't empty the correct headers are then added into
+    the dataframe.
     Parameters:
       select_sql (Expression):SQL expression to be used.
       session (Session):An open session of the database you are searching.

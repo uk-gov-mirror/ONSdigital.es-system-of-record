@@ -80,9 +80,9 @@ def lambda_handler(event, context):
                                                 event[criteria])
 
         if added_query_sql == 0:
-            all_query_sql = all_query_sql.where(table_model.columns
-                                                .survey_period == db.select(
-                [func.max(table_model.columns.survey_period)]))
+            all_query_sql = all_query_sql\
+                .where(table_model.columns.survey_period == db.select(
+                       [func.max(table_model.columns.survey_period)]))
 
         logger.info("Fetching Table Data: {}".format("survey_period"))
         query = alchemy_functions.select(all_query_sql, session)

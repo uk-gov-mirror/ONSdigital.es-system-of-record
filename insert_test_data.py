@@ -10,7 +10,8 @@ import alchemy_functions as af
 logger = logging.getLogger("insert_test_data")
 
 
-# If this fails to complete, you need to drop and recreate the database to fix the query tables serialisation.
+# If this fails to complete, you need to drop and recreate
+# the database to fix the query tables serialisation.
 def main():
     """Load data from a file and attempt to insert data into the database.
     Data is loaded in from a json file (data.json).
@@ -36,7 +37,8 @@ def main():
         session = Session(engine)
         metadata = db.MetaData()
     except db.exc.DatabaseError as exc:
-        logger.error("Error: Failed to connect to the database: {}".format(exc))
+        logger.error("Error: Failed to connect to the database: {}"
+                     .format(exc))
         return json.loads('{"QueryTypes":"Failed To Connect To Database."}')
 
     table_list = ['ssr_old_regions',
@@ -65,16 +67,20 @@ def main():
     try:
         session.commit()
     except db.exc.DatabaseError as exc:
-        logger.error("Error: Failed to commit changes to the database: {}".format(exc))
+        logger.error("Error: Failed to commit changes to the database: {}"
+                     .format(exc))
 
-        return json.loads('{"QueryTypes":"Failed To Commit Changes To The Database."}')
+        return json.loads(
+            '{"QueryTypes":"Failed To Commit Changes To The Database."}')
 
     try:
         session.close()
     except db.exc.DatabaseError as exc:
-        logger.error("Error: Failed to close connection to the database: {}".format(exc))
+        logger.error("Error: Failed to close connection to the database: {}"
+                     .format(exc))
 
-        return json.loads('{"QueryTypes":"Connection To Database Closed Badly."}')
+        return json.loads(
+            '{"QueryTypes":"Connection To Database Closed Badly."}')
     logger.info("Succesfully completed insert")
 
 

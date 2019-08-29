@@ -13,7 +13,8 @@ logger = logging.getLogger("get_query")
 
 
 def lambda_handler(event, context):
-    """Collects data on a passed in Reference from seven tables and combines them into a single Json.
+    """Collects data on a passed in Reference from seven tables and combines
+    them into a single Json.
     Parameters:
       event (Dict):A series of key value pairs used in the search.
     Returns:
@@ -153,7 +154,7 @@ def lambda_handler(event, context):
         except db.exc.OperationalError as exc:
             logger.error(
                 "Alchemy Operational Error When Retrieving Data: {}"
-                    .format(exc))
+                .format(exc))
             return {"statusCode": 500,
                     "body": {
                         "Error": "Operation Error, Failed To Retrieve Data."}}
@@ -234,7 +235,8 @@ def lambda_handler(event, context):
                     (table_list['query_task_update']['task_sequence_number'] ==
                      tas_row['task_sequence_number'])]
 
-                curr_up = json.dumps(curr_up.to_dict(orient='records'), sort_keys=True, default=str)
+                curr_up = json.dumps(curr_up.to_dict(orient='records'),
+                                     sort_keys=True, default=str)
             else:
                 curr_up = "[]"
             out_json += curr_up + '},'

@@ -13,7 +13,8 @@ logger = logging.getLogger("get_contributor")
 
 
 def lambda_handler(event, context):
-    """Collects data on a passed in Reference from six tables and combines them into a single Json.
+    """Collects data on a passed in Reference from six tables and combines
+    them into a single Json.
     Parameters:
       event (Dict):A single key value pair of ru_reference and a string number.
     Returns:
@@ -71,7 +72,8 @@ def lambda_handler(event, context):
                 .where(table_model.columns.ru_reference == ref)
 
             if current_table == "survey_contact":
-                other_model = alchemy_functions.table_model(engine, metadata, "contact")
+                other_model = alchemy_functions.table_model(
+                    engine, metadata, "contact")
                 statement = db.select([table_model.columns.ru_reference,
                                        table_model.columns.survey_code,
                                        table_model.columns
