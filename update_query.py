@@ -26,14 +26,14 @@ def lambda_handler(event, context):
     database = os.environ.get('Database_Location', None)
     if database is None:
         logger.error("Database_Location Environment Variable Has Not Been Set.")
-        return {"statusCode": 500, "body": "Configuration error"}
+        return {"statusCode": 500, "body": {"Error":"Configuration error"}}
 
     try:
         io_validation.QueryReference(strict=True).load(event)
         io_validation.Query(strict=True).load(event)
     except ValidationError as err:
         logger.error("Failed to validate input: {}".format(err.messages))
-        return {"statusCode": 500, "body": err.messages}
+        return {"statusCode": 500, "body": {"Error": err.messages}}
 
     try:
         logger.info("Connecting to the database")
