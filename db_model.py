@@ -1,5 +1,6 @@
 # coding: utf-8
-from sqlalchemy import Boolean, CHAR, Column, Date, ForeignKey, ForeignKeyConstraint, Integer, SmallInteger, String, Table, Text, text
+from sqlalchemy import Boolean, CHAR, Column, Date, ForeignKey,\
+    ForeignKeyConstraint, Integer, SmallInteger, String, Table, Text, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -96,15 +97,18 @@ class Vet(Base):
     vet_code = Column(Integer, primary_key=True)
     vet_description = Column(String(60), nullable=False)
 
-    question_anomaly = relationship('QuestionAnomaly', secondary='es_db_test.failed_vet')
+    question_anomaly = relationship('QuestionAnomaly',
+                                    secondary='es_db_test.failed_vet')
 
 
 class SurveyEnrolment(Base):
     __tablename__ = 'survey_enrolment'
     __table_args__ = {'schema': 'es_db_test'}
 
-    ru_reference = Column(ForeignKey('es_db_test.contributor.ru_reference'), primary_key=True, nullable=False)
-    survey_code = Column(ForeignKey('es_db_test.survey.survey_code'), primary_key=True, nullable=False)
+    ru_reference = Column(ForeignKey('es_db_test.contributor.ru_reference'),
+                          primary_key=True, nullable=False)
+    survey_code = Column(ForeignKey('es_db_test.survey.survey_code'),
+                         primary_key=True, nullable=False)
     number_of_consecutive_non_response = Column(SmallInteger)
     number_of_periods_without_queries = Column(SmallInteger)
     period_of_enrolment = Column(String(10), nullable=False)
@@ -118,7 +122,8 @@ class SurveyPeriod(Base):
     __table_args__ = {'schema': 'es_db_test'}
 
     survey_period = Column(CHAR(6), primary_key=True, nullable=False)
-    survey_code = Column(ForeignKey('es_db_test.survey.survey_code'), primary_key=True, nullable=False)
+    survey_code = Column(ForeignKey('es_db_test.survey.survey_code'),
+                         primary_key=True, nullable=False)
     active_period = Column(Boolean)
     number_of_responses = Column(Integer)
     number_cleared = Column(Integer)
@@ -131,8 +136,12 @@ class SurveyPeriod(Base):
 class ContributorSurveyPeriod(Base):
     __tablename__ = 'contributor_survey_period'
     __table_args__ = (
-        ForeignKeyConstraint(['ru_reference', 'survey_code'], ['es_db_test.survey_enrolment.ru_reference', 'es_db_test.survey_enrolment.survey_code']),
-        ForeignKeyConstraint(['survey_code', 'survey_period'], ['es_db_test.survey_period.survey_code', 'es_db_test.survey_period.survey_period']),
+        ForeignKeyConstraint(['ru_reference', 'survey_code'],
+                             ['es_db_test.survey_enrolment.ru_reference',
+                              'es_db_test.survey_enrolment.survey_code']),
+        ForeignKeyConstraint(['survey_code', 'survey_period'],
+                             ['es_db_test.survey_period.survey_code',
+                              'es_db_test.survey_period.survey_period']),
         {'schema': 'es_db_test'}
     )
 
@@ -157,11 +166,15 @@ class ContributorSurveyPeriod(Base):
 class SurveyContact(Base):
     __tablename__ = 'survey_contact'
     __table_args__ = (
-        ForeignKeyConstraint(['ru_reference', 'survey_code'], ['es_db_test.survey_enrolment.ru_reference', 'es_db_test.survey_enrolment.survey_code']),
+        ForeignKeyConstraint(['ru_reference', 'survey_code'],
+                             ['es_db_test.survey_enrolment.ru_reference',
+                              'es_db_test.survey_enrolment.survey_code']),
         {'schema': 'es_db_test'}
     )
 
-    contact_reference = Column(ForeignKey('es_db_test.contact.contact_reference'), primary_key=True, nullable=False)
+    contact_reference = Column(
+        ForeignKey('es_db_test.contact.contact_reference'),
+        primary_key=True, nullable=False)
     ru_reference = Column(String(11), primary_key=True, nullable=False)
     survey_code = Column(CHAR(3), primary_key=True, nullable=False)
     effective_end_date = Column(Date)
@@ -174,12 +187,19 @@ class SurveyContact(Base):
 class Query(Base):
     __tablename__ = 'query'
     __table_args__ = (
-        ForeignKeyConstraint(['survey_period', 'ru_reference', 'survey_code'], ['es_db_test.contributor_survey_period.survey_period', 'es_db_test.contributor_survey_period.ru_reference', 'es_db_test.contributor_survey_period.survey_code']),
+        ForeignKeyConstraint(
+            ['survey_period', 'ru_reference', 'survey_code'],
+            ['es_db_test.contributor_survey_period.survey_period',
+             'es_db_test.contributor_survey_period.ru_reference',
+             'es_db_test.contributor_survey_period.survey_code']),
         {'schema': 'es_db_test'}
     )
 
-    query_reference = Column(Integer, primary_key=True, server_default=text("nextval('es_db_test.query_query_reference_seq'::regclass)"))
-    query_type = Column(ForeignKey('es_db_test.query_type.query_type'), nullable=False)
+    query_reference = Column(
+        Integer, primary_key=True, server_default=text(
+            "nextval('es_db_test.query_query_reference_seq'::regclass)"))
+    query_type = Column(ForeignKey('es_db_test.query_type.query_type'),
+                        nullable=False)
     ru_reference = Column(String(11), nullable=False)
     survey_code = Column(CHAR(3), nullable=False)
     survey_period = Column(CHAR(6), nullable=False)
@@ -204,7 +224,8 @@ class QueryTask(Base):
     __table_args__ = {'schema': 'es_db_test'}
 
     task_sequence_number = Column(Integer, primary_key=True, nullable=False)
-    query_reference = Column(ForeignKey('es_db_test.query.query_reference'), primary_key=True, nullable=False)
+    query_reference = Column(ForeignKey('es_db_test.query.query_reference'),
+                             primary_key=True, nullable=False)
     response_required_by = Column(Date)
     task_description = Column(Text, nullable=False)
     task_responsibility = Column(String(50))
@@ -218,11 +239,16 @@ class QueryTask(Base):
 class StepException(Base):
     __tablename__ = 'step_exception'
     __table_args__ = (
-        ForeignKeyConstraint(['survey_period', 'ru_reference', 'survey_code'], ['es_db_test.contributor_survey_period.survey_period', 'es_db_test.contributor_survey_period.ru_reference', 'es_db_test.contributor_survey_period.survey_code']),
+        ForeignKeyConstraint(
+            ['survey_period', 'ru_reference', 'survey_code'],
+            ['es_db_test.contributor_survey_period.survey_period',
+             'es_db_test.contributor_survey_period.ru_reference',
+             'es_db_test.contributor_survey_period.survey_code']),
         {'schema': 'es_db_test'}
     )
 
-    query_reference = Column(ForeignKey('es_db_test.query.query_reference'), nullable=False)
+    query_reference = Column(ForeignKey('es_db_test.query.query_reference'),
+                             nullable=False)
     survey_period = Column(String(6), primary_key=True, nullable=False)
     run_id = Column(Integer, primary_key=True, nullable=False)
     ru_reference = Column(String(11), primary_key=True, nullable=False)
@@ -238,7 +264,9 @@ class StepException(Base):
 class QueryTaskUpdate(Base):
     __tablename__ = 'query_task_update'
     __table_args__ = (
-        ForeignKeyConstraint(['task_sequence_number', 'query_reference'], ['es_db_test.query_task.task_sequence_number', 'es_db_test.query_task.query_reference']),
+        ForeignKeyConstraint(['task_sequence_number', 'query_reference'],
+                             ['es_db_test.query_task.task_sequence_number',
+                              'es_db_test.query_task.query_reference']),
         {'schema': 'es_db_test'}
     )
 
@@ -254,7 +282,13 @@ class QueryTaskUpdate(Base):
 class QuestionAnomaly(Base):
     __tablename__ = 'question_anomaly'
     __table_args__ = (
-        ForeignKeyConstraint(['survey_period', 'run_id', 'ru_reference', 'step', 'survey_code'], ['es_db_test.step_exception.survey_period', 'es_db_test.step_exception.run_id', 'es_db_test.step_exception.ru_reference', 'es_db_test.step_exception.step', 'es_db_test.step_exception.survey_code']),
+        ForeignKeyConstraint(
+            ['survey_period', 'run_id', 'ru_reference', 'step', 'survey_code'],
+            ['es_db_test.step_exception.survey_period',
+             'es_db_test.step_exception.run_id',
+             'es_db_test.step_exception.ru_reference',
+             'es_db_test.step_exception.step',
+             'es_db_test.step_exception.survey_code']),
         {'schema': 'es_db_test'}
     )
 
@@ -271,13 +305,22 @@ class QuestionAnomaly(Base):
 
 t_failed_vet = Table(
     'failed_vet', metadata,
-    Column('failed_vet', ForeignKey('es_db_test.vet.vet_code'), primary_key=True, nullable=False),
+    Column('failed_vet', ForeignKey('es_db_test.vet.vet_code'),
+           primary_key=True, nullable=False),
     Column('survey_period', String(6), primary_key=True, nullable=False),
     Column('question_number', String(4), primary_key=True, nullable=False),
     Column('run_id', Integer, primary_key=True, nullable=False),
     Column('ru_reference', String(11), primary_key=True, nullable=False),
     Column('step', String(11), primary_key=True, nullable=False),
     Column('survey_code', String(25), primary_key=True, nullable=False),
-    ForeignKeyConstraint(['survey_period', 'question_number', 'run_id', 'ru_reference', 'step', 'survey_code'], ['es_db_test.question_anomaly.survey_period', 'es_db_test.question_anomaly.question_number', 'es_db_test.question_anomaly.run_id', 'es_db_test.question_anomaly.ru_reference', 'es_db_test.question_anomaly.step', 'es_db_test.question_anomaly.survey_code']),
+    ForeignKeyConstraint(
+        ['survey_period', 'question_number', 'run_id', 'ru_reference', 'step',
+         'survey_code'],
+        ['es_db_test.question_anomaly.survey_period',
+         'es_db_test.question_anomaly.question_number',
+         'es_db_test.question_anomaly.run_id',
+         'es_db_test.question_anomaly.ru_reference',
+         'es_db_test.question_anomaly.step',
+         'es_db_test.question_anomaly.survey_code']),
     schema='es_db_test'
 )

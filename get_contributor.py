@@ -13,7 +13,8 @@ logger = logging.getLogger("get_contributor")
 
 
 def lambda_handler(event, context):
-    """Collects data on a passed in Reference from six tables and combines them into a single Json.
+    """Collects data on a passed in Reference from six tables and combines
+    them into a single Json.
     Parameters:
       event (Dict):A single key value pair of ru_reference and a string number.
     Returns:
@@ -32,8 +33,8 @@ def lambda_handler(event, context):
         io_validation.ContributorSearch(strict=True).load(event)
     except ValidationError as exc:
         logger.error("Input: {}".format(event))
-        logger.error("Failed To Validate The Output: {}".format(exc.messages))
-        return {"statusCode": 500, "body": exc.messages}
+        logger.error("Failed To Validate The Input: {}".format(exc.messages))
+        return {"statusCode": 500, "body": {"Error": exc.messages}}
 
     ref = event['ru_reference']
 
@@ -71,7 +72,8 @@ def lambda_handler(event, context):
                 .where(table_model.columns.ru_reference == ref)
 
             if current_table == "survey_contact":
-                other_model = alchemy_functions.table_model(engine, metadata, "contact")
+                other_model = alchemy_functions.table_model(
+                    engine, metadata, "contact")
                 statement = db.select([table_model.columns.ru_reference,
                                        table_model.columns.survey_code,
                                        table_model.columns
@@ -163,7 +165,7 @@ def lambda_handler(event, context):
     except ValidationError as exc:
         logger.error("Output: {}".format(out_json))
         logger.error("Failed To Validate The Output: {}".format(exc.messages))
-        return {"statusCode": 500, "body": exc.messages}
+        return {"statusCode": 500, "body": {"Error": exc.messages}}
 
     logger.info("get_contributor Has Successfully Run.")
     return {"statusCode": 200, "body": json.loads(out_json)}
