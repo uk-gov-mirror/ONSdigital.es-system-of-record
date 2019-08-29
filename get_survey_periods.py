@@ -73,8 +73,8 @@ def lambda_handler(event, context):
                 logger.info("No parameters have been passed for {}."
                             .format(criteria))
                 continue
-            added_query_sql += 1
 
+            added_query_sql += 1
             all_query_sql = all_query_sql.where(getattr(table_model.columns,
                                                         criteria) ==
                                                 event[criteria])
@@ -89,8 +89,8 @@ def lambda_handler(event, context):
     except db.exc.OperationalError as exc:
         logger.error(
             "Alchemy Operational Error When Retrieving Data: {}".format(exc))
-        return {"statusCode": 500, "body": {
-            "Error": "Operation Error, Failed To Retrieve Data."}}
+        return {"statusCode": 500,
+                "body": {"Error": "Operation Error, Failed To Retrieve Data."}}
     except Exception as exc:
         logger.error("Problem Retrieving Data From The Table: {}".format(exc))
         return {"statusCode": 500,

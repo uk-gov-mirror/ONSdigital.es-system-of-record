@@ -104,8 +104,8 @@ def lambda_handler(event, context):
     except db.exc.OperationalError as exc:
         logger.error(
             "Alchemy Operational Error When Retrieving Data: {}".format(exc))
-        return {"statusCode": 500, "body": {
-            "Error": "Operation Error, Failed To Retrieve Data."}}
+        return {"statusCode": 500,
+                "body": {"Error": "Operation Error, Failed To Retrieve Data."}}
     except Exception as exc:
         logger.error("Problem Retrieving Data From The Table: {}".format(exc))
         return {"statusCode": 500,
