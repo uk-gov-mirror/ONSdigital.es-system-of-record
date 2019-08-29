@@ -34,7 +34,7 @@ def lambda_handler(event, context):
     except ValidationError as exc:
         logger.error("Input: {}".format(event))
         logger.error("Failed To Validate The Input: {}".format(exc.messages))
-        return {"statusCode": 500, "body": exc.messages}
+        return {"statusCode": 500, "body": {"Error": exc.messages}}
 
     ref = event['ru_reference']
 
@@ -165,7 +165,7 @@ def lambda_handler(event, context):
     except ValidationError as exc:
         logger.error("Output: {}".format(out_json))
         logger.error("Failed To Validate The Output: {}".format(exc.messages))
-        return {"statusCode": 500, "body": exc.messages}
+        return {"statusCode": 500, "body": {"Error": exc.messages}}
 
     logger.info("get_contributor Has Successfully Run.")
     return {"statusCode": 200, "body": json.loads(out_json)}

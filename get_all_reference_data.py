@@ -102,7 +102,7 @@ def lambda_handler(event, context):
     except ValidationError as exc:
         logger.error("Output: {}".format(out_json))
         logger.error("Failed To Validate The Output: {}".format(exc.messages))
-        return {"statusCode": 500, "body": exc.messages}
+        return {"statusCode": 500, "body": {"Error": exc.messages}}
 
     logger.info("get_all_reference_data Has Successfully Run.")
     return {"statusCode": 200, "body": json.loads(out_json)}
