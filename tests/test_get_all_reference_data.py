@@ -81,7 +81,7 @@ class test_get_all_reference_data(unittest.TestCase):
             x = get_all_reference_data.lambda_handler('', '')
 
         assert (x["statusCode"] == 500)
-        assert ("Failed To Connect To Database." in str(x['body']['Error']))
+        assert ("Failed To Connect" in str(x['body']['Error']))
 
     @mock.patch("get_all_reference_data.db.create_engine")
     @mock.patch("get_all_reference_data.db.select")
