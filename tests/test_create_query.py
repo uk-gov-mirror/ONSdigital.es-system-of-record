@@ -5,7 +5,6 @@ import os
 import unittest
 import unittest.mock as mock
 import sqlalchemy as db
-import sqlalchemy.exc as exc
 from alchemy_mock.mocking import AlchemyMagicMock
 
 sys.path.append(os.path.realpath(os.path.dirname(__file__)+"/.."))
@@ -167,6 +166,7 @@ class TestCreateQuery(unittest.TestCase):
                 test_data = json.load(infile)
             with mock.patch("create_query.insert") as mock_insert:
                 mock_therest = mock.Mock()
+
                 mock_therest.values.return_value\
                     .returning.return_value\
                     .on_conflict_do_nothing.return_value = "bob"
@@ -179,6 +179,7 @@ class TestCreateQuery(unittest.TestCase):
                     mock_therest, mock_therest,
                     mock_therest,
                     db.exc.OperationalError("Misser Mike, ee say no", "", "")]
+
                 x = create_query.lambda_handler(test_data, '')
 
                 assert(x["statusCode"] == 500)
