@@ -26,7 +26,8 @@ def lambda_handler(event, context):
     try:
         io_validation.SurveyPeriod(strict=True).load(event)
     except ValidationError as err:
-        return err.messages
+        print(err)
+        return {"statusCode": 500, "body": {"Error": "Configuration error"}}
 
     try:
         engine = db.create_engine(database)
@@ -34,13 +35,13 @@ def lambda_handler(event, context):
         metadata = db.MetaData()
     except db.exc.NoSuchModuleError as exc:
         logger.error("Error: Failed to connect to the database(driver error): {}".format(exc))
-        return {"statusCode": 500, "body": {"ContributorData": "Failed To Connect To Database." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"QueryTypes": "Failed To Connect To Database."}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database."}}
     except Exception as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"QueryTypes": "Failed To Connect To Database."}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database."}}
 
     try:
         logger.info("Retrieving table model(survey_period)")
@@ -82,7 +83,7 @@ def lambda_handler(event, context):
         logger.error("Error: Failed to close connection to the database: {}".format(exc))
         return {"statusCode": 500, "body": {"Error": "Connection To Database Closed Badly."}}
     logger.info("Successfully survey_period update")
-    return {"statusCode": 200, "body": {"Error": "Successfully Updated The Table."}}
+    return {"statusCode": 200, "body": {"Success": "Successfully Updated The Table."}}
 
 
 x = lambda_handler({'active_period': True, 'number_of_responses': 2, 'number_cleared': 2,

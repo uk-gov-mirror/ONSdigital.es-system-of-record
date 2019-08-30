@@ -3,38 +3,34 @@ import json
 import unittest.mock as mock
 import sys
 import os
-sys.path.append(os.path.realpath(os.path.dirname(__file__)+"/.."))
-
-import update_survey_period as update_survey_period
 import sqlalchemy as db
-import sqlalchemy.exc as exc
 from alchemy_mock.mocking import AlchemyMagicMock
+
+sys.path.append(os.path.realpath(os.path.dirname(__file__)+"/.."))  # noqa
+import update_survey_period as update_survey_period
 
 
 class TestUpdateSurveyPeriod(unittest.TestCase):
     @mock.patch("update_survey_period.db.create_engine")
     @mock.patch("update_survey_period.db.update")
-    @mock.patch("update_survey_period.io_validation.ContributorUpdate")
     @mock.patch("update_survey_period.alchemy_functions")
-    def test_lambda_handler_happy_path(self, mock_create_engine, mock_update, mock_marsh, mock_alchemy_funks):
+    def test_lambda_handler_happy_path(self, mock_create_engine, mock_update, mock_alchemy_funks):
         with mock.patch.dict(
             update_survey_period.os.environ, {"Database_Location": "Djibouti"}
         ):
-                mock_update.return_value.values.return_value.returning.return_value.on_conflict_do_nothing.return_value\
-                    = "bob"
+            mock_update.return_value.values.return_value.returning.return_value.on_conflict_do_nothing.return_value\
+                = "bob"
 
-                x = update_survey_period.lambda_handler({"additional_comments": "6",  # "Hello",
-                                    "contributor_comments": "666",  # "Contributor says hello!",
-                                    "survey_period": "201712",  # "201712",
-                                    "survey_code": "066",  # "066",
-                                    "ru_reference": "77700000001"}, "")
-                mock_marsh.return_value = True
+            x = update_survey_period.lambda_handler({'active_period': True, 'number_of_responses': 2,
+                                                     'number_cleared': 2, 'number_cleared_first_time': 1,
+                                                     'sample_size': 2, 'survey_period': '201712', 'survey_code':
+                                                         '066'}, '')
 
-                assert(x["statusCode"] == 200)
-                assert ("Successfully" in x['body']['ContributorData'])
+        assert(x["statusCode"] == 200)
+        assert ("Successfully" in x['body']['Success'])
 
     def test_environment_variable_exception(self):
-        x = update_survey_period.lambda_handler("JAMIE - FORMER SOFTWARE ENGINEER", '')
+        x = update_survey_period.lambda_handler("JAMIE WAS HERE!! FORMER SOFTWARE ENGINEER", '')
 
         assert (x["statusCode"] == 500)
         assert ("Should say something else" in x['body'])
@@ -46,27 +42,27 @@ class TestUpdateSurveyPeriod(unittest.TestCase):
                     update_survey_period.os.environ, {"Database_Location": "Djibouti"}
             ):
                 test_data.pop('query_type')
-                x = update_survey_period.lambda_handler("MIKE", '')
+                x = update_survey_period.lambda_handler("MIKE LOVES BOUNTY BARS!!", '')
 
         assert (x["statusCode"] == 500)
-        assert ("Invalid" in str(x['body']))
+        assert ("Configuration error" in str(x['body']['Error']))
 
     @mock.patch("update_survey_period.db.create_engine")
     def test_db_connection_exception(self, mock_create_engine):
         with mock.patch.dict(
                 update_survey_period.os.environ, {"Database_Location": "Djibouti"}
         ):
-            mock_create_engine.side_effect = db.exc.OperationalError("Side effect in full effect","","")
-            x = update_survey_period.lambda_handler({"additional_comments": "6",  # "Hello",
-                                "contributor_comments": "666",  # "Contributor says hello!",
-                                "survey_period": "201712",  # "201712",
-                                "survey_code": "066",  # "066",
-                                "ru_reference": "77700000001"}, "")
+            mock_create_engine.side_effect = db.exc.OperationalError("Side effect in full effect", "", "")
+
+            x = update_survey_period.lambda_handler(
+                {'active_period': True, 'number_of_responses': 2, 'number_cleared': 2,
+                 'number_cleared_first_time': 1, 'sample_size': 2, 'survey_period': '201712',
+                 'survey_code': '066'}, '')
 
             print(x)
 
         assert (x["statusCode"] == 500)
-        assert ("'Operational Error, Failed To Connect." in str(x['body']['Error']))
+        assert ("Failed To Connect To Database." in str(x['body']['Error']))
 
     @mock.patch("update_survey_period.db.create_engine")
     @mock.patch("update_survey_period.alchemy_functions")
@@ -76,13 +72,14 @@ class TestUpdateSurveyPeriod(unittest.TestCase):
         ):
             with mock.patch("update_survey_period.db.update") as mock_update:
                 mock_update.side_effect = db.exc.OperationalError("Side effect in full effect", "", "")
+
                 x = update_survey_period.lambda_handler({'active_period': True, 'number_of_responses': 2,
                                                          'number_cleared': 2, 'number_cleared_first_time': 1,
                                                          'sample_size': 2, 'survey_period': '201712', 'survey_code':
                                                              '066'}, '')
 
-            assert(x["statusCode"] == 500)
-            assert ("Failed To Update Survey_Period." in x['body']['Error'])
+        assert(x["statusCode"] == 500)
+        assert ("Failed To Update Survey_Period." in x['body']['Error'])
 
     @mock.patch("update_survey_period.db.create_engine")
     @mock.patch("update_survey_period.db.update")
@@ -103,8 +100,8 @@ class TestUpdateSurveyPeriod(unittest.TestCase):
                                                          'sample_size': 2, 'survey_period': '201712', 'survey_code':
                                                              '066'}, '')
 
-                assert (x["statusCode"] == 500)
-                assert ("Failed To Commit Changes" in x['body']['Error'])
+        assert (x["statusCode"] == 500)
+        assert ("Failed To Commit Changes" in x['body']['Error'])
 
     @mock.patch("update_survey_period.db.create_engine")
     @mock.patch("update_survey_period.db.update")
@@ -125,6 +122,5 @@ class TestUpdateSurveyPeriod(unittest.TestCase):
                                                          'sample_size': 2, 'survey_period': '201712', 'survey_code':
                                                              '066'}, '')
 
-
-                assert (x["statusCode"] == 500)
-                assert ("Connection To Database Closed Badly." in x['body']['Error'])
+        assert (x["statusCode"] == 500)
+        assert ("Connection To Database Closed Badly." in x['body']['Error'])
