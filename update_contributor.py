@@ -13,85 +13,106 @@ logger = logging.getLogger("update_contributor")
 def lambda_handler(event, context):
     """Takes a contributor dictonary and updates the comments.
     Parameters:
-      event (Dict):A series of key value pairs with the related comments to be added.
+      event (Dict):A series of key value pairs with the related comments to be
+      added.
     Returns:
       Json message reporting the success of the update.
     """
 
+    logger.info("update_contributor Has Started Running.")
+
     database = os.environ.get('Database_Location', None)
     if database is None:
-        logger.error("Database_Location env not set")
-        return {"statusCode": 500, "body": "Should say something else"}
+        logger.error(
+            "Database_Location Environment Variable Has Not Been Set.")
+        return {"statusCode": 500, "body": {"Error": "Configuration Error."}}
 
     try:
         io_validation.ContributorUpdate(strict=True).load(event)
-    except ValidationError as err:
-        return {"statusCode": 500, "body": {str(err.messages)}}
+    except ValidationError as exc:
+        logger.error("Input: {}".format(event))
+        logger.error("Failed To Validate The Input: {}".format(exc.messages))
+        return {"statusCode": 500, "body": {"Error": exc.messages}}
 
     try:
-        logger.info("Connecting to the database")
+        logger.info("Connecting To The Database.")
         engine = db.create_engine(database)
         session = Session(engine)
         metadata = db.MetaData()
 
     except db.exc.NoSuchModuleError as exc:
-        logger.error("Error: Failed to connect to the database(driver error): {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
+        logger.error("Driver Error, Failed To Connect: {}".format(exc))
+        return {"statusCode": 500,
+                "body": {"Error": "Driver Error, Failed To Connect."}}
     except db.exc.OperationalError as exc:
-        logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
+        logger.error("Operational Error Encountered: {}".format(exc))
+        return {"statusCode": 500,
+                "body": {"Error": "Operational Error, Failed To Connect."}}
     except Exception as exc:
-        logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
+        logger.error("Failed To Connect To The Database: {}".format(exc))
+        return {"statusCode": 500,
+                "body": {"Error": "Failed To Connect To The Database."}}
 
     current_time = str(datetime.now())
 
     try:
-        logger.info("Retrieving table model")
-        table_model = alchemy_functions.table_model(engine, metadata, 'contributor_survey_period')
-        logger.info("Updating Table")
+        logger.info("Fetching Table Model: {}"
+                    .format("contributor_survey_period"))
+        table_model = alchemy_functions.table_model(
+            engine, metadata, 'contributor_survey_period')
+
+        logger.info("Building SQL Statement: {}"
+                    .format("contributor_survey_period"))
         statement = db.update(table_model).\
             values(additional_comments=event['additional_comments'],
                    contributor_comments=event['contributor_comments'],
                    last_updated=current_time).\
-            where(db.and_(table_model.columns.survey_period == event['survey_period'],
-                          table_model.columns.survey_code == event['survey_code'],
-                          table_model.columns.ru_reference == event['ru_reference']))
+            where(db.and_(
+             table_model.columns.survey_period == event['survey_period'],
+             table_model.columns.survey_code == event['survey_code'],
+             table_model.columns.ru_reference == event['ru_reference']))
 
+        logger.info("Updating Table: {}".format("contributor_survey_period"))
         alchemy_functions.update(statement, session)
 
     except db.exc.OperationalError as exc:
-        logger.error("Error updating the database.{}".format(type(exc)))
-        return {"statusCode": 500, "body": {"Error": "Failed to update the update_contributor table."}}
+        logger.error(
+            "Alchemy Operational Error When Updating Data: {}".format(exc))
+        return {"statusCode": 500,
+                "body": {"Error": "Operation Error, Failed To Update Data: {}"
+                         .format("contributor_survey_period")}}
     except Exception as exc:
-        print(exc)
-        logger.error("Error updating the database." + str(type(exc)))
-        return {"statusCode": 500, "body": {"Error": "Failed to update the update_contributor table."}}
+        logger.error("Problem Updating Data From The Table: {}".format(exc))
+        return {"statusCode": 500,
+                "body": {"Error": "Failed To Update Data: {}"
+                         .format("contributor_survey_period")}}
 
     try:
+        logger.info("Commit Session.")
         session.commit()
     except db.exc.OperationalError as exc:
-        logger.error("Error: Failed to commit changes to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Failed To Commit Changes To The Database."}}
+        logger.error("Operation Error, Failed To Commit Changes: {}"
+                     .format(exc))
+        return {"statusCode": 500,
+                "body": {"Error": "Failed To Commit Changes."}}
     except Exception as exc:
-        logger.error("Error updating the database." + str(type(exc)))
-        return {"statusCode": 500, "body": {"Error": "Failed To Update The Database."}}
+        logger.error("Failed To Commit Changes To Database: {}".format(exc))
+        return {"statusCode": 500,
+                "body": {"Error": "Failed To Commit Changes To The Database."}}
 
     try:
+        logger.info("Closing Session.")
         session.close()
     except db.exc.OperationalError as exc:
-        logger.error("Error: Failed to close connection to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"Error": "Connection To Database Closed Badly."}}
+        logger.error(
+            "Operational Error, Failed To Close The Session: {}".format(exc))
+        return {"statusCode": 500,
+                "body": {"Error": "Database Session Closed Badly."}}
     except Exception as exc:
-        logger.error("Error updating the database." + str(type(exc)))
-        return {"statusCode": 500, "body": {"Error": "Failed To Update The Database."}}
-    logger.info("Successfully completed contributor update")
-    return {"statusCode": 200, "body": {"ContributorData": "Successfully Updated The Table."}}
+        logger.error("Failed To Close The Session: {}".format(exc))
+        return {"statusCode": 500,
+                "body": {"Error": "Database Session Closed Badly."}}
 
-
-x = lambda_handler({"additional_comments": "6",  # "Hello",
-                    "contributor_comments": "666",  # "Contributor says hello!",
-                    "survey_period": "201712",  # "201712",
-                    "survey_code": "066",  # "066",
-                    "ru_reference": "77700000001"}, "")
-print(x)
+    logger.info("update_contributor Has Successfully Run.")
+    return {"statusCode": 200,
+            "body": {"Success": "Successfully Updated The Tables."}}

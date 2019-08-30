@@ -49,7 +49,8 @@ class SurveyEnrolment(Schema):
     number_of_consecutive_non_response = fields.Int(required=True)
     number_of_periods_without_queries = fields.Int(required=True)
     period_of_enrolment = fields.Str(required=True)
-    Periods = fields.Nested(CombinedContributorSurveyPeriod(many=True), required=True)
+    Periods = fields.Nested(CombinedContributorSurveyPeriod(many=True),
+                            required=True)
     Contacts = fields.Nested(CombinedContact(many=True), required=True)
 
 
@@ -75,7 +76,8 @@ class Contributor(Schema):
     sic2003 = fields.Int(required=True, allow_none=True)
     sic2007 = fields.Int(required=True, allow_none=True)
     telephone = fields.Str(required=True, allow_none=True)
-    Surveys = fields.Nested(SurveyEnrolment(many=True), required=True, allow_none=True)
+    Surveys = fields.Nested(SurveyEnrolment(many=True), required=True,
+                            allow_none=True)
 
 
 class QueryTaskUpdates(Schema):
@@ -95,7 +97,8 @@ class QueryTasks(Schema):
     task_status = fields.Str(required=True)
     next_planned_action = fields.Str(required=True, allow_none=True)
     when_action_required = fields.Date(required=True, allow_none=True)
-    QueryTaskUpdates = fields.Nested(QueryTaskUpdates(many=True), required=True, allow_none=True)
+    QueryTaskUpdates = fields.Nested(QueryTaskUpdates(many=True),
+                                     required=True, allow_none=True)
 
 
 class CombinedVETs(Schema):
@@ -117,7 +120,8 @@ class Anomalies(Schema):
     step = fields.Str(required=True)
     survey_code = fields.Str(required=True)
     anomaly_description = fields.Str(required=True)
-    FailedVETs = fields.Nested(CombinedVETs(many=True), required=True, allow_none=True)
+    FailedVETs = fields.Nested(CombinedVETs(many=True), required=True,
+                               allow_none=True)
 
 
 class Exceptions(Schema):
@@ -150,7 +154,8 @@ class Query(Schema):
     raised_by = fields.Str(required=True)
     results_state = fields.Str(required=True, allow_none=True)
     target_resolution_date = fields.Date(required=True, allow_none=True)
-    Exceptions = fields.Nested(Exceptions(many=True), required=True, allow_none=True)
+    Exceptions = fields.Nested(Exceptions(many=True), required=True,
+                               allow_none=True)
     QueryTasks = fields.Nested(QueryTasks(many=True), required=True)
 
 

@@ -14,7 +14,8 @@ logger = logging.getLogger("get_query_dashboard")
 
 # Same as findQuery but with one extra return key/value pair.
 def lambda_handler(event, context):
-    """Collects data on a passed in References from eight tables and combines them into a single Json.
+    """Collects data on a passed in References from eight tables and combines
+    them into a single Json.
     Parameters:
       event (Dict):A series of key value pairs used in the search.
     Returns:
@@ -33,8 +34,8 @@ def lambda_handler(event, context):
         io_validation.QuerySearch(strict=True).load(event)
     except ValidationError as exc:
         logger.error("Input: {}".format(event))
-        logger.error("Failed To Validate The Output: {}".format(exc.messages))
-        return {"statusCode": 500, "body": exc.messages}
+        logger.error("Failed To Validate The Input: {}".format(exc.messages))
+        return {"statusCode": 500, "body": {"Error": exc.messages}}
 
     search_list = ['query_reference',
                    'survey_period',
@@ -160,7 +161,7 @@ def lambda_handler(event, context):
         except db.exc.OperationalError as exc:
             logger.error(
                 "Alchemy Operational Error When Retrieving Data: {}"
-                    .format(exc))
+                .format(exc))
             return {"statusCode": 500,
                     "body": {
                         "Error": "Operation Error, Failed To Retrieve Data."}}
@@ -273,7 +274,7 @@ def lambda_handler(event, context):
     except ValidationError as exc:
         logger.error("Output: {}".format(out_json))
         logger.error("Failed To Validate The Output: {}".format(exc.messages))
-        return {"statusCode": 500, "body": exc.messages}
+        return {"statusCode": 500, "body": {"Error": exc.messages}}
 
     logger.info("get_query_dashboard Has Successfully Run.")
     return {"statusCode": 200, "body": json.loads(out_json)}
