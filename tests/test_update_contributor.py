@@ -101,7 +101,8 @@ class TestUpdateContributor(unittest.TestCase):
     def test_commit_fail(self, mock_create_engine, mock_update,
                          mock_alchemy_funks):
         with mock.patch.dict(
-                update_contributor.os.environ, {"Database_Location": "Djibouti"}
+                update_contributor.os.environ,
+                {"Database_Location": "Djibouti"}
         ):
             with mock.patch("update_contributor.Session") as mock_sesh:
                 mock_session = AlchemyMagicMock()
@@ -129,7 +130,8 @@ class TestUpdateContributor(unittest.TestCase):
     def test_close_fail(self, mock_create_engine, mock_update,
                         mock_alchemy_funks):
         with mock.patch.dict(
-                update_contributor.os.environ, {"Database_Location": "Djibouti"}
+                update_contributor.os.environ,
+                {"Database_Location": "Djibouti"}
         ):
             with mock.patch("update_contributor.Session") as mock_sesh:
                 mock_session = AlchemyMagicMock()
