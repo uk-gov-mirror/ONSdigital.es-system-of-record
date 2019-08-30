@@ -13,7 +13,8 @@ logger = logging.getLogger("update_contributor")
 def lambda_handler(event, context):
     """Takes a contributor dictonary and updates the comments.
     Parameters:
-      event (Dict):A series of key value pairs with the related comments to be added.
+      event (Dict):A series of key value pairs with the related comments to be
+      added.
     Returns:
       Json message reporting the success of the update.
     """
@@ -28,14 +29,13 @@ def lambda_handler(event, context):
 
     try:
         io_validation.ContributorUpdate(strict=True).load(event)
-
     except ValidationError as exc:
         logger.error("Input: {}".format(event))
         logger.error("Failed To Validate The Input: {}".format(exc.messages))
         return {"statusCode": 500, "body": {"Error": exc.messages}}
 
     try:
-        logger.info("Connecting to the database")
+        logger.info("Connecting To The Database.")
         engine = db.create_engine(database)
         session = Session(engine)
         metadata = db.MetaData()
@@ -56,16 +56,22 @@ def lambda_handler(event, context):
     current_time = str(datetime.now())
 
     try:
-        logger.info("Fetching Table Model: {}".format("contributor_survey_period"))
-        table_model = alchemy_functions.table_model(engine, metadata, 'contributor_survey_period')
-        logger.info("Building SQL Statement: {}".format("contributor_survey_period"))
+        logger.info("Fetching Table Model: {}"
+                    .format("contributor_survey_period"))
+        table_model = alchemy_functions.table_model(
+            engine, metadata, 'contributor_survey_period')
+
+        logger.info("Building SQL Statement: {}"
+                    .format("contributor_survey_period"))
         statement = db.update(table_model).\
             values(additional_comments=event['additional_comments'],
                    contributor_comments=event['contributor_comments'],
                    last_updated=current_time).\
-            where(db.and_(table_model.columns.survey_period == event['survey_period'],
-                          table_model.columns.survey_code == event['survey_code'],
-                          table_model.columns.ru_reference == event['ru_reference']))
+            where(db.and_(
+             table_model.columns.survey_period == event['survey_period'],
+             table_model.columns.survey_code == event['survey_code'],
+             table_model.columns.ru_reference == event['ru_reference']))
+
         logger.info("Updating Table: {}".format("contributor_survey_period"))
         alchemy_functions.update(statement, session)
 
@@ -78,9 +84,11 @@ def lambda_handler(event, context):
     except Exception as exc:
         logger.error("Problem Updating Data From The Table: {}".format(exc))
         return {"statusCode": 500,
-                "body": {"Error": "Failed To Update Data: {}".format("contributor_survey_period")}}
+                "body": {"Error": "Failed To Update Data: {}"
+                         .format("contributor_survey_period")}}
 
     try:
+        logger.info("Commit Session.")
         session.commit()
     except db.exc.OperationalError as exc:
         logger.error("Operation Error, Failed To Commit Changes: {}"
@@ -93,6 +101,7 @@ def lambda_handler(event, context):
                 "body": {"Error": "Failed To Commit Changes To The Database."}}
 
     try:
+        logger.info("Closing Session.")
         session.close()
     except db.exc.OperationalError as exc:
         logger.error(

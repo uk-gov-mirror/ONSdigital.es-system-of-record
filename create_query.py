@@ -311,6 +311,7 @@ def lambda_handler(event, context):
                          .format("query_task")}}
 
     try:
+        logger.info("Commit Session.")
         session.commit()
     except db.exc.OperationalError as exc:
         logger.error("Operation Error, Failed To Commit Changes: {}"

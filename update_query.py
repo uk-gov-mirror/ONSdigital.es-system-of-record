@@ -290,9 +290,9 @@ def lambda_handler(event, context):
                 except Exception as exc:
                     logger.error(
                         "Problem Updating Data From The Table: {}".format(exc))
-                return {"statusCode": 500,
-                        "body": {"Error": "Failed To Update Data: {}"
-                                 .format("query_task_update")}}
+                    return {"statusCode": 500,
+                            "body": {"Error": "Failed To Update Data: {}"
+                                     .format("query_task_update")}}
     except db.exc.OperationalError as exc:
         logger.error("Alchemy Operational Error When Updating Data: {}"
                      .format(exc))
@@ -306,6 +306,7 @@ def lambda_handler(event, context):
                          .format("query_task")}}
 
     try:
+        logger.info("Commit Session.")
         session.commit()
     except db.exc.OperationalError as exc:
         logger.error("Operation Error, Failed To Commit Changes: {}"
