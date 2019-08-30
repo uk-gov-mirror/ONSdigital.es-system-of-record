@@ -78,7 +78,7 @@ class TestUpdateContributor(unittest.TestCase):
     def test_update_contributor_fail(self, mock_create_engine,
                                      mock_alchemy_funcs):
         with mock.patch.dict(
-            update_contributor.os.environ, {"Database_Location": "sweden"}
+            update_contributor.os.environ, {"Database_Location": "Djibouti"}
         ):
             with mock.patch("update_contributor.db.update") as mock_update:
                 mock_update.side_effect =\
@@ -101,7 +101,7 @@ class TestUpdateContributor(unittest.TestCase):
     def test_commit_fail(self, mock_create_engine, mock_update,
                          mock_alchemy_funks):
         with mock.patch.dict(
-                update_contributor.os.environ, {"Database_Location": "sweden"}
+                update_contributor.os.environ, {"Database_Location": "Djibouti"}
         ):
             with mock.patch("update_contributor.Session") as mock_sesh:
                 mock_session = AlchemyMagicMock()
@@ -120,8 +120,8 @@ class TestUpdateContributor(unittest.TestCase):
                      "survey_code": "066",  # "066",
                      "ru_reference": "77700000001"}, "")
 
-                assert (x["statusCode"] == 500)
-                assert ("Failed To Commit Changes" in x['body']['Error'])
+        assert (x["statusCode"] == 500)
+        assert ("Failed To Commit Changes" in x['body']['Error'])
 
     @mock.patch("update_contributor.db.create_engine")
     @mock.patch("update_contributor.db.update")
@@ -129,7 +129,7 @@ class TestUpdateContributor(unittest.TestCase):
     def test_close_fail(self, mock_create_engine, mock_update,
                         mock_alchemy_funks):
         with mock.patch.dict(
-                update_contributor.os.environ, {"Database_Location": "sweden"}
+                update_contributor.os.environ, {"Database_Location": "Djibouti"}
         ):
             with mock.patch("update_contributor.Session") as mock_sesh:
                 mock_session = AlchemyMagicMock()
@@ -147,8 +147,6 @@ class TestUpdateContributor(unittest.TestCase):
                      "survey_period": "201712",  # "201712",
                      "survey_code": "066",  # "066",
                      "ru_reference": "77700000001"}, "")
-
-                print(x)
 
                 assert (x["statusCode"] == 500)
                 assert ("Database Session Closed Badly." in x['body']['Error'])

@@ -18,12 +18,16 @@ def lambda_handler(event, context):
     Returns:
       Json message reporting the success of the update.
     """
-    database = os.environ['Database_Location']
+    database = os.environ.get('Database_Location', None)
+    if database is None:
+        logger.error("Database_Location env not set")
+        return {"statusCode": 500, "body": "Should say something else"}
 
     try:
         io_validation.SurveyPeriod(strict=True).load(event)
     except ValidationError as err:
-        return err.messages
+        print(err)
+        return {"statusCode": 500, "body": {"Error": "Configuration error"}}
 
     try:
         engine = db.create_engine(database)
@@ -31,13 +35,13 @@ def lambda_handler(event, context):
         metadata = db.MetaData()
     except db.exc.NoSuchModuleError as exc:
         logger.error("Error: Failed to connect to the database(driver error): {}".format(exc))
-        return {"statusCode": 500, "body": {"ContributorData": "Failed To Connect To Database." + str(type(exc))}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database." + str(type(exc))}}
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"QueryTypes": "Failed To Connect To Database."}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database."}}
     except Exception as exc:
         logger.error("Error: Failed to connect to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"QueryTypes": "Failed To Connect To Database."}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Connect To Database."}}
 
     try:
         logger.info("Retrieving table model(survey_period)")
@@ -56,30 +60,30 @@ def lambda_handler(event, context):
         alchemy_functions.update(statement, session)
     except db.exc.OperationalError as exc:
         logger.error("Error updating the database." + str(type(exc)))
-        return {"statusCode": 500, "body": {"SurveyPeriod": "Failed To Update Survey_Period."}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Update Survey_Period."}}
     except Exception as exc:
         logger.error("Error updating the database." + str(type(exc)))
-        return {"statusCode": 500, "body": {"SurveyPeriod": "Failed To Update Survey_Period."}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Update Survey_Period."}}
 
     try:
         session.commit()
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to commit changes to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"SurveyPeriod": "Failed To Commit Changes To The Database."}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Commit Changes To The Database."}}
     except Exception as exc:
         logger.error("Error: Failed to commit changes to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"SurveyPeriod": "Failed To Commit Changes To The Database."}}
+        return {"statusCode": 500, "body": {"Error": "Failed To Commit Changes To The Database."}}
 
     try:
         session.close()
     except db.exc.OperationalError as exc:
         logger.error("Error: Failed to close connection to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"SurveyPeriod": "Connection To Database Closed Badly."}}
+        return {"statusCode": 500, "body": {"Error": "Connection To Database Closed Badly."}}
     except Exception as exc:
         logger.error("Error: Failed to close connection to the database: {}".format(exc))
-        return {"statusCode": 500, "body": {"SurveyPeriod": "Connection To Database Closed Badly."}}
+        return {"statusCode": 500, "body": {"Error": "Connection To Database Closed Badly."}}
     logger.info("Successfully survey_period update")
-    return {"statusCode": 200, "body": {"SurveyPeriod": "Successfully Updated The Table."}}
+    return {"statusCode": 200, "body": {"Success": "Successfully Updated The Table."}}
 
 
 x = lambda_handler({'active_period': True, 'number_of_responses': 2, 'number_cleared': 2,
