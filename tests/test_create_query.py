@@ -5,10 +5,9 @@ import os
 import unittest
 import unittest.mock as mock
 import sqlalchemy as db
-import sqlalchemy.exc as exc
 from alchemy_mock.mocking import AlchemyMagicMock
 
-sys.path.append(os.path.realpath(os.path.dirname(__file__)+"/.."))
+sys.path.append(os.path.realpath(os.path.dirname(__file__)+"/.."))  # noqa
 import create_query as create_query
 
 
@@ -146,7 +145,6 @@ class test_create_query(unittest.TestCase):
                 mock_therest = mock.Mock()
                 mock_therest.values.return_value.returning.return_value.on_conflict_do_nothing.return_value = "bob"
 
-                #  not sure why i need so many mock_therest, but it wont get there without it
                 mock_insert.side_effect = [mock_therest, mock_therest,
                                            mock_therest, mock_therest,
                                            mock_therest, mock_therest,
@@ -165,11 +163,6 @@ class test_create_query(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            # with mock.patch("create_query.Session") as mock_sesh:
-            #     mock_session = AlchemyMagicMock()
-            #     mock_sesh.return_value = mock_session
-            #     mock_session.commit.return_value = "potatoes"
-            #     mock_session.close.return_value = "cheese"
             with mock.patch("create_query.insert") as mock_insert:
                 mock_therest = mock.Mock()
                 mock_therest.values.return_value.returning.return_value.on_conflict_do_nothing.return_value = "bob"

@@ -104,3 +104,6 @@ def lambda_handler(event, context):
         return {"statusCode": 500,
                 "body": {"Error": "Database Session Closed Badly."}}
 
+    logger.info("update_contributor Has Successfully Run.")
+    return {"statusCode": 200,
+            "body": {"Success": "Successfully Updated The Tables."}}
