@@ -39,6 +39,13 @@ def select(select_sql, session):
     return table_dataframe
 
 
+def to_df(table_data):
+    table_dataframe = pd.DataFrame(table_data)
+    if not table_dataframe.empty:
+        table_dataframe.columns = table_data[0].keys()
+    return table_dataframe
+
+
 def update(update_sql, session):
     """Updates or Inserts all rows into a table based on a prebuilt statement.
     Parameters:
