@@ -8,7 +8,10 @@ from sqlalchemy.orm import Session
 
 import alchemy_functions
 import io_validation
-
+import pandas as pd
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 1000)
 logger = logging.getLogger("get_contributor")
 
 
@@ -69,17 +72,23 @@ def lambda_handler(event, context):
 
             logger.info("Building SQL Statement: {}".format(current_table))
             statement = session.query(table_model)\
-                .filter(table_model.ru_reference == ref).all()
+                .filter(table_model.columns.ru_reference == ref).all()
 
             if current_table == "survey_contact":
-                statement = session.query(table_model).join("contact")\
-                    .filter(table_model.ru_reference == ref).all()
+                other_model = alchemy_functions.table_model(engine, metadata, "contact")
+                statement = session.query(table_model, other_model)\
+                    .join(other_model, table_model.columns.contact_reference == other_model.columns.contact_reference)\
+                    .filter(table_model.columns.ru_reference == ref).all()
             elif current_table == "contributor_survey_period":
-                statement = session.query(table_model).join("survey_period1")\
-                    .filter(table_model.ru_reference == ref).all()
+                other_model = alchemy_functions.table_model(engine, metadata, "survey_period")
+                statement = session.query(table_model, other_model)\
+                    .join(other_model, db.and_(table_model.columns.survey_code == other_model.columns.survey_code,
+                          table_model.columns.survey_period == other_model.columns.survey_period))\
+                    .filter(table_model.columns.ru_reference == ref).all()
 
             logger.info("Fetching Table Data: {}".format(current_table))
-            table_data = alchemy_functions.to_df(statement)
+            df = alchemy_functions.to_df(statement)
+            table_data = df.loc[:, ~df.columns.duplicated()]
             table_list[current_table] = table_data
     except db.exc.OperationalError as exc:
         logger.error(
