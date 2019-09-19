@@ -14,7 +14,7 @@ import get_query as get_query  # noqa: 402
 class TestGetQuery(unittest.TestCase):
 
     @mock.patch("get_query.db.create_engine")
-    @mock.patch("get_query.db.select")
+    @mock.patch("get_query.Session.query")
     def test_lambda_handler_happy_path(self, mock_create_engine, mock_select):
 
         with mock.patch.dict(
@@ -24,7 +24,7 @@ class TestGetQuery(unittest.TestCase):
                     as mock_alchemy_functions:
                 mock_alchemy_functions.return_value\
                     .table_model.return_value = 'I Am A Table'
-                mock_alchemy_functions.select.side_effect = [
+                mock_alchemy_functions.to_df.side_effect = [
                     pd.DataFrame({"query_reference": [123456],
                                   "ru_reference": ["xxxxx"],
                                   "survey_code": ["xxxx"],
@@ -85,7 +85,7 @@ class TestGetQuery(unittest.TestCase):
                 assert ("Queries" in x['body'])
 
     @mock.patch("get_query.db.create_engine")
-    @mock.patch("get_query.db.select")
+    @mock.patch("get_query.Session.query")
     @mock.patch("get_query.alchemy_functions")
     def test_lambda_handler_select_fail(self, mock_create_engine, mock_select,
                                         mock_alchemy_functions):
@@ -100,7 +100,7 @@ class TestGetQuery(unittest.TestCase):
             assert ("Failed To Retrieve Data." in x['body']['Error'])
 
     @mock.patch("get_query.db.create_engine")
-    @mock.patch("get_query.db.select")
+    @mock.patch("get_query.Session.query")
     def test_lambda_handler_output_error(self, mock_create_engine,
                                          mock_select):
 
@@ -109,7 +109,7 @@ class TestGetQuery(unittest.TestCase):
         ):
             with mock.patch("get_query.alchemy_functions")\
                     as mock_alchemy_functions:
-                mock_alchemy_functions.select.side_effect = [
+                mock_alchemy_functions.to_df.side_effect = [
                     pd.DataFrame({"query_reference": [0],
                                   "ru_reference": ["1"],
                                   "survey_period": ["2"],
@@ -144,7 +144,7 @@ class TestGetQuery(unittest.TestCase):
         assert ("Failed To Connect" in str(x['body']['Error']))
 
     @mock.patch("get_query.db.create_engine")
-    @mock.patch("get_query.db.select")
+    @mock.patch("get_query.Session.query")
     @mock.patch("get_query.alchemy_functions")
     def test_lambda_handler_connection_close(self, mock_create_engine,
                                              mock_select,

@@ -65,8 +65,8 @@ def lambda_handler(event, context):
         logger.info("Fetching Table Model: {}".format("query"))
         table_model = alchemy_functions.table_model(engine, metadata, "query")
 
-        logger.info("Building SQL Statement: {}".format("query"))
-        all_query_sql = db.select([table_model])
+        logger.info("Fetching Table Data: {}".format("query"))
+        all_query_sql = session.query(table_model)
 
         added_query_sql = 0
 
@@ -77,15 +77,15 @@ def lambda_handler(event, context):
                 continue
 
             added_query_sql += 1
-            all_query_sql = all_query_sql.where(getattr(
+            all_query_sql = all_query_sql.filter(getattr(
                 table_model.columns, criteria) == event[criteria])
 
         if added_query_sql == 0:
-            all_query_sql = all_query_sql.where(
+            all_query_sql = all_query_sql.filter(
                 table_model.columns.query_status == 'Open')
 
-        logger.info("Fetching Table Data: {}".format("query"))
-        query = alchemy_functions.select(all_query_sql, session)
+        logger.info("Converting Data: {}".format("query"))
+        query = alchemy_functions.to_df(all_query_sql)
 
     except db.exc.OperationalError as exc:
         logger.error(
@@ -124,32 +124,26 @@ def lambda_handler(event, context):
                 table_model = alchemy_functions.table_model(engine, metadata,
                                                             current_table)
 
-                logger.info("Building SQL Statement: {}".format(current_table))
-                if (current_table == 'step_exception') or\
-                        (current_table == 'query_task') or\
-                        (current_table == 'query_task_update'):
-                    statement = db.select([table_model]).where(
+                logger.info("Fetching Table Data: {}".format(current_table))
+                if current_table in ['step_exception', 'query_task', 'query_task_update']:
+                    statement = session.query(table_model).filter(
                         table_model.columns.query_reference == ref)
                 elif current_table == "failed_vet":
                     other_model = alchemy_functions.table_model(
                         engine, metadata, "vet")
-                    statement = db.select(
-                        [table_model, other_model.columns.vet_description]).\
-                        where(
+                    statement = session.query(table_model, other_model)\
+                        .filter(
                         db.and_(table_model.columns.survey_period == period,
                                 table_model.columns.survey_code == survey,
-                                table_model.columns.ru_reference == ru,
-                                table_model.columns.failed_vet ==
-                                other_model.columns.vet_code))
+                                table_model.columns.ru_reference == ru))
                 else:
-                    statement = db.select([table_model]).where(
+                    statement = session.query(table_model).filter(
                         db.and_(table_model.columns.survey_period == period,
                                 table_model.columns.survey_code == survey,
                                 table_model.columns.ru_reference == ru))
 
-                logger.info("Fetching Table Data: {}".format(current_table))
-                table_data = alchemy_functions.select(statement, session)
-                table_list[current_table] = table_data
+                logger.info("Converting Data: {}".format(current_table))
+                table_list[current_table] = alchemy_functions.to_df(statement)
 
         except db.exc.OperationalError as exc:
             logger.error(
