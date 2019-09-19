@@ -58,21 +58,20 @@ def lambda_handler(event, context):
         table_model = alchemy_functions.table_model(
             engine, metadata, 'survey_period')
 
-        logger.info("Building SQL Statement: {}".format("survey_period"))
-        statement = db.update(table_model).\
-            values(
-            active_period=event['active_period'],
-            number_of_responses=event['number_of_responses'],
-            number_cleared=event['number_cleared'],
-            number_cleared_first_time=event['number_cleared_first_time'],
-            sample_size=event['sample_size']).\
-            where(db.and_(table_model.columns.survey_period ==
-                  event['survey_period'],
-                  table_model.columns.survey_code ==
-                  event['survey_code']))
-
         logger.info("Updating Table: {}".format("survey_period"))
-        alchemy_functions.update(statement, session)
+        session.query(table_model).filter(db.and_(
+            table_model.columns.survey_period == event['survey_period'],
+            table_model.columns.survey_code == event['survey_code']))\
+            .update({
+                table_model.columns.active_period: event['active_period'],
+                table_model.columns.number_of_responses:
+                    event['number_of_responses'],
+                table_model.columns.number_cleared: event['number_cleared'],
+                table_model.columns.number_cleared_first_time:
+                    event['number_cleared_first_time'],
+                table_model.columns.sample_size: event['sample_size']},
+                    synchronize_session=False)
+
     except db.exc.OperationalError as exc:
         logger.error(
             "Alchemy Operational Error When Updating Data: {}".format(exc))

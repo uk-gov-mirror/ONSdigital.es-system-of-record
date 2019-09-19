@@ -12,7 +12,7 @@ import update_survey_period as update_survey_period  # noqa: 402
 
 class TestUpdateSurveyPeriod(unittest.TestCase):
     @mock.patch("update_survey_period.db.create_engine")
-    @mock.patch("update_survey_period.db.update")
+    @mock.patch("update_survey_period.Session.query")
     @mock.patch("update_survey_period.alchemy_functions")
     def test_lambda_handler_happy_path(self, mock_create_engine, mock_update,
                                        mock_alchemy_funks):
@@ -79,7 +79,8 @@ class TestUpdateSurveyPeriod(unittest.TestCase):
             update_survey_period.os.environ,
                 {"Database_Location": "Djibouti"}
         ):
-            with mock.patch("update_survey_period.db.update") as mock_update:
+            with mock.patch("update_survey_period.Session.query")\
+                    as mock_update:
                 mock_update.side_effect =\
                     db.exc.OperationalError("Side effect in full effect",
                                             "", "")
@@ -94,7 +95,7 @@ class TestUpdateSurveyPeriod(unittest.TestCase):
         assert ("Failed To Update Data: survey_period" in x['body']['Error'])
 
     @mock.patch("update_survey_period.db.create_engine")
-    @mock.patch("update_survey_period.db.update")
+    @mock.patch("update_survey_period.Session.query")
     @mock.patch("update_survey_period.alchemy_functions")
     def test_commit_fail(self, mock_create_engine, mock_update,
                          mock_alchemy_funks):
@@ -122,7 +123,7 @@ class TestUpdateSurveyPeriod(unittest.TestCase):
         assert ("Failed To Commit Changes" in x['body']['Error'])
 
     @mock.patch("update_survey_period.db.create_engine")
-    @mock.patch("update_survey_period.db.update")
+    @mock.patch("update_survey_period.Session.query")
     @mock.patch("update_survey_period.alchemy_functions")
     def test_close_fail(self, mock_create_engine, mock_update,
                         mock_alchemy_funks):
