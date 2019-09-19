@@ -43,6 +43,7 @@ def to_df(table_data):
     table_dataframe = pd.DataFrame(table_data)
     if not table_dataframe.empty:
         table_dataframe.columns = table_data[0].keys()
+    table_dataframe = table_dataframe.loc[:, ~table_dataframe.columns.duplicated()]
     return table_dataframe
 
 

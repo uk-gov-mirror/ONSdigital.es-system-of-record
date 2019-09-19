@@ -62,34 +62,26 @@ def lambda_handler(event, context):
     try:
         table_list = {'contributor': None,
                       'survey_enrolment': None,
-                      'survey_contact': None,
-                      'contributor_survey_period': None}
+                      'survey_contact': "contact",
+                      'contributor_survey_period': "survey_period"}
 
         for current_table in table_list:
             logger.info("Fetching Table Model: {}".format(current_table))
             table_model = alchemy_functions.table_model(engine, metadata,
                                                         current_table)
 
-            logger.info("Building SQL Statement: {}".format(current_table))
-            statement = session.query(table_model)\
-                .filter(table_model.columns.ru_reference == ref).all()
-
-            if current_table == "survey_contact":
-                other_model = alchemy_functions.table_model(engine, metadata, "contact")
-                statement = session.query(table_model, other_model)\
-                    .join(other_model, table_model.columns.contact_reference == other_model.columns.contact_reference)\
-                    .filter(table_model.columns.ru_reference == ref).all()
-            elif current_table == "contributor_survey_period":
-                other_model = alchemy_functions.table_model(engine, metadata, "survey_period")
-                statement = session.query(table_model, other_model)\
-                    .join(other_model, db.and_(table_model.columns.survey_code == other_model.columns.survey_code,
-                          table_model.columns.survey_period == other_model.columns.survey_period))\
-                    .filter(table_model.columns.ru_reference == ref).all()
-
             logger.info("Fetching Table Data: {}".format(current_table))
-            df = alchemy_functions.to_df(statement)
-            table_data = df.loc[:, ~df.columns.duplicated()]
-            table_list[current_table] = table_data
+            if current_table in ["survey_contact", "contributor_survey_period"]:
+                other_model = alchemy_functions.table_model(engine, metadata, table_list[current_table])
+                statement = session.query(table_model, other_model)\
+                    .join(other_model)\
+                    .filter(table_model.columns.ru_reference == ref).all()
+            else:
+                statement = session.query(table_model)\
+                    .filter(table_model.columns.ru_reference == ref).all()
+
+            logger.info("Converting Data: {}".format(current_table))
+            table_list[current_table] = alchemy_functions.to_df(statement)
     except db.exc.OperationalError as exc:
         logger.error(
             "Alchemy Operational Error When Retrieving Data: {}".format(exc))
@@ -156,3 +148,6 @@ def lambda_handler(event, context):
 
     logger.info("get_contributor Has Successfully Run.")
     return {"statusCode": 200, "body": json.loads(out_json)}
+
+
+lambda_handler({"ru_reference": "77700000001"}, "")

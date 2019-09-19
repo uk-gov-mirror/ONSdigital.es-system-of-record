@@ -53,10 +53,10 @@ def lambda_handler(event, context):
             table_model = alchemy_functions.table_model(engine, metadata,
                                                         current_table)
 
-            logger.info("Building SQL Statement: {}".format(current_table))
+            logger.info("Fetching Table Data: {}".format(current_table))
             statement = session.query(table_model).all()
 
-            logger.info("Fetching Table Data: {}".format(current_table))
+            logger.info("Converting Data: {}".format(current_table))
             table_data = alchemy_functions.to_df(statement)
             table_list[current_table] = table_data
     except db.exc.OperationalError as exc:
