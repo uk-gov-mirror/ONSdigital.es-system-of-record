@@ -71,7 +71,8 @@ def lambda_handler(event, context):
 
         logger.info("Building SQL Statement: {}".format("Combined Tables"))
         all_query_sql = session.query(table_model, other_model)\
-            .join(other_model, table_model.columns.ru_reference == other_model.columns.ru_reference)
+            .join(other_model, table_model.columns.ru_reference ==
+                  other_model.columns.ru_reference)
 
         added_query_sql = 0
 
@@ -130,7 +131,8 @@ def lambda_handler(event, context):
                                                             current_table)
 
                 logger.info("Fetching Table Data: {}".format(current_table))
-                if current_table in ['step_exception', 'query_task', 'query_task_update']:
+                if current_table in ['step_exception', 'query_task',
+                                     'query_task_update']:
                     statement = session.query(table_model).filter(
                         table_model.columns.query_reference == ref)
                 elif current_table == "failed_vet":

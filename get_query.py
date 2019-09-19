@@ -125,7 +125,8 @@ def lambda_handler(event, context):
                                                             current_table)
 
                 logger.info("Fetching Table Data: {}".format(current_table))
-                if current_table in ['step_exception', 'query_task', 'query_task_update']:
+                if current_table in ['step_exception', 'query_task',
+                                     'query_task_update']:
                     statement = session.query(table_model).filter(
                         table_model.columns.query_reference == ref)
                 elif current_table == "failed_vet":

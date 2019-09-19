@@ -123,10 +123,10 @@ class TestGetContributor(unittest.TestCase):
             with mock.patch("get_contributor.alchemy_functions")\
                     as mock_alchemy_functions:
                 mock_alchemy_functions.to_df.side_effect = [pd.DataFrame({}),
-                                                             pd.DataFrame({}),
-                                                             pd.DataFrame({}),
-                                                             pd.DataFrame({}),
-                                                             pd.DataFrame({})]
+                                                            pd.DataFrame({}),
+                                                            pd.DataFrame({}),
+                                                            pd.DataFrame({}),
+                                                            pd.DataFrame({})]
 
                 x = get_contributor.lambda_handler({"ru_reference": ""}, '')
                 assert(x["statusCode"] == 500)

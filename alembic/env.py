@@ -26,7 +26,6 @@ target_metadata = None
 # ... etc.
 
 
-
 def update_sqlalchemy_url_from_env():
     """
     Update sqlalchemy url based on environment params.
@@ -36,7 +35,7 @@ def update_sqlalchemy_url_from_env():
     try:
         url = url.format(**{
             k: os.environ[k] for k in (
-                "db_host", "db_user", "db_pass", "db_name") 
+                "db_host", "db_user", "db_pass", "db_name")
         })
     except KeyError as exc:
         print("Missing config for db: {}".format(exc))
@@ -44,6 +43,7 @@ def update_sqlalchemy_url_from_env():
     config.set_section_option(
         config.config_ini_section, 'sqlalchemy.url',
         url)
+
 
 def run_migrations_offline():
     """Run migrations in 'offline' mode.

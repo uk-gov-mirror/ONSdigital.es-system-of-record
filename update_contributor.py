@@ -61,19 +61,19 @@ def lambda_handler(event, context):
         table_model = alchemy_functions.table_model(
             engine, metadata, 'contributor_survey_period')
 
-        logger.info("Building SQL Statement: {}"
+        logger.info("Updating Table: {}"
                     .format("contributor_survey_period"))
-        statement = db.update(table_model).\
-            values(additional_comments=event['additional_comments'],
-                   contributor_comments=event['contributor_comments'],
-                   last_updated=current_time).\
-            where(db.and_(
+        session.query(table_model)\
+            .filter(db.and_(
              table_model.columns.survey_period == event['survey_period'],
              table_model.columns.survey_code == event['survey_code'],
-             table_model.columns.ru_reference == event['ru_reference']))
-
-        logger.info("Updating Table: {}".format("contributor_survey_period"))
-        alchemy_functions.update(statement, session)
+             table_model.columns.ru_reference == event['ru_reference']))\
+            .update({table_model.columns.additional_comments:
+                     event['additional_comments'],
+                     table_model.columns.contributor_comments:
+                     event['contributor_comments'],
+                     table_model.columns.last_updated: current_time},
+                    synchronize_session=False)
 
     except db.exc.OperationalError as exc:
         logger.error(

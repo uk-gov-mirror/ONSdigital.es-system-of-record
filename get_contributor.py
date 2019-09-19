@@ -71,8 +71,10 @@ def lambda_handler(event, context):
                                                         current_table)
 
             logger.info("Fetching Table Data: {}".format(current_table))
-            if current_table in ["survey_contact", "contributor_survey_period"]:
-                other_model = alchemy_functions.table_model(engine, metadata, table_list[current_table])
+            if current_table in ["survey_contact",
+                                 "contributor_survey_period"]:
+                other_model = alchemy_functions\
+                    .table_model(engine, metadata, table_list[current_table])
                 statement = session.query(table_model, other_model)\
                     .join(other_model)\
                     .filter(table_model.columns.ru_reference == ref).all()

@@ -76,8 +76,8 @@ def lambda_handler(event, context):
 
             added_query_sql += 1
             all_query_sql = all_query_sql.filter(getattr(table_model.columns,
-                                                        criteria) ==
-                                                event[criteria])
+                                                         criteria) ==
+                                                 event[criteria])
 
         if added_query_sql == 0:
             all_query_sql = all_query_sql\
