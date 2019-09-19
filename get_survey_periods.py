@@ -63,8 +63,8 @@ def lambda_handler(event, context):
         table_model = alchemy_functions.table_model(engine, metadata,
                                                     "survey_period")
 
-        logger.info("Building SQL Statement: {}".format("survey_period"))
-        all_query_sql = db.select([table_model])
+        logger.info("Fetching Table Data: {}".format("survey_period"))
+        all_query_sql = session.query(table_model)
 
         added_query_sql = 0
 
@@ -75,17 +75,17 @@ def lambda_handler(event, context):
                 continue
 
             added_query_sql += 1
-            all_query_sql = all_query_sql.where(getattr(table_model.columns,
+            all_query_sql = all_query_sql.filter(getattr(table_model.columns,
                                                         criteria) ==
                                                 event[criteria])
 
         if added_query_sql == 0:
             all_query_sql = all_query_sql\
-                .where(table_model.columns.survey_period == db.select(
-                       [func.max(table_model.columns.survey_period)]))
+                .filter(table_model.columns.survey_period == session.query(
+                       func.max(table_model.columns.survey_period)))
 
-        logger.info("Fetching Table Data: {}".format("survey_period"))
-        query = alchemy_functions.select(all_query_sql, session)
+        logger.info("Converting Data: {}".format("survey_period"))
+        query = alchemy_functions.to_df(all_query_sql)
     except db.exc.OperationalError as exc:
         logger.error(
             "Alchemy Operational Error When Retrieving Data: {}".format(exc))

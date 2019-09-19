@@ -14,7 +14,7 @@ import get_survey_periods as get_survey_periods  # noqa: 402
 class TestGetSurveyPeriods(unittest.TestCase):
 
     @mock.patch("get_survey_periods.db.create_engine")
-    @mock.patch("get_survey_periods.db.select")
+    @mock.patch("get_survey_periods.Session.query")
     def test_lambda_handler_happy_path(self, mock_create_engine, mock_select):
 
         with mock.patch.dict(
@@ -25,7 +25,7 @@ class TestGetSurveyPeriods(unittest.TestCase):
                     as mock_alchemy_functions:
                 mock_alchemy_functions.return_value\
                     .table_model.return_value = 'I Am A Table'
-                mock_alchemy_functions.select.side_effect = [
+                mock_alchemy_functions.to_df.side_effect = [
                     pd.DataFrame({"survey_period": ["Year"],
                                   "survey_code": ["Sand"],
                                   "active_period": [True],
@@ -41,7 +41,7 @@ class TestGetSurveyPeriods(unittest.TestCase):
                 assert ("survey_period" in x['body'][0])
 
     @mock.patch("get_survey_periods.db.create_engine")
-    @mock.patch("get_survey_periods.db.select")
+    @mock.patch("get_survey_periods.Session.query")
     @mock.patch("get_survey_periods.alchemy_functions")
     def test_lambda_handler_select_fail(self, mock_create_engine, mock_select,
                                         mock_alchemy_functions):
@@ -58,7 +58,7 @@ class TestGetSurveyPeriods(unittest.TestCase):
             assert ("Failed To Retrieve Data." in x['body']['Error'])
 
     @mock.patch("get_survey_periods.db.create_engine")
-    @mock.patch("get_survey_periods.db.select")
+    @mock.patch("get_survey_periods.Session.query")
     def test_lambda_handler_output_error(self, mock_create_engine,
                                          mock_select):
 
@@ -68,7 +68,7 @@ class TestGetSurveyPeriods(unittest.TestCase):
         ):
             with mock.patch("get_survey_periods.alchemy_functions")\
                     as mock_alchemy_functions:
-                mock_alchemy_functions.select.side_effect = [
+                mock_alchemy_functions.to_df.side_effect = [
                     pd.DataFrame({"Me": ["My"]})]
 
                 x = get_survey_periods.lambda_handler({"survey_period": "",
@@ -97,7 +97,7 @@ class TestGetSurveyPeriods(unittest.TestCase):
         assert ("Failed To Connect" in str(x['body']['Error']))
 
     @mock.patch("get_survey_periods.db.create_engine")
-    @mock.patch("get_survey_periods.db.select")
+    @mock.patch("get_survey_periods.Session.query")
     @mock.patch("get_survey_periods.alchemy_functions")
     def test_lambda_handler_connection_close(self, mock_create_engine,
                                              mock_select,
