@@ -8,10 +8,7 @@ from sqlalchemy.orm import Session
 
 import alchemy_functions
 import io_validation
-import pandas as pd
-pd.set_option('display.max_rows', 500)
-pd.set_option('display.max_columns', 500)
-pd.set_option('display.width', 1000)
+
 logger = logging.getLogger("get_contributor")
 
 

@@ -14,7 +14,7 @@ import create_query as create_query  # noqa: 402
 class TestCreateQuery(unittest.TestCase):
 
     @mock.patch("create_query.db.create_engine")
-    @mock.patch("create_query.insert")
+    @mock.patch("create_query.Session.query")
     @mock.patch("create_query.alchemy_functions")
     def test_lambda_handler_happy_path(self, mock_create_engine, mock_insert,
                                        mock_alchemy_funks):
@@ -66,7 +66,7 @@ class TestCreateQuery(unittest.TestCase):
         assert ("Failed To Connect" in str(x['body']['Error']))
 
     @mock.patch("create_query.db.create_engine")
-    @mock.patch("create_query.insert")
+    @mock.patch("create_query.Session.query")
     @mock.patch("create_query.alchemy_functions")
     def test_query_table_insert_fail(self, mock_create_engine, mock_insert,
                                      mock_alchemy_funks):
@@ -93,7 +93,7 @@ class TestCreateQuery(unittest.TestCase):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
 
-            with mock.patch("create_query.insert") as mock_insert:
+            with mock.patch("create_query.Session.query") as mock_insert:
                 mock_therest = mock.Mock()
                 mock_therest.values.return_value\
                     .returning.return_value\
@@ -117,7 +117,7 @@ class TestCreateQuery(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            with mock.patch("create_query.insert") as mock_insert:
+            with mock.patch("create_query.Session.query") as mock_insert:
                 mock_therest = mock.Mock()
                 mock_therest.values.return_value\
                     .returning.return_value\
@@ -140,7 +140,7 @@ class TestCreateQuery(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            with mock.patch("create_query.insert") as mock_insert:
+            with mock.patch("create_query.Session.query") as mock_insert:
                 mock_therest = mock.Mock()
                 mock_therest.values.return_value\
                     .returning.return_value\
@@ -164,7 +164,7 @@ class TestCreateQuery(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            with mock.patch("create_query.insert") as mock_insert:
+            with mock.patch("create_query.Session.query") as mock_insert:
                 mock_therest = mock.Mock()
 
                 mock_therest.values.return_value\
@@ -196,7 +196,7 @@ class TestCreateQuery(unittest.TestCase):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
 
-            with mock.patch("create_query.insert") as mock_insert:
+            with mock.patch("create_query.Session.query") as mock_insert:
                 mock_therest = mock.Mock()
                 mock_therest.values.return_value\
                     .returning.return_value\
@@ -218,7 +218,7 @@ class TestCreateQuery(unittest.TestCase):
                     in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
-    @mock.patch("create_query.insert")
+    @mock.patch("create_query.Session.query")
     @mock.patch("create_query.alchemy_functions")
     def test_commit_fail(self, mock_create_engine, mock_insert,
                          mock_alchemy_funks):
@@ -241,7 +241,7 @@ class TestCreateQuery(unittest.TestCase):
                 assert ("Failed To Commit" in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
-    @mock.patch("create_query.insert")
+    @mock.patch("create_query.Session.query")
     @mock.patch("create_query.alchemy_functions")
     def test_close_fail(self, mock_create_engine, mock_insert,
                         mock_alchemy_funks):
