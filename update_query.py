@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 import alchemy_functions
 import io_validation
+import db_model
 
 logger = logging.getLogger("update_query")
 
@@ -40,7 +41,7 @@ def lambda_handler(event, context):
     try:
         logger.info("Connecting To The Database.")
         engine = db.create_engine(database)
-        session = Session(engine)
+        session = Session(engine, autoflush=False)
         metadata = db.MetaData()
     except db.exc.NoSuchModuleError as exc:
         logger.error("Driver Error, Failed To Connect: {}".format(exc))
@@ -101,29 +102,18 @@ def lambda_handler(event, context):
                 logger.info("Inserting step_exception row {}".format(count))
                 logger.info("Fetching Table Model: {}"
                             .format("step_exception"))
-                table_model = alchemy_functions.table_model(
-                    engine, metadata, 'step_exception')
+                table_model = db_model.StepException
 
                 logger.info("Updating Table Data: {}".format("step_exception"))
-                session.query(table_model)\
-                    .insert({table_model.columns.query_reference:
-                            exception['query_reference'],
-                            table_model.columns.survey_period:
-                            exception['survey_period'],
-                            table_model.columns.run_id:
-                            exception['run_id'],
-                            table_model.columns.ru_reference:
-                            exception['ru_reference'],
-                            table_model.columns.step:
-                            exception['step'],
-                            table_model.columns.survey_code:
-                            exception['survey_code'],
-                            table_model.columns.error_code:
-                            exception['error_code'],
-                            table_model.columns.error_description:
-                            exception['error_description']
-                             }, synchronize_session=False)\
-                    .on_conflict_do_nothing(constraint=table_model.primary_key)
+                session.add(table_model(
+                    query_reference=exception['query_reference'],
+                    survey_period=exception['survey_period'],
+                    run_id=exception['run_id'],
+                    ru_reference=exception['ru_reference'],
+                    step=exception['step'],
+                    survey_code=exception['survey_code'],
+                    error_code=exception['error_code'],
+                    error_description=exception['error_description']))
 
                 try:
                     if "Anomalies" in exception.keys():
@@ -133,30 +123,19 @@ def lambda_handler(event, context):
                                         .format(count))
                             logger.info("Fetching Table Model: {}"
                                         .format("question_anomaly"))
-                            table_model = alchemy_functions.table_model(
-                                engine, metadata, 'question_anomaly')
+                            table_model = db_model.QuestionAnomaly
 
-                            logger.info("Updating Table Data: {}".format(
+                            logger.info("Inserting Table Data: {}".format(
                                 "question_anomaly"))
-                            session.query(table_model)\
-                                .insert({table_model.columns.survey_period:
-                                        anomaly['survey_period'],
-                                        table_model.columns.question_number:
-                                        anomaly['question_number'],
-                                        table_model.columns.run_id:
-                                        anomaly['run_id'],
-                                        table_model.columns.ru_reference:
-                                        anomaly['ru_reference'],
-                                        table_model.columns.step:
-                                        anomaly['step'],
-                                        table_model.columns.survey_code:
-                                        anomaly['survey_code'],
-                                        table_model.columns
-                                        .anomaly_description:
-                                        anomaly['anomaly_description']},
-                                        synchronize_session=False)\
-                                .on_conflict_do_nothing(
-                                constraint=table_model.primary_key)
+                            session.add(table_model(
+                                survey_period=anomaly['survey_period'],
+                                question_number=anomaly['question_number'],
+                                run_id=anomaly['run_id'],
+                                ru_reference=anomaly['ru_reference'],
+                                step=anomaly['step'],
+                                survey_code=anomaly['survey_code'],
+                                anomaly_description=
+                                anomaly['anomaly_description']))
 
                             try:
                                 if "FailedVETs" in anomaly.keys():
@@ -167,33 +146,21 @@ def lambda_handler(event, context):
                                             .format(count))
                                         logger.info("Fetching Table Model: {}"
                                                     .format("failed_vet"))
-                                        table_model = alchemy_functions\
-                                            .table_model(engine, metadata,
-                                                         'failed_vet')
+                                        table_model = db_model.FailedVET
 
                                         logger.info(
-                                            "Updating Table Data: {}".format(
+                                            "Inserting Table Data: {}".format(
                                                 "failed_vet"))
-                                        session.query(table_model)\
-                                            .insert(
-                                           {table_model.columns.failed_vet:
-                                            vets['failed_vet'],
-                                            table_model.columns.survey_period:
-                                                vets['survey_period'],
-                                            table_model.columns
-                                                .question_number:
-                                                vets['question_number'],
-                                            table_model.columns.run_id:
-                                                vets['run_id'],
-                                            table_model.columns.ru_reference:
-                                                vets['ru_reference'],
-                                            table_model.columns.step:
-                                                vets['step'],
-                                            table_model.columns.survey_code:
-                                                vets['survey_code']},
-                                           synchronize_session=False)\
-                                            .on_conflict_do_nothing(
-                                            constraint=table_model.primary_key)
+                                        session.add(table_model(
+                                            failed_vet=vets['failed_vet'],
+                                            survey_period=
+                                            vets['survey_period'],
+                                            question_number=
+                                            vets['question_number'],
+                                            run_id=vets['run_id'],
+                                            ru_reference=vets['ru_reference'],
+                                            step=vets['step'],
+                                            survey_code=vets['survey_code']))
 
                             except db.exc.OperationalError as exc:
                                 logger.error(
@@ -278,25 +245,21 @@ def lambda_handler(event, context):
                                 .format(count))
                             logger.info("Fetching Table Model: {}".format(
                                 "query_task_update"))
-                            table_model = alchemy_functions.table_model(
-                                engine, metadata, 'query_task_update')
+                            table_model = db_model.QueryTaskUpdate
 
-                            logger.info("Updating Table Data: {}"
+                            logger.info("Inserting Table Data: {}"
                                         .format("query_task_update"))
-                            session.query(table_model).insert({
-                                table_model.columns.task_sequence_number:
-                                    query_task['task_sequence_number'],
-                                table_model.columns.query_reference:
-                                    query_task['query_reference'],
-                                table_model.columns.last_updated:
-                                    query_task['last_updated'],
-                                table_model.columns.task_update_description:
-                                    query_task['task_update_description'],
-                                table_model.columns.updated_by:
-                                    query_task['updated_by']},
-                                synchronize_session=False)\
-                                .on_conflict_do_nothing(
-                                constraint=table_model.primary_key)
+                            session.add(table_model(
+                                task_sequence_number=
+                                query_task['task_sequence_number'],
+                                query_reference=
+                                query_task['query_reference'],
+                                last_updated=
+                                query_task['last_updated'],
+                                task_update_description=
+                                query_task['task_update_description'],
+                                updated_by=
+                                query_task['updated_by']))
 
                 except db.exc.OperationalError as exc:
                     logger.error(
@@ -353,3 +316,107 @@ def lambda_handler(event, context):
     logger.info("update_query Has Successfully Run.")
     return {"statusCode": 200,
             "body": {"Success": "Successfully Updated The Tables."}}
+
+
+lambda_handler({
+  "industry_group": "Con",
+  "query_active": False,
+  "query_description": "Validation Exception Test",
+  "current_period": "200001",
+  "survey_period": "201803",
+  "ru_reference": "77700000002",
+  "query_reference": 5,
+  "last_query_update": "2018-01-01",
+  "QueryTasks": [
+    {
+      "task_sequence_number": 1,
+      "task_description": "Clerical Investigation",
+      "task_status": "Open",
+      "query_reference": 5,
+      "response_required_by": "2019-07-11",
+      "QueryTaskUpdates": [
+        {
+          "task_sequence_number": 1,
+          "query_reference": 5,
+          "updated_by": "Us",
+          "last_updated": "2019-07-11",
+          "task_update_description": "Test"
+        }
+      ],
+      "when_action_required": "2019-07-11",
+      "next_planned_action": "2017-03-01",
+      "task_responsibility": "BMI Survey Team"
+    }
+  ],
+  "results_state": "Not Run",
+  "date_raised": "2019-07-11",
+  "query_status": "open",
+  "target_resolution_date": "2019-07-11",
+  "survey_code": "066",
+  "Exceptions": [
+    {
+      "error_description": "Desc",
+      "query_reference": 5,
+      "survey_period": "201803",
+      "survey_code": "066",
+      "step": "Vets",
+      "run_id": 1,
+      "ru_reference": "77700000002",
+      "error_code": "01",
+      "Anomalies": [
+        {
+          "survey_period": "201803",
+          "question_number": "602",
+          "survey_code": "066",
+          "anomaly_description": "Desc Question",
+          "FailedVETs": [
+            {
+              "survey_period": "201803",
+              "question_number": "602",
+              "failed_vet": 1,
+              "survey_code": "066",
+              "step": "Vets",
+              "run_id": 1,
+              "ru_reference": "77700000002"
+            },
+            {
+              "survey_period": "201803",
+              "question_number": "602",
+              "failed_vet": 1,
+              "survey_code": "066",
+              "step": "Vets",
+              "run_id": 1,
+              "ru_reference": "77700000002"
+            }
+          ],
+          "step": "Vets",
+          "run_id": 1,
+          "ru_reference": "77700000002"
+        },
+        {
+          "survey_period": "201803",
+          "question_number": "601",
+          "survey_code": "066",
+          "anomaly_description": "Desc Question",
+          "FailedVETs": [
+            {
+              "survey_period": "201803",
+              "question_number": "601",
+              "failed_vet": 1,
+              "survey_code": "066",
+              "step": "Vets",
+              "run_id": 1,
+              "ru_reference": "77700000002"
+            }
+          ],
+          "step": "Vets",
+          "run_id": 1,
+          "ru_reference": "77700000002"
+        }
+      ]
+    }
+  ],
+  "general_specific_flag": False,
+  "raised_by": "System Generated",
+  "query_type": "Data Cleaning"
+}, "")

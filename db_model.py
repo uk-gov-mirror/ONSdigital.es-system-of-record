@@ -303,24 +303,26 @@ class QuestionAnomaly(Base):
     step_exception = relationship('StepException')
 
 
-t_failed_vet = Table(
-    'failed_vet', metadata,
-    Column('failed_vet', ForeignKey('es_db_test.vet.vet_code'),
-           primary_key=True, nullable=False),
-    Column('survey_period', String(6), primary_key=True, nullable=False),
-    Column('question_number', String(4), primary_key=True, nullable=False),
-    Column('run_id', Integer, primary_key=True, nullable=False),
-    Column('ru_reference', String(11), primary_key=True, nullable=False),
-    Column('step', String(11), primary_key=True, nullable=False),
-    Column('survey_code', String(25), primary_key=True, nullable=False),
-    ForeignKeyConstraint(
-        ['survey_period', 'question_number', 'run_id', 'ru_reference', 'step',
-         'survey_code'],
-        ['es_db_test.question_anomaly.survey_period',
-         'es_db_test.question_anomaly.question_number',
-         'es_db_test.question_anomaly.run_id',
-         'es_db_test.question_anomaly.ru_reference',
-         'es_db_test.question_anomaly.step',
-         'es_db_test.question_anomaly.survey_code']),
-    schema='es_db_test'
-)
+class FailedVET(Base):
+    __tablename__ = 'failed_vet'
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ['survey_period', 'question_number', 'run_id', 'ru_reference',
+             'step',
+             'survey_code'],
+            ['es_db_test.question_anomaly.survey_period',
+             'es_db_test.question_anomaly.question_number',
+             'es_db_test.question_anomaly.run_id',
+             'es_db_test.question_anomaly.ru_reference',
+             'es_db_test.question_anomaly.step',
+             'es_db_test.question_anomaly.survey_code']),
+        {'schema': 'es_db_test'}
+    )
+    failed_vet = Column(ForeignKey('es_db_test.vet.vet_code'),
+                        primary_key=True, nullable=False)
+    survey_period = Column(String(6), primary_key=True, nullable=False)
+    question_number = Column(String(4), primary_key=True, nullable=False)
+    run_id = Column(Integer, primary_key=True, nullable=False)
+    ru_reference = Column(String(11), primary_key=True, nullable=False)
+    step = Column(String(11), primary_key=True, nullable=False)
+    survey_code = Column(String(25), primary_key=True, nullable=False)
