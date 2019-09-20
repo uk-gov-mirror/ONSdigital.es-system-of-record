@@ -177,7 +177,7 @@ def lambda_handler(event, context):
                                         session.query(table_model)\
                                             .insert(
                                            {table_model.columns.failed_vet:
-                                            vets['FailedVETs'],
+                                            vets['failed_vet'],
                                             table_model.columns.survey_period:
                                                 vets['survey_period'],
                                             table_model.columns

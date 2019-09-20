@@ -13,7 +13,7 @@ import update_query as update_query
 
 class TestUpdateQuery(unittest.TestCase):
     @mock.patch("update_query.db.create_engine")
-    @mock.patch("update_query.db.update")
+    @mock.patch("update_query.Session.query")
     @mock.patch("update_query.alchemy_functions")
     def test_lambda_handler_happy_path(self, mock_create_engine, mock_update,
                                        mock_alchemy_funks):
@@ -76,8 +76,8 @@ class TestUpdateQuery(unittest.TestCase):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
             with mock.patch("update_query.db.update") as mock_update:
-                mock_therest = mock.Mock()
-                mock_therest.values.return_value\
+                mock_the_rest = mock.Mock()
+                mock_the_rest.values.return_value\
                     .returning.return_value\
                     .on_conflict_do_nothing.return_value = "Bob"
                 mock_update.side_effect =\
@@ -100,24 +100,20 @@ class TestUpdateQuery(unittest.TestCase):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
 
-            with mock.patch("update_query.db.update") as mock_update:
-                with mock.patch("update_query.insert") as mock_insert:
-                    mock_therestofinsert = mock.Mock()
-                    mock_therestofinsert.values.return_value\
-                        .returning.return_value\
-                        .on_conflict_do_nothing.return_value = "Bob"
-                    mock_therest = mock.Mock()
-                    mock_therest.values.return_value\
-                        .where.return_value = "MikesiQuatilo"
-                    mock_update.return_value = mock_therest
-                    mock_insert.side_effect = [
-                        mock_therestofinsert, mock_therestofinsert,
-                        db.exc.OperationalError("Side effect in full effect",
-                                                "", "")]
-                    mock_alchemy_funks.table_model.return_value\
-                        .columns.return_value\
-                        .query_reference.return_value = "Reeves"
-                    x = update_query.lambda_handler(test_data, "")
+            with mock.patch("update_query.Session.query")\
+                    as mock_update_insert:
+                mock_the_rest = mock.Mock()
+                mock_the_rest.values.return_value\
+                    .returning.return_value\
+                    .on_conflict_do_nothing.return_value = "Bob"
+                mock_update_insert.side_effect = [
+                    mock_the_rest, mock_the_rest, mock_the_rest,
+                    db.exc.OperationalError("Side effect in full effect",
+                                            "", "")]
+                mock_alchemy_funks.table_model.return_value\
+                    .columns.return_value\
+                    .query_reference.return_value = "Reeves"
+                x = update_query.lambda_handler(test_data, "")
 
                 assert(x["statusCode"] == 500)
                 assert ("Failed To Update Data: failed_vet"
@@ -133,32 +129,24 @@ class TestUpdateQuery(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            with mock.patch("update_query.Session") as mock_sesh:
-                mock_session = AlchemyMagicMock()
-                mock_sesh.return_value = mock_session
-                with mock.patch("update_query.db.update") as mock_update:
-                    with mock.patch("update_query.insert") as mock_insert:
-                        mock_therestofinsert = mock.Mock()
-                        mock_therestofinsert.values.return_value\
-                            .returning.return_value\
-                            .on_conflict_do_nothing.return_value = "Bob"
-                        mock_therest = mock.Mock()
-                        mock_therest.values.return_value\
-                            .where.return_value = "MikesiQuatilo"
-                        mock_update.return_value = mock_therest
+            with mock.patch("update_query.Session.query")\
+                    as mock_update_insert:
+                mock_the_rest = mock.Mock()
+                mock_the_rest.values.return_value\
+                    .returning.return_value\
+                    .on_conflict_do_nothing.return_value = "Bob"
+                mock_update_insert.side_effect = [
+                    mock_the_rest, mock_the_rest,
+                    db.exc.OperationalError("Side effect in effect",
+                                            "", "")]
+                mock_alchemy_funks.table_model.return_value\
+                    .columns.return_value\
+                    .query_reference.return_value = "Reeves"
+                x = update_query.lambda_handler(test_data, "")
 
-                        mock_insert.side_effect = [
-                            mock_therestofinsert,
-                            db.exc.OperationalError("Side effect in effect",
-                                                    "", "")]
-                        mock_alchemy_funks.table_model.return_value\
-                            .columns.return_value\
-                            .query_reference.return_value = "Reeves"
-                        x = update_query.lambda_handler(test_data, "")
-
-                assert(x["statusCode"] == 500)
-                assert ("Failed To Update Data: question_anomaly"
-                        in x['body']['Error'])
+            assert(x["statusCode"] == 500)
+            assert ("Failed To Update Data: question_anomaly"
+                    in x['body']['Error'])
 
     @mock.patch("update_query.db.create_engine")
     @mock.patch("update_query.alchemy_functions")
@@ -170,27 +158,24 @@ class TestUpdateQuery(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            with mock.patch("update_query.Session") as mock_sesh:
-                mock_session = AlchemyMagicMock()
-                mock_sesh.return_value = mock_session
-                with mock.patch("update_query.db.update") as mock_update:
-                    with mock.patch("update_query.insert") as mock_insert:
-                        mock_therest = mock.Mock()
-                        mock_therest.values.return_value\
-                            .where.return_value = "MikesiQuatilo"
-                        mock_update.return_value = mock_therest
+            with mock.patch("update_query.Session.query")\
+                    as mock_update_insert:
+                mock_the_rest = mock.Mock()
+                mock_the_rest.values.return_value\
+                    .where.return_value = "MikesiQuatilo"
 
-                        mock_insert.side_effect =\
-                            db.exc.OperationalError("Side effect in effect",
-                                                    "", "")
-                        mock_alchemy_funks.table_model.return_value\
-                            .columns.return_value\
-                            .query_reference.return_value = "Reeves"
+                mock_update_insert.side_effect = [
+                    mock_the_rest,
+                    db.exc.OperationalError("Side effect in effect",
+                                            "", "")]
+                mock_alchemy_funks.table_model.return_value\
+                    .columns.return_value\
+                    .query_reference.return_value = "Reeves"
 
-                        x = update_query.lambda_handler(test_data, "")
-                assert(x["statusCode"] == 500)
-                assert ("Failed To Update Data: step_exception"
-                        in x['body']['Error'])
+                x = update_query.lambda_handler(test_data, "")
+            assert(x["statusCode"] == 500)
+            assert ("Failed To Update Data: step_exception"
+                    in x['body']['Error'])
 
     @mock.patch("update_query.db.create_engine")
     @mock.patch("update_query.alchemy_functions")
@@ -203,28 +188,25 @@ class TestUpdateQuery(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            with mock.patch("update_query.Session") as mock_sesh:
-                mock_session = AlchemyMagicMock()
-                mock_sesh.return_value = mock_session
-                with mock.patch("update_query.db.update") as mock_update:
-                    with mock.patch("update_query.insert") as mock_insert:
-                        mock_therest = mock.Mock()
-                        mock_therest.values.return_value\
-                            .where.return_value = "MikesiQuatilo"
-                        mock_insert.return_value.values.return_value\
-                            .returning.return_value\
-                            .on_conflict_do_nothing.return_value = "Bob"
-                        mock_update.side_effect = [
-                            mock_therest,
-                            db.exc.OperationalError("Side effect in effect",
-                                                    "", "")]
-                        mock_alchemy_funks.table_model.return_value\
-                            .columns.return_value\
-                            .query_reference.return_value = "Reeves"
-                        x = update_query.lambda_handler(test_data, "")
-                assert(x["statusCode"] == 500)
-                assert ("Failed To Update Data: query_task"
-                        in x['body']['Error'])
+            with mock.patch("update_query.Session.query")\
+                    as mock_update_insert:
+                mock_the_rest = mock.Mock()
+                mock_the_rest.values.return_value\
+                    .where.return_value = "MikesiQuatilo"
+                mock_update_insert.side_effect = [
+                    mock_the_rest, mock_the_rest,
+                    mock_the_rest, mock_the_rest,
+                    mock_the_rest, mock_the_rest,
+                    mock_the_rest,
+                    db.exc.OperationalError("Side effect in effect",
+                                            "", "")]
+                mock_alchemy_funks.table_model.return_value\
+                    .columns.return_value\
+                    .query_reference.return_value = "Reeves"
+                x = update_query.lambda_handler(test_data, "")
+        assert(x["statusCode"] == 500)
+        assert ("Failed To Update Data: query_task"
+                in x['body']['Error'])
 
     @mock.patch("update_query.db.create_engine")
     @mock.patch("update_query.alchemy_functions")
@@ -238,35 +220,30 @@ class TestUpdateQuery(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            with mock.patch("update_query.Session") as mock_sesh:
-                mock_session = AlchemyMagicMock()
-                mock_sesh.return_value = mock_session
-                with mock.patch("update_query.insert") as mock_insert:
-                    mock_therest = mock.Mock()
-                    mock_therest.values.return_value\
-                        .where.return_value = "MikesiQuatilo"
-                    mock_therestofinsert = mock.Mock()
-                    mock_therestofinsert.values.return_value\
-                        .on_conflict_do_nothing\
-                        .return_value = "moo says the moo cow"
+            with mock.patch("update_query.Session.query")\
+                    as mock_update_insert:
+                mock_the_rest = mock.Mock()
+                mock_the_rest.values.return_value\
+                    .where.return_value = "MikesiQuatilo"
 
-                    mock_insert.side_effect = [
-                        mock_therestofinsert, mock_therestofinsert,
-                        mock_therestofinsert, mock_therestofinsert,
-                        mock_therestofinsert, mock_therestofinsert,
-                        db.exc.OperationalError("Side effect in full effect",
-                                                "", "")]
-                    mock_alchemy_funks.table_model.return_value\
-                        .columns.return_value\
-                        .query_reference.return_value = "Reeves"
+                mock_update_insert.side_effect = [
+                    mock_the_rest, mock_the_rest,
+                    mock_the_rest, mock_the_rest,
+                    mock_the_rest, mock_the_rest,
+                    mock_the_rest, mock_the_rest,
+                    db.exc.OperationalError("Side effect in full effect",
+                                            "", "")]
+                mock_alchemy_funks.table_model.return_value\
+                    .columns.return_value\
+                    .query_reference.return_value = "Reeves"
 
-                    x = update_query.lambda_handler(test_data, "")
-                assert(x["statusCode"] == 500)
-                assert ("Failed To Update Data: query_task_update"
-                        in x['body']['Error'])
+                x = update_query.lambda_handler(test_data, "")
+            assert(x["statusCode"] == 500)
+            assert ("Failed To Update Data: query_task_update"
+                    in x['body']['Error'])
 
     @mock.patch("update_query.db.create_engine")
-    @mock.patch("update_query.db.update")
+    @mock.patch("update_query.Session.query")
     @mock.patch("update_query.alchemy_functions")
     def test_commit_fail(self, mock_create_engine, mock_update,
                          mock_alchemy_funks):
@@ -290,7 +267,7 @@ class TestUpdateQuery(unittest.TestCase):
                 assert ("Failed To Commit Changes" in x['body']['Error'])
 
     @mock.patch("update_query.db.create_engine")
-    @mock.patch("update_query.db.update")
+    @mock.patch("update_query.Session.query")
     @mock.patch("update_query.alchemy_functions")
     def test_close_fail(self, mock_create_engine, mock_update,
                         mock_alchemy_funks):
