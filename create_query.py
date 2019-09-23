@@ -6,6 +6,7 @@ import sqlalchemy as db
 from marshmallow import ValidationError
 from sqlalchemy.orm import Session
 
+import alchemy_functions
 import io_validation
 import db_model
 
@@ -59,7 +60,7 @@ def lambda_handler(event, context):
         logger.info("Fetching Table Model: {}".format("query"))
         table_model = db_model.Query
         logger.info("Inserting Table Data: {}".format("query"))
-        new_query = session.add(
+        session.add(
             table_model(query_type=event['query_type'],
                         ru_reference=event['ru_reference'],
                         survey_code=event['survey_code'],
@@ -77,7 +78,15 @@ def lambda_handler(event, context):
                         target_resolution_date=
                         event['target_resolution_date']))
         session.flush()
-        print(new_query)
+
+        # Couldn't get the ORM to do a returning clause.
+        # Below is a temporary work around until I have
+        # a chance to look at it more indepth.
+        table_model = alchemy_functions.table_model(engine, metadata, 'query')
+        new_query = session.query(max(table_model.columns.query_reference))
+        new_query = alchemy_functions.to_df(new_query)
+        new_query = int(new_query['query_reference'].iloc[0])
+
     except db.exc.OperationalError as exc:
         logger.error(
             "Alchemy Operational Error When Updating Data: {}".format(exc))
@@ -213,11 +222,11 @@ def lambda_handler(event, context):
                 logger.info("Inserting Table Data: {}".format("query_task"))
                 session.add(table_model(
                     task_sequence_number=task['task_sequence_number'],
-                    query_reference= new_query,
+                    query_reference=new_query,
                     response_required_by=task['response_required_by'],
                     task_description=task['task_description'],
                     task_responsibility=task['task_responsibility'],
-                    task_status= task['task_status'],
+                    task_status=task['task_status'],
                     next_planned_action=task['next_planned_action'],
                     when_action_required=task['when_action_required']))
                 session.flush()
@@ -237,8 +246,7 @@ def lambda_handler(event, context):
                             session.add(table_model(
                                 task_sequence_number=
                                 query_task['task_sequence_number'],
-                                query_reference=
-                                query_task['query_reference'],
+                                query_reference=new_query,
                                 last_updated=
                                 query_task['last_updated'],
                                 task_update_description=
@@ -297,83 +305,8 @@ def lambda_handler(event, context):
         logger.error("Failed To Close The Session: {}".format(exc))
         return {"statusCode": 500,
                 "body": {"Error": "Database Session Closed Badly."}}
-    print(new_query)
+
     logger.info("create_query Has Successfully Run.")
     return {"statusCode": 201,
             "body": {"Success": "Successfully Created Query: {}"
                      .format(new_query)}}
-
-
-lambda_handler({
-  "industry_group": "Con",
-  "query_active": False,
-  "query_description": "Validation Exception Test",
-  "current_period": "200001",
-  "survey_period": "201803",
-  "ru_reference": "77700000002",
-  "query_reference": 5,
-  "last_query_update": "2018-01-01",
-  "QueryTasks": [
-    {
-      "task_sequence_number": 1,
-      "task_description": "Clerical Investigation",
-      "task_status": "Open",
-      "query_reference": 5,
-      "response_required_by": "2019-07-11",
-      "QueryTaskUpdates": [
-        {
-          "task_sequence_number": 1,
-          "query_reference": 5,
-          "updated_by": "Us",
-          "last_updated": "2019-07-11",
-          "task_update_description": "Test"
-        }
-      ],
-      "when_action_required": "2019-07-11",
-      "next_planned_action": "2017-03-01",
-      "task_responsibility": "BMI Survey Team"
-    }
-  ],
-  "results_state": "Not Run",
-  "date_raised": "2019-07-11",
-  "query_status": "open",
-  "target_resolution_date": "2019-07-11",
-  "survey_code": "066",
-  "Exceptions": [
-    {
-      "error_description": "Desc",
-      "query_reference": 5,
-      "survey_period": "201803",
-      "survey_code": "066",
-      "step": "Vets",
-      "run_id": 1,
-      "ru_reference": "77700000002",
-      "error_code": "01",
-      "Anomalies": [
-        {
-          "survey_period": "201803",
-          "question_number": "601",
-          "survey_code": "066",
-          "anomaly_description": "Desc Question",
-          "FailedVETs": [
-            {
-              "survey_period": "201803",
-              "question_number": "601",
-              "failed_vet": 1,
-              "survey_code": "066",
-              "step": "Vets",
-              "run_id": 1,
-              "ru_reference": "77700000002"
-            }
-          ],
-          "step": "Vets",
-          "run_id": 1,
-          "ru_reference": "77700000002"
-        }
-      ]
-    }
-  ],
-  "general_specific_flag": False,
-  "raised_by": "System Generated",
-  "query_type": "Data Cleaning"
-}, "")

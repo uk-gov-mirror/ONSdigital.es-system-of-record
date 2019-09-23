@@ -9,8 +9,7 @@ def main(direction, revision):
     """
 
     # Replace file path with your alembic install location
-    path = "\\Users\\Off.Network.User8" +\
-           "\\AppData\\Local\\Programs\\Python\\Python37\\Scripts"
+    path = "~/PycharmProjects/es-system-of-record"
     subprocess.run(["alembic", direction, revision], cwd=path)
 
 
