@@ -74,12 +74,14 @@ def lambda_handler(event, context):
 
     except db.exc.OperationalError as exc:
         logger.error(
-            "Alchemy Operational Error When Updating Data: {}".format(exc))
+            "Alchemy Operational Error When Updating Data: {} {}"
+            .format("survey_period", exc))
         return {"statusCode": 500,
                 "body": {"Error": "Operation Error, Failed To Update Data: {}"
                          .format("survey_period")}}
     except Exception as exc:
-        logger.error("Problem Updating Data From The Table: {}".format(exc))
+        logger.error("Problem Updating Data From The Table: {} {}"
+                     .format("survey_period", exc))
         return {"statusCode": 500,
                 "body": {"Error": "Failed To Update Data: {}"
                          .format("survey_period")}}

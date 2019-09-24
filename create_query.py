@@ -5,6 +5,7 @@ import sqlalchemy as db
 
 from marshmallow import ValidationError
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 import alchemy_functions
 import io_validation
@@ -75,26 +76,30 @@ def lambda_handler(event, context):
                         query_status=event['query_status'],
                         raised_by=event['raised_by'],
                         results_state=event['results_state'],
-                        target_resolution_date=
-                        event['target_resolution_date']))
+                        target_resolution_date=event['target_resolution_date']
+                        ))
         session.flush()
 
         # Couldn't get the ORM to do a returning clause.
         # Below is a temporary work around until I have
         # a chance to look at it more indepth.
+        # Further NOTE: Might have to do with SERIAL vs SEQUENCE
+        # Will try to link to some information on JIRA if possible
         table_model = alchemy_functions.table_model(engine, metadata, 'query')
-        new_query = session.query(max(table_model.columns.query_reference))
-        new_query = alchemy_functions.to_df(new_query)
-        new_query = int(new_query['query_reference'].iloc[0])
+        new_query = session.query(
+            func.max(table_model.columns.query_reference)).all()
+        new_query = new_query[0][0]
 
     except db.exc.OperationalError as exc:
         logger.error(
-            "Alchemy Operational Error When Updating Data: {}".format(exc))
+            "Alchemy Operational Error When Inserting Data: {} {}"
+            .format("query", exc))
         return {"statusCode": 500,
                 "body": {"Error": "Operation Error, Failed To Insert Data: {}"
                          .format("query")}}
     except Exception as exc:
-        logger.error("Problem Updating Data From The Table: {}".format(exc))
+        logger.error("Problem Inserting Data From The Table: {} {}"
+                     .format("query", exc))
         return {"statusCode": 500,
                 "body": {"Error": "Failed To Insert Data: {}".format("query")}}
 
@@ -139,8 +144,8 @@ def lambda_handler(event, context):
                                 ru_reference=anomaly['ru_reference'],
                                 step=anomaly['step'],
                                 survey_code=anomaly['survey_code'],
-                                anomaly_description=
-                                anomaly['anomaly_description']))
+                                anomaly_description=anomaly[
+                                    'anomaly_description']))
                             session.flush()
                             try:
                                 if "FailedVETs" in anomaly.keys():
@@ -157,10 +162,10 @@ def lambda_handler(event, context):
                                                     .format("failed_vet"))
                                         session.add(table_model(
                                             failed_vet=vets['failed_vet'],
-                                            survey_period=
-                                            vets['survey_period'],
-                                            question_number=
-                                            vets['question_number'],
+                                            survey_period=vets[
+                                                'survey_period'],
+                                            question_number=vets[
+                                                'question_number'],
                                             run_id=vets['run_id'],
                                             ru_reference=vets['ru_reference'],
                                             step=vets['step'],
@@ -169,7 +174,8 @@ def lambda_handler(event, context):
                             except db.exc.OperationalError as exc:
                                 logger.error(
                                     "Alchemy Operational Error " +
-                                    "When Updating Data: {}".format(exc))
+                                    "When Inserting Data: {} {}"
+                                    .format("failed_vet", exc))
                                 return {"statusCode": 500,
                                         "body": {
                                           "Error": "Operation Error, " +
@@ -177,8 +183,9 @@ def lambda_handler(event, context):
                                                    .format("failed_vet")}}
                             except Exception as exc:
                                 logger.error(
-                                    "Problem Updating Data From The Table: {}"
-                                    .format(exc))
+                                    "Problem Inserting Data From " +
+                                    "The Table: {} {}"
+                                    .format("failed_vet", exc))
                                 return {"statusCode": 500,
                                         "body": {
                                           "Error": "Failed To Insert Data: {}"
@@ -186,27 +193,29 @@ def lambda_handler(event, context):
 
                 except db.exc.OperationalError as exc:
                     logger.error(
-                        "Alchemy Operational Error When Updating Data: {}"
-                        .format(exc))
+                        "Alchemy Operational Error When Inserting Data: {} {}"
+                        .format("question_anomaly", exc))
                     return {"statusCode": 500,
                             "body": {"Error": "Operation Error, " +
                                               "Failed To Insert Data: {}"
                                               .format("question_anomaly")}}
                 except Exception as exc:
-                    logger.error("Problem Updating Data From The Table: {}"
-                                 .format(exc))
+                    logger.error("Problem Inserting Data From The Table: {} {}"
+                                 .format("question_anomaly", exc))
                     return {"statusCode": 500,
                             "body": {"Error": "Failed To Insert Data: {}"
                                      .format("question_anomaly")}}
 
     except db.exc.OperationalError as exc:
         logger.error(
-            "Alchemy Operational Error When Updating Data: {}".format(exc))
+            "Alchemy Operational Error When Inserting Data: {} {}"
+            .format("step_exception", exc))
         return {"statusCode": 500,
                 "body": {"Error": "Operation Error, Failed To Insert Data: {}"
                          .format("step_exception")}}
     except Exception as exc:
-        logger.error("Problem Updating Data From The Table: {}".format(exc))
+        logger.error("Problem Inserting Data From The Table: {} {}"
+                     .format("step_exception", exc))
         return {"statusCode": 500,
                 "body": {"Error": "Failed To Insert Data: {}"
                          .format("step_exception")}}
@@ -244,38 +253,38 @@ def lambda_handler(event, context):
                             logger.info("Inserting Table Data: {}"
                                         .format("query_task_update"))
                             session.add(table_model(
-                                task_sequence_number=
-                                query_task['task_sequence_number'],
+                                task_sequence_number=query_task[
+                                    'task_sequence_number'],
                                 query_reference=new_query,
-                                last_updated=
-                                query_task['last_updated'],
-                                task_update_description=
-                                query_task['task_update_description'],
-                                updated_by=
-                                query_task['updated_by']))
+                                last_updated=query_task['last_updated'],
+                                task_update_description=query_task[
+                                    'task_update_description'],
+                                updated_by=query_task['updated_by']))
                     session.flush()
                 except db.exc.OperationalError as exc:
                     logger.error(
-                        "Alchemy Operational Error When Updating Data: {}"
-                        .format(exc))
+                        "Alchemy Operational Error When Inserting Data: {} {}"
+                        .format("query_task_update", exc))
                     return {"statusCode": 500,
                             "body": {"Error": "Operation Error, " +
                                               "Failed To Insert Data: {}"
                                               .format("query_task_update")}}
                 except Exception as exc:
                     logger.error(
-                        "Problem Updating Data From The Table: {}".format(exc))
+                        "Problem Inserting Data From The Table: {} {}"
+                        .format("query_task_update", exc))
                     return {"statusCode": 500,
                             "body": {"Error": "Failed To Insert Data: {}"
                                      .format("query_task_update")}}
     except db.exc.OperationalError as exc:
-        logger.error("Alchemy Operational Error When Updating Data: {}"
-                     .format(exc))
+        logger.error("Alchemy Operational Error When Inserting Data: {} {}"
+                     .format("query_task", exc))
         return {"statusCode": 500,
                 "body": {"Error": "Operation Error, Failed To Insert Data: {}"
                          .format("query_task")}}
     except Exception as exc:
-        logger.error("Problem Updating Data From The Table: {}".format(exc))
+        logger.error("Problem Inserting Data From The Table: {} {}"
+                     .format("query_task", exc))
         return {"statusCode": 500,
                 "body": {"Error": "Failed To Insert Data: {}"
                          .format("query_task")}}
@@ -306,6 +315,7 @@ def lambda_handler(event, context):
         return {"statusCode": 500,
                 "body": {"Error": "Database Session Closed Badly."}}
 
+    print(new_query)
     logger.info("create_query Has Successfully Run.")
     return {"statusCode": 201,
             "body": {"Success": "Successfully Created Query: {}"

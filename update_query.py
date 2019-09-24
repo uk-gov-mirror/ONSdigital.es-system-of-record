@@ -86,12 +86,14 @@ def lambda_handler(event, context):
 
     except db.exc.OperationalError as exc:
         logger.error(
-            "Alchemy Operational Error When Updating Data: {}".format(exc))
+            "Alchemy Operational Error When Updating Data: {} {}"
+            .format("query", exc))
         return {"statusCode": 500,
                 "body": {"Error": "Operation Error, Failed To Update Data: {}"
                          .format("query")}}
     except Exception as exc:
-        logger.error("Problem Updating Data From The Table: {}".format(exc))
+        logger.error("Problem Updating Data From The Table: {} {}"
+                     .format("query", exc))
         return {"statusCode": 500,
                 "body": {"Error": "Failed To Update Data: {}".format("query")}}
 
@@ -102,18 +104,36 @@ def lambda_handler(event, context):
                 logger.info("Inserting step_exception row {}".format(count))
                 logger.info("Fetching Table Model: {}"
                             .format("step_exception"))
+                table_model = alchemy_functions.table_model(engine, metadata,
+                                                            'step_exception')
+                is_it_here = session.query(table_model)\
+                    .filter(db.and_(
+                        table_model.columns.query_reference ==
+                        exception['query_reference'],
+                        table_model.columns.run_id == exception['run_id'],
+                        table_model.columns.ru_reference ==
+                        exception['ru_reference'],
+                        table_model.columns.survey_period ==
+                        exception['survey_period'],
+                        table_model.columns.survey_code ==
+                        exception['survey_code'],
+                        table_model.columns.step == exception['step'])).scalar
+                if is_it_here is not None:
+                    continue
                 table_model = db_model.StepException
 
                 logger.info("Updating Table Data: {}".format("step_exception"))
-                session.add(table_model(
-                    query_reference=exception['query_reference'],
-                    survey_period=exception['survey_period'],
-                    run_id=exception['run_id'],
-                    ru_reference=exception['ru_reference'],
-                    step=exception['step'],
-                    survey_code=exception['survey_code'],
-                    error_code=exception['error_code'],
-                    error_description=exception['error_description']))
+                check = alchemy_functions.to_df(session.query(table_model))
+                if check.empty:
+                    session.add(table_model(
+                        query_reference=exception['query_reference'],
+                        survey_period=exception['survey_period'],
+                        run_id=exception['run_id'],
+                        ru_reference=exception['ru_reference'],
+                        step=exception['step'],
+                        survey_code=exception['survey_code'],
+                        error_code=exception['error_code'],
+                        error_description=exception['error_description']))
 
                 try:
                     if "Anomalies" in exception.keys():
@@ -123,6 +143,27 @@ def lambda_handler(event, context):
                                         .format(count))
                             logger.info("Fetching Table Model: {}"
                                         .format("question_anomaly"))
+
+                            table_model = alchemy_functions\
+                                .table_model(engine, metadata,
+                                             'question_anomaly')
+                            is_it_here = session.query(table_model) \
+                                .filter(db.and_(
+                                    table_model.columns.query_reference ==
+                                    anomaly['question_number'],
+                                    table_model.columns.run_id == anomaly[
+                                        'run_id'],
+                                    table_model.columns.ru_reference ==
+                                    anomaly['ru_reference'],
+                                    table_model.columns.survey_period ==
+                                    anomaly['survey_period'],
+                                    table_model.columns.survey_code ==
+                                    anomaly['survey_code'],
+                                    table_model.columns.step == anomaly[
+                                        'step'])).scalar
+                            if is_it_here is not None:
+                                continue
+
                             table_model = db_model.QuestionAnomaly
 
                             logger.info("Inserting Table Data: {}".format(
@@ -134,8 +175,8 @@ def lambda_handler(event, context):
                                 ru_reference=anomaly['ru_reference'],
                                 step=anomaly['step'],
                                 survey_code=anomaly['survey_code'],
-                                anomaly_description=
-                                anomaly['anomaly_description']))
+                                anomaly_description=anomaly[
+                                    'anomaly_description']))
 
                             try:
                                 if "FailedVETs" in anomaly.keys():
@@ -146,6 +187,30 @@ def lambda_handler(event, context):
                                             .format(count))
                                         logger.info("Fetching Table Model: {}"
                                                     .format("failed_vet"))
+                                        table_model = alchemy_functions\
+                                            .table_model(engine, metadata,
+                                                         'failed_vet')
+                                        is_it_here = session\
+                                            .query(table_model).filter(db.and_(
+                                                table_model.columns
+                                                .query_reference ==
+                                                vets['question_number'],
+                                                table_model.columns.run_id ==
+                                                vets['run_id'],
+                                                table_model.columns
+                                                .ru_reference ==
+                                                vets['ru_reference'],
+                                                table_model.columns
+                                                .survey_period ==
+                                                vets['survey_period'],
+                                                table_model.columns
+                                                .survey_code ==
+                                                vets['survey_code'],
+                                                table_model.columns.step ==
+                                                vets['step'])).scalar
+                                        if is_it_here is not None:
+                                            continue
+
                                         table_model = db_model.FailedVET
 
                                         logger.info(
@@ -153,10 +218,10 @@ def lambda_handler(event, context):
                                                 "failed_vet"))
                                         session.add(table_model(
                                             failed_vet=vets['failed_vet'],
-                                            survey_period=
-                                            vets['survey_period'],
-                                            question_number=
-                                            vets['question_number'],
+                                            survey_period=vets[
+                                                'survey_period'],
+                                            question_number=vets[
+                                                'question_number'],
                                             run_id=vets['run_id'],
                                             ru_reference=vets['ru_reference'],
                                             step=vets['step'],
@@ -165,7 +230,8 @@ def lambda_handler(event, context):
                             except db.exc.OperationalError as exc:
                                 logger.error(
                                     "Alchemy Operational Error " +
-                                    "When Updating Data: {}".format(exc))
+                                    "When Updating Data: {} {}"
+                                    .format("failed_vet", exc))
                                 return {"statusCode": 500,
                                         "body": {
                                           "Error": "Operation Error, " +
@@ -173,8 +239,9 @@ def lambda_handler(event, context):
                                                    .format("failed_vet")}}
                             except Exception as exc:
                                 logger.error(
-                                    "Problem Updating Data From The Table: {}"
-                                    .format(exc))
+                                    "Problem Updating Data " +
+                                    "From The Table: {} {}"
+                                    .format("failed_vet", exc))
                                 return {"statusCode": 500,
                                         "body": {
                                           "Error": "Failed To Update Data: {}"
@@ -182,27 +249,29 @@ def lambda_handler(event, context):
 
                 except db.exc.OperationalError as exc:
                     logger.error(
-                        "Alchemy Operational Error When Updating Data: {}"
-                        .format(exc))
+                        "Alchemy Operational Error When Updating Data: {} {}"
+                        .format("question_anomaly", exc))
                     return {"statusCode": 500,
                             "body": {"Error": "Operation Error, " +
                                               "Failed To Update Data: {}"
                                               .format("question_anomaly")}}
                 except Exception as exc:
-                    logger.error("Problem Updating Data From The Table: {}"
-                                 .format(exc))
+                    logger.error("Problem Updating Data From The Table: {} {}"
+                                 .format("question_anomaly", exc))
                     return {"statusCode": 500,
                             "body": {"Error": "Failed To Update Data: {}"
                                      .format("question_anomaly")}}
 
     except db.exc.OperationalError as exc:
         logger.error(
-            "Alchemy Operational Error When Updating Data: {}".format(exc))
+            "Alchemy Operational Error When Updating Data: {} {}"
+            .format("step_exception", exc))
         return {"statusCode": 500,
                 "body": {"Error": "Operation Error, Failed To Update Data: {}"
                          .format("step_exception")}}
     except Exception as exc:
-        logger.error("Problem Updating Data From The Table: {}".format(exc))
+        logger.error("Problem Updating Data From The Table: {} {}"
+                     .format("step_exception", exc))
         return {"statusCode": 500,
                 "body": {"Error": "Failed To Update Data: {}"
                          .format("step_exception")}}
@@ -245,44 +314,60 @@ def lambda_handler(event, context):
                                 .format(count))
                             logger.info("Fetching Table Model: {}".format(
                                 "query_task_update"))
+
+                            table_model = alchemy_functions\
+                                .table_model(engine, metadata,
+                                             'query_task_update')
+
+                            is_it_here = session.query(table_model)\
+                                .filter(db.and_(
+                                    table_model.columns.query_reference ==
+                                    query_task['query_reference'],
+                                    table_model.columns.task_sequence_number ==
+                                    query_task['task_sequence_number'],
+                                    table_model.columns.last_updated ==
+                                    query_task['last_updated'])).scalar()
+
+                            if is_it_here is not None:
+                                continue
+
                             table_model = db_model.QueryTaskUpdate
 
                             logger.info("Inserting Table Data: {}"
                                         .format("query_task_update"))
                             session.add(table_model(
-                                task_sequence_number=
-                                query_task['task_sequence_number'],
-                                query_reference=
-                                query_task['query_reference'],
-                                last_updated=
-                                query_task['last_updated'],
-                                task_update_description=
-                                query_task['task_update_description'],
-                                updated_by=
-                                query_task['updated_by']))
+                                task_sequence_number=query_task[
+                                    'task_sequence_number'],
+                                query_reference=query_task['query_reference'],
+                                last_updated=query_task['last_updated'],
+                                task_update_description=query_task[
+                                    'task_update_description'],
+                                updated_by=query_task['updated_by']))
 
                 except db.exc.OperationalError as exc:
                     logger.error(
-                        "Alchemy Operational Error When Updating Data: {}"
-                        .format(exc))
+                        "Alchemy Operational Error When Updating Data: {} {}"
+                        .format("query_task_update", exc))
                     return {"statusCode": 500,
                             "body": {"Error": "Operation Error, " +
                                               "Failed To Update Data: {}"
                                               .format("query_task_update")}}
                 except Exception as exc:
                     logger.error(
-                        "Problem Updating Data From The Table: {}".format(exc))
+                        "Problem Updating Data From The Table: {} {}"
+                        .format("query_task_update", exc))
                     return {"statusCode": 500,
                             "body": {"Error": "Failed To Update Data: {}"
                                      .format("query_task_update")}}
     except db.exc.OperationalError as exc:
-        logger.error("Alchemy Operational Error When Updating Data: {}"
-                     .format(exc))
+        logger.error("Alchemy Operational Error When Updating Data: {} {}"
+                     .format("query_task", exc))
         return {"statusCode": 500,
                 "body": {"Error": "Operation Error, Failed To Update Data: {}"
                          .format("query_task")}}
     except Exception as exc:
-        logger.error("Problem Updating Data From The Table: {}".format(exc))
+        logger.error("Problem Updating Data From The Table: {} {}"
+                     .format("query_task", exc))
         return {"statusCode": 500,
                 "body": {"Error": "Failed To Update Data: {}"
                          .format("query_task")}}
@@ -316,107 +401,3 @@ def lambda_handler(event, context):
     logger.info("update_query Has Successfully Run.")
     return {"statusCode": 200,
             "body": {"Success": "Successfully Updated The Tables."}}
-
-
-lambda_handler({
-  "industry_group": "Con",
-  "query_active": False,
-  "query_description": "Validation Exception Test",
-  "current_period": "200001",
-  "survey_period": "201803",
-  "ru_reference": "77700000002",
-  "query_reference": 5,
-  "last_query_update": "2018-01-01",
-  "QueryTasks": [
-    {
-      "task_sequence_number": 1,
-      "task_description": "Clerical Investigation",
-      "task_status": "Open",
-      "query_reference": 5,
-      "response_required_by": "2019-07-11",
-      "QueryTaskUpdates": [
-        {
-          "task_sequence_number": 1,
-          "query_reference": 5,
-          "updated_by": "Us",
-          "last_updated": "2019-07-11",
-          "task_update_description": "Test"
-        }
-      ],
-      "when_action_required": "2019-07-11",
-      "next_planned_action": "2017-03-01",
-      "task_responsibility": "BMI Survey Team"
-    }
-  ],
-  "results_state": "Not Run",
-  "date_raised": "2019-07-11",
-  "query_status": "open",
-  "target_resolution_date": "2019-07-11",
-  "survey_code": "066",
-  "Exceptions": [
-    {
-      "error_description": "Desc",
-      "query_reference": 5,
-      "survey_period": "201803",
-      "survey_code": "066",
-      "step": "Vets",
-      "run_id": 1,
-      "ru_reference": "77700000002",
-      "error_code": "01",
-      "Anomalies": [
-        {
-          "survey_period": "201803",
-          "question_number": "602",
-          "survey_code": "066",
-          "anomaly_description": "Desc Question",
-          "FailedVETs": [
-            {
-              "survey_period": "201803",
-              "question_number": "602",
-              "failed_vet": 1,
-              "survey_code": "066",
-              "step": "Vets",
-              "run_id": 1,
-              "ru_reference": "77700000002"
-            },
-            {
-              "survey_period": "201803",
-              "question_number": "602",
-              "failed_vet": 1,
-              "survey_code": "066",
-              "step": "Vets",
-              "run_id": 1,
-              "ru_reference": "77700000002"
-            }
-          ],
-          "step": "Vets",
-          "run_id": 1,
-          "ru_reference": "77700000002"
-        },
-        {
-          "survey_period": "201803",
-          "question_number": "601",
-          "survey_code": "066",
-          "anomaly_description": "Desc Question",
-          "FailedVETs": [
-            {
-              "survey_period": "201803",
-              "question_number": "601",
-              "failed_vet": 1,
-              "survey_code": "066",
-              "step": "Vets",
-              "run_id": 1,
-              "ru_reference": "77700000002"
-            }
-          ],
-          "step": "Vets",
-          "run_id": 1,
-          "ru_reference": "77700000002"
-        }
-      ]
-    }
-  ],
-  "general_specific_flag": False,
-  "raised_by": "System Generated",
-  "query_type": "Data Cleaning"
-}, "")

@@ -88,13 +88,18 @@ def lambda_handler(event, context):
         query = alchemy_functions.to_df(all_query_sql)
     except db.exc.OperationalError as exc:
         logger.error(
-            "Alchemy Operational Error When Retrieving Data: {}".format(exc))
+            "Alchemy Operational Error When Retrieving Data: {} {}"
+            .format("survey_period", exc))
         return {"statusCode": 500,
-                "body": {"Error": "Operation Error, Failed To Retrieve Data."}}
+                "body": {"Error":
+                         "Operation Error, Failed To Retrieve Data: {} {}"
+                         .format("survey_period")}}
     except Exception as exc:
-        logger.error("Problem Retrieving Data From The Table: {}".format(exc))
+        logger.error("Problem Retrieving Data From The Table: {} {}"
+                     .format("survey_period", exc))
         return {"statusCode": 500,
-                "body": {"Error": "Failed To Retrieve Data."}}
+                "body": {"Error": "Failed To Retrieve Data: {}"
+                         .format("survey_period")}}
 
     logger.info("Creating JSON.")
     out_json = json.dumps(query.to_dict(orient='records'), sort_keys=True,

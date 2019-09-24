@@ -95,13 +95,18 @@ def lambda_handler(event, context):
 
     except db.exc.OperationalError as exc:
         logger.error(
-            "Alchemy Operational Error When Retrieving Data: {}".format(exc))
+            "Alchemy Operational Error When Retrieving Data: {} {}"
+            .format("query", exc))
         return {"statusCode": 500,
-                "body": {"Error": "Operation Error, Failed To Retrieve Data."}}
+                "body": {"Error":
+                         "Operation Error, Failed To Retrieve Data: {}"
+                         .format("query")}}
     except Exception as exc:
-        logger.error("Problem Retrieving Data From The Table: {}".format(exc))
+        logger.error("Problem Retrieving Data From The Table: {} {}"
+                     .format("query", exc))
         return {"statusCode": 500,
-                "body": {"Error": "Failed To Retrieve Data."}}
+                "body": {"Error": "Failed To Retrieve Data: {}"
+                         .format("query")}}
 
     table_list = {'step_exception': None,
                   'question_anomaly': None,
@@ -153,16 +158,18 @@ def lambda_handler(event, context):
                 table_list[current_table] = alchemy_functions.to_df(statement)
         except db.exc.OperationalError as exc:
             logger.error(
-                "Alchemy Operational Error When Retrieving Data: {}"
-                .format(exc))
+                "Alchemy Operational Error When Retrieving Data: {} {}"
+                .format(current_table, exc))
             return {"statusCode": 500,
                     "body": {
-                        "Error": "Operation Error, Failed To Retrieve Data."}}
+                        "Error": "Operation Error, Failed To Retrieve Data: {}"
+                        .format(current_table)}}
         except Exception as exc:
-            logger.error("Problem Retrieving Data From The Table: {}"
-                         .format(exc))
+            logger.error("Problem Retrieving Data From The Table: {} {}"
+                         .format(current_table, exc))
             return {"statusCode": 500,
-                    "body": {"Error": "Failed To Retrieve Data."}}
+                    "body": {"Error": "Failed To Retrieve Data: {}"
+                             .format(current_table)}}
 
         logger.info("Creating JSON.")
         curr_query = json.dumps(curr_query.to_dict(orient='records'),
