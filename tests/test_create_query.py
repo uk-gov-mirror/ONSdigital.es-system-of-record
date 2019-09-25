@@ -5,6 +5,7 @@ import os
 import unittest
 import unittest.mock as mock
 import sqlalchemy as db
+import pandas as pd
 from alchemy_mock.mocking import AlchemyMagicMock
 
 sys.path.append(os.path.realpath(os.path.dirname(__file__)+"/.."))
@@ -14,7 +15,7 @@ import create_query as create_query  # noqa: 402
 class TestCreateQuery(unittest.TestCase):
 
     @mock.patch("create_query.db.create_engine")
-    @mock.patch("create_query.Session.query")
+    @mock.patch("create_query.Session.add")
     @mock.patch("create_query.alchemy_functions")
     def test_lambda_handler_happy_path(self, mock_create_engine, mock_insert,
                                        mock_alchemy_funks):
@@ -23,10 +24,11 @@ class TestCreateQuery(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            mock_insert.return_value.values.return_value\
-                .returning.return_value\
-                .on_conflict_do_nothing.return_value = "bob"
-            x = create_query.lambda_handler(test_data, '')
+            with mock.patch("create_query.Session.query") as mock_return:
+                mock_return.return_value.all.return_value = pd.DataFrame(
+                    {0: [1]})
+
+                x = create_query.lambda_handler(test_data, '')
 
             assert(x["statusCode"] == 201)
             assert ("Successfully" in x['body']['Success'])
@@ -66,7 +68,7 @@ class TestCreateQuery(unittest.TestCase):
         assert ("Failed To Connect" in str(x['body']['Error']))
 
     @mock.patch("create_query.db.create_engine")
-    @mock.patch("create_query.Session.query")
+    @mock.patch("create_query.Session.add")
     @mock.patch("create_query.alchemy_functions")
     def test_query_table_insert_fail(self, mock_create_engine, mock_insert,
                                      mock_alchemy_funks):
@@ -93,20 +95,20 @@ class TestCreateQuery(unittest.TestCase):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
 
-            with mock.patch("create_query.Session.query") as mock_insert:
-                mock_therest = mock.Mock()
-                mock_therest.values.return_value\
-                    .returning.return_value\
-                    .on_conflict_do_nothing.return_value = "bob"
-                mock_insert.side_effect = [
-                    mock_therest,
-                    db.exc.OperationalError("Misser Mike, ee say no", "", "")]
+            with mock.patch("create_query.Session.add") as mock_insert:
+                with mock.patch("create_query.Session.query") as mock_return:
+                    mock_return.return_value.all.return_value = pd.DataFrame(
+                        {0: [1]})
+                    mock_therest = mock.Mock()
+                    mock_insert.side_effect = [
+                        mock_therest,
+                        db.exc.OperationalError("Misser Mike, ee say no", "", "")]
 
-                x = create_query.lambda_handler(test_data, '')
+                    x = create_query.lambda_handler(test_data, '')
 
-                assert(x["statusCode"] == 500)
-                assert ("Failed To Insert Data: step_exception"
-                        in x['body']['Error'])
+            assert(x["statusCode"] == 500)
+            assert ("Failed To Insert Data: step_exception"
+                    in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.alchemy_functions")
@@ -117,15 +119,15 @@ class TestCreateQuery(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            with mock.patch("create_query.Session.query") as mock_insert:
-                mock_therest = mock.Mock()
-                mock_therest.values.return_value\
-                    .returning.return_value\
-                    .on_conflict_do_nothing.return_value = "bob"
-                mock_insert.side_effect = [
-                    mock_therest, mock_therest,
-                    db.exc.OperationalError("Misser Mike, ee say no", "", "")]
-                x = create_query.lambda_handler(test_data, '')
+            with mock.patch("create_query.Session.add") as mock_insert:
+                with mock.patch("create_query.Session.query") as mock_return:
+                    mock_return.return_value.all.return_value = pd.DataFrame(
+                        {0: [1]})
+                    mock_therest = mock.Mock()
+                    mock_insert.side_effect = [
+                        mock_therest, mock_therest,
+                        db.exc.OperationalError("Misser Mike, ee say no", "", "")]
+                    x = create_query.lambda_handler(test_data, '')
 
             assert(x["statusCode"] == 500)
             assert ("Failed To Insert Data: question_anomaly"
@@ -140,17 +142,17 @@ class TestCreateQuery(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            with mock.patch("create_query.Session.query") as mock_insert:
-                mock_therest = mock.Mock()
-                mock_therest.values.return_value\
-                    .returning.return_value\
-                    .on_conflict_do_nothing.return_value = "bob"
-                mock_insert.side_effect = [
-                    mock_therest,
-                    mock_therest,
-                    mock_therest,
-                    db.exc.OperationalError("Misser Mike, ee say no", "", "")]
-                x = create_query.lambda_handler(test_data, '')
+            with mock.patch("create_query.Session.add") as mock_insert:
+                with mock.patch("create_query.Session.query") as mock_return:
+                    mock_return.return_value.all.return_value = pd.DataFrame(
+                        {0: [1]})
+                    mock_therest = mock.Mock()
+                    mock_insert.side_effect = [
+                        mock_therest,
+                        mock_therest,
+                        mock_therest,
+                        db.exc.OperationalError("Misser Mike, ee say no", "", "")]
+                    x = create_query.lambda_handler(test_data, '')
 
             assert(x["statusCode"] == 500)
             assert ("Failed To Insert Data: failed_vet" in x['body']['Error'])
@@ -164,27 +166,27 @@ class TestCreateQuery(unittest.TestCase):
         ):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
-            with mock.patch("create_query.Session.query") as mock_insert:
-                mock_therest = mock.Mock()
+            with mock.patch("create_query.Session.add") as mock_insert:
+                with mock.patch("create_query.Session.query") as mock_return:
+                    mock_return.return_value.all.return_value = pd.DataFrame(
+                        {0: [1]})
 
-                mock_therest.values.return_value\
-                    .returning.return_value\
-                    .on_conflict_do_nothing.return_value = "bob"
+                    mock_therest = mock.Mock()
 
-                #  So many 'mock_therest's are needed
-                #  due to the nature of the test data used.
-                mock_insert.side_effect = [
-                    mock_therest, mock_therest,
-                    mock_therest, mock_therest,
-                    mock_therest, mock_therest,
-                    mock_therest,
-                    db.exc.OperationalError("Misser Mike, ee say no", "", "")]
+                    #  So many 'mock_therest's are needed
+                    #  due to the nature of the test data used.
+                    mock_insert.side_effect = [
+                        mock_therest, mock_therest,
+                        mock_therest, mock_therest,
+                        mock_therest, mock_therest,
+                        mock_therest,
+                        db.exc.OperationalError("Misser Mike, ee say no", "", "")]
 
-                x = create_query.lambda_handler(test_data, '')
+                    x = create_query.lambda_handler(test_data, '')
 
-                assert(x["statusCode"] == 500)
-                assert ("Failed To Insert Data: query_task"
-                        in x['body']['Error'])
+            assert(x["statusCode"] == 500)
+            assert ("Failed To Insert Data: query_task"
+                    in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.alchemy_functions")
@@ -196,29 +198,29 @@ class TestCreateQuery(unittest.TestCase):
             with open('tests/fixtures/test_data.txt') as infile:
                 test_data = json.load(infile)
 
-            with mock.patch("create_query.Session.query") as mock_insert:
-                mock_therest = mock.Mock()
-                mock_therest.values.return_value\
-                    .returning.return_value\
-                    .on_conflict_do_nothing.return_value = "bob"
+            with mock.patch("create_query.Session.add") as mock_insert:
+                with mock.patch("create_query.Session.query") as mock_return:
+                    mock_return.return_value.all.return_value = pd.DataFrame(
+                        {0: [1]})
+                    mock_therest = mock.Mock()
 
-                #  So many 'mock_therest's are needed
-                #  due to the nature of the test data used.
-                mock_insert.side_effect = [
-                    mock_therest, mock_therest,
-                    mock_therest, mock_therest,
-                    mock_therest, mock_therest,
-                    mock_therest, mock_therest,
-                    db.exc.OperationalError("Misser Mike, ee say no", "", "")]
+                    #  So many 'mock_therest's are needed
+                    #  due to the nature of the test data used.
+                    mock_insert.side_effect = [
+                        mock_therest, mock_therest,
+                        mock_therest, mock_therest,
+                        mock_therest, mock_therest,
+                        mock_therest, mock_therest,
+                        db.exc.OperationalError("Misser Mike, ee say no", "", "")]
 
-                x = create_query.lambda_handler(test_data, '')
+                    x = create_query.lambda_handler(test_data, '')
 
             assert(x["statusCode"] == 500)
             assert ("Failed To Insert Data: query_task_update"
                     in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
-    @mock.patch("create_query.Session.query")
+    @mock.patch("create_query.Session.add")
     @mock.patch("create_query.alchemy_functions")
     def test_commit_fail(self, mock_create_engine, mock_insert,
                          mock_alchemy_funks):
@@ -241,7 +243,7 @@ class TestCreateQuery(unittest.TestCase):
                 assert ("Failed To Commit" in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
-    @mock.patch("create_query.Session.query")
+    @mock.patch("create_query.Session.add")
     @mock.patch("create_query.alchemy_functions")
     def test_close_fail(self, mock_create_engine, mock_insert,
                         mock_alchemy_funks):

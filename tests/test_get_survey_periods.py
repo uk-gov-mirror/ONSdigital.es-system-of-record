@@ -55,7 +55,7 @@ class TestGetSurveyPeriods(unittest.TestCase):
                                                    "survey_code": ""}, '')
 
             assert(x["statusCode"] == 500)
-            assert ("Failed To Retrieve Data." in x['body']['Error'])
+            assert ("Failed To Retrieve Data:" in x['body']['Error'])
 
     @mock.patch("get_survey_periods.db.create_engine")
     @mock.patch("get_survey_periods.Session.query")

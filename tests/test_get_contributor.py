@@ -109,7 +109,7 @@ class TestGetContributor(unittest.TestCase):
             x = get_contributor.lambda_handler({"ru_reference": ""}, '')
 
             assert(x["statusCode"] == 500)
-            assert ("Failed To Retrieve Data." in x['body']['Error'])
+            assert ("Failed To Retrieve Data:" in x['body']['Error'])
 
     @mock.patch("get_contributor.db.create_engine")
     @mock.patch("get_contributor.Session.query")

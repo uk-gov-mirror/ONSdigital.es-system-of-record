@@ -1,6 +1,6 @@
 # coding: utf-8
 from sqlalchemy import Boolean, CHAR, Column, Date, ForeignKey,\
-    ForeignKeyConstraint, Integer, SmallInteger, String, Table, Text, text
+    ForeignKeyConstraint, Integer, SmallInteger, String, Text, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 

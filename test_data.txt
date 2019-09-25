@@ -58,15 +58,6 @@
               "step": "Vets",
               "run_id": 1,
               "ru_reference": "77700000002"
-            },
-            {
-              "survey_period": "201803",
-              "question_number": "602",
-              "failed_vet": 1,
-              "survey_code": "066",
-              "step": "Vets",
-              "run_id": 1,
-              "ru_reference": "77700000002"
             }
           ],
           "step": "Vets",

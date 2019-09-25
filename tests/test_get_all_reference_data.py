@@ -57,7 +57,7 @@ class TestGetAllReferenceData(unittest.TestCase):
             x = get_all_reference_data.lambda_handler('', '')
 
             assert(x["statusCode"] == 500)
-            assert ("Failed To Retrieve Data." in x['body']['Error'])
+            assert ("Failed To Retrieve Data:" in x['body']['Error'])
 
     @mock.patch("get_all_reference_data.db.create_engine")
     @mock.patch("get_all_reference_data.Session.query")

@@ -97,7 +97,7 @@ class TestGetQuery(unittest.TestCase):
             x = get_query.lambda_handler({"query_reference": 0}, '')
 
             assert(x["statusCode"] == 500)
-            assert ("Failed To Retrieve Data." in x['body']['Error'])
+            assert ("Failed To Retrieve Data:" in x['body']['Error'])
 
     @mock.patch("get_query.db.create_engine")
     @mock.patch("get_query.Session.query")
