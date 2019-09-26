@@ -117,23 +117,22 @@ def lambda_handler(event, context):
                         exception['survey_period'],
                         table_model.columns.survey_code ==
                         exception['survey_code'],
-                        table_model.columns.step == exception['step'])).scalar
+                        table_model.columns.step == exception['step']))\
+                    .scalar()
                 if is_it_here is not None:
                     continue
                 table_model = db_model.StepException
 
                 logger.info("Updating Table Data: {}".format("step_exception"))
-                check = alchemy_functions.to_df(session.query(table_model))
-                if check.empty:
-                    session.add(table_model(
-                        query_reference=exception['query_reference'],
-                        survey_period=exception['survey_period'],
-                        run_id=exception['run_id'],
-                        ru_reference=exception['ru_reference'],
-                        step=exception['step'],
-                        survey_code=exception['survey_code'],
-                        error_code=exception['error_code'],
-                        error_description=exception['error_description']))
+                session.add(table_model(
+                    query_reference=exception['query_reference'],
+                    survey_period=exception['survey_period'],
+                    run_id=exception['run_id'],
+                    ru_reference=exception['ru_reference'],
+                    step=exception['step'],
+                    survey_code=exception['survey_code'],
+                    error_code=exception['error_code'],
+                    error_description=exception['error_description']))
 
                 try:
                     if "Anomalies" in exception.keys():
@@ -160,7 +159,7 @@ def lambda_handler(event, context):
                                     table_model.columns.survey_code ==
                                     anomaly['survey_code'],
                                     table_model.columns.step == anomaly[
-                                        'step'])).scalar
+                                        'step'])).scalar()
                             if is_it_here is not None:
                                 continue
 
@@ -207,7 +206,7 @@ def lambda_handler(event, context):
                                                 .survey_code ==
                                                 vets['survey_code'],
                                                 table_model.columns.step ==
-                                                vets['step'])).scalar
+                                                vets['step'])).scalar()
                                         if is_it_here is not None:
                                             continue
 

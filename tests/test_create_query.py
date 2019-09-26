@@ -102,7 +102,8 @@ class TestCreateQuery(unittest.TestCase):
                     mock_therest = mock.Mock()
                     mock_insert.side_effect = [
                         mock_therest,
-                        db.exc.OperationalError("Misser Mike, ee say no", "", "")]
+                        db.exc.OperationalError(
+                            "Misser Mike, ee say no", "", "")]
 
                     x = create_query.lambda_handler(test_data, '')
 
@@ -126,7 +127,8 @@ class TestCreateQuery(unittest.TestCase):
                     mock_therest = mock.Mock()
                     mock_insert.side_effect = [
                         mock_therest, mock_therest,
-                        db.exc.OperationalError("Misser Mike, ee say no", "", "")]
+                        db.exc.OperationalError(
+                            "Misser Mike, ee say no", "", "")]
                     x = create_query.lambda_handler(test_data, '')
 
             assert(x["statusCode"] == 500)
@@ -151,7 +153,8 @@ class TestCreateQuery(unittest.TestCase):
                         mock_therest,
                         mock_therest,
                         mock_therest,
-                        db.exc.OperationalError("Misser Mike, ee say no", "", "")]
+                        db.exc.OperationalError(
+                            "Misser Mike, ee say no", "", "")]
                     x = create_query.lambda_handler(test_data, '')
 
             assert(x["statusCode"] == 500)
@@ -180,7 +183,8 @@ class TestCreateQuery(unittest.TestCase):
                         mock_therest, mock_therest,
                         mock_therest, mock_therest,
                         mock_therest,
-                        db.exc.OperationalError("Misser Mike, ee say no", "", "")]
+                        db.exc.OperationalError(
+                            "Misser Mike, ee say no", "", "")]
 
                     x = create_query.lambda_handler(test_data, '')
 
@@ -211,7 +215,8 @@ class TestCreateQuery(unittest.TestCase):
                         mock_therest, mock_therest,
                         mock_therest, mock_therest,
                         mock_therest, mock_therest,
-                        db.exc.OperationalError("Misser Mike, ee say no", "", "")]
+                        db.exc.OperationalError(
+                            "Misser Mike, ee say no", "", "")]
 
                     x = create_query.lambda_handler(test_data, '')
 

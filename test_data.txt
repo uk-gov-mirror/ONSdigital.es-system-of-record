@@ -1,6 +1,6 @@
 {
   "industry_group": "Con",
-  "query_active": false,
+  "query_active": False,
   "query_description": "Validation Exception Test",
   "current_period": "200001",
   "survey_period": "201803",
@@ -87,7 +87,7 @@
       ]
     }
   ],
-  "general_specific_flag": false,
+  "general_specific_flag": False,
   "raised_by": "System Generated",
   "query_type": "Data Cleaning"
 }
