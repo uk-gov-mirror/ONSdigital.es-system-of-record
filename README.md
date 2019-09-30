@@ -74,30 +74,29 @@ Database_Location=<thesqlalchemy.url> python get_query.py
 <a id='files'>
 
 **Query Lambda** <br>
-create_query -> For inserting new queries into database<br>
-get_all_reference_data -> Returns all data<br>
-get_contributor -> Return data for a given contributor<br>
-get_query -> Return data for a given query<br>
+create_query -> For inserting new queries into the database.<br>
+get_all_reference_data -> Returns all reference data.<br>
+get_contributor -> Return data for a given contributor.<br>
+get_query -> Return data for matching queries.<br>
 get_query_dashboard -> As getQuery, but also includes contributor name.<br>
-get_survey_periods -> Return data for a given survey/period<br>
-update_query -> Update a query<br>
-update_survey_period -> Update a survey/period<br>
-update_contributor -> Update a contributor<br>
+get_survey_periods -> Return data for matching survey/periods.<br>
+update_query -> Update a query.<br>
+update_survey_period -> Update a survey/period.<br>
+update_contributor -> Update a contributor.<br>
 <br>
 [(Back to top)](#top)
 
-**Non-sor Functions**<br>
+**Non-SOR Functions**<br>
 insert_test_data -> Inserts test data into database to enable each of the lambda to be 
 tested.<br>
-run_alembic -> May be an old file. Runs the alembic upgrade/downgrade without needing 
+run_alembic -> May be an old file. Runs the Alembic upgrade/downgrade without needing 
 to goto command line.<br>
 io_validation -> Marshmallow schema to allow input/output validation.<br>
-empty_database -> Used during alembic downgrade.<br>
-db_model -> A model of the database tables, used by sqlAlchemy.<br>
-base_migration_model -> Used during alembic upgrade to create all db tables.<br>
+empty_database -> Used during Alembic downgrade.<br>
+db_model -> A model of the database tables, used by SQLAlchemy.<br>
+base_migration_model -> Used during Alembic upgrade to create all database tables.<br>
 alchemy_functions.py -> Used by all of the system of records query lambda. Provides 
-standard functions for using sqlalchemy.<br>
-README -> This file.....
+standard functions for using SQLAlchemy.<br>
 
 [(Back to top)](#top)
 
@@ -105,77 +104,76 @@ README -> This file.....
 Example data to use in calling the methods.:
 
 ```
-getAllRefData:
+get_all_reference_data:
   {}
 ```  
 
 ```
-getContributor:
+get_contributor:
   {
-  "RURef": "77700000001"
+  "ru_reference": "77700000001"
   }
  ``` 
  
  ```
-updateContributor:
+update_contributor:
   {
-  "rureference": "77700000001",
-  "surveyperiod": "201803",
-  "surveyoutputcode": "066",
-  "additionalcomments": "Recently Had Machinery Break Down.",
-  "contributorcomments": "Lower Than Usual values Are Correct."
+  "ru_reference": "77700000001",
+  "survey_period": "201803",
+  "survey_code": "066",
+  "additional_comments": "Recently Had Machinery Break Down.",
+  "contributor_comments": "Lower Than Usual Values Are Correct."
   }
  ```
  
  ```
-  createQuery:
+  create_query:
   {
-    "currentperiod": 201806,
-    "datetimeraised": "2019-06-27",
-    "generalspecificflag": false,
-    "industrygroup": "Construction",
-    "lastqueryupdate": "2019-06-27",
-    "periodqueryrelates": "201803",
-    "queryactive": true,
-    "querydescription": "Company Data Suspicous.",
-    "queryreference": 1,
-    "querystatus": "open",
-    "querytype": "Register",
-    "raisedby": "Anna McCaffery",
-    "resultsstate": "NA",
-    "runreference": 1,
-    "rureference": "77700000001",
-    "surveyoutputcode": "066",
-    "targetresolutiondate": "2019-06-30",
+    "current_period": 201806,
+    "date_raised": "2019-06-27",
+    "general_specific_flag": false,
+    "industry_group": "Construction",
+    "last_query_update": "2019-06-27",
+    "survey_period": "201803",
+    "query_active": true,
+    "query_description": "Company Data Suspicous.",
+    "query_reference": 1,
+    "query_status": "open",
+    "query_type": "Register",
+    "raised_by": "Anna McCaffery",
+    "results_state": "NA",
+    "run_id": 1,
+    "ru_reference": "77700000001",
+    "survey_code": "066",
+    "target_resolution_date": "2019-06-30",
     "Exceptions": [
       {
-        "errorcode": "ERR0867",
-        "errordescription": "QuestionNo Failed",
-        "queryreference": 2,
-        "runreference": 1,
-        "rureference": "77700000001",
+        "error_code": "ERR0867",
+        "error_description": "QuestionNo Failed",
+        "query_reference": 2,
+        "run_id": 1,
+        "ru_reference": "77700000001",
         "step": "VETs",
-        "surveyoutputcode": "066",
-        "surveyperiod": "201803",
+        "survey_code": "066",
+        "survey_period": "201803",
         "Anomalies": [
           {
-            "description": "Validation Failure On Concrete Agg.",
-            "questionno": "Q605",
-            "runreference": 1,
-            "rureference": "77700000001",
+            "anomaly_description": "Validation Failure On Concrete Agg.",
+            "question_number": "Q605",
+            "run_id": 1,
+            "ru_reference": "77700000001",
             "step": "VETs",
-            "surveyoutputcode": "066",
-            "surveyperiod": "201803",
+            "survey_code": "066",
+            "survey_period": "201803",
             "FailedVETs": [
               {
-                "description": "First Validation",
-                "failedvet": 123,
-                "questionno": "Q605",
-                "runreference": 1,
-                "rureference": "77700000001",
+                "failed_vet": 123,
+                "question_number": "Q605",
+                "run_id": 1,
+                "ru_reference": "77700000001",
                 "step": "VETs",
-                "surveyoutputcode": "066",
-                "surveyperiod": "201803"
+                "survey_code": "066",
+                "survey_period": "201803"
               }
             ]
           }
@@ -184,21 +182,21 @@ updateContributor:
     ],
     "QueryTasks": [
       {
-        "nextplannedaction": "Update Data",
-        "queryreference": 1,
-        "responserequiredby": "2019-06-28",
-        "taskdescription": "Call Company To See If Figures Incorrect.",
-        "taskresponsibility": "Bill Bob",
-        "taskseqno": 1,
-        "taskstatus": "In Progress",
-        "whenactionrequired": "2018-07-12",
+        "next_planned_action": "Update Data",
+        "query_reference": 1,
+        "response_required_by": "2019-06-28",
+        "task_description": "Call Company To See If Figures Incorrect.",
+        "task_responsibility": "Bill Bob",
+        "task_sequence_number": 1,
+        "task_status": "In Progress",
+        "when_action_required": "2018-07-12",
         "QueryTaskUpdates": [
           {
-            "lastupdated": "2019-06-27",
-            "queryreference": 1,
-            "taskseqno": 1,
-            "taskupdatedescription": "Contact Not In Office Until Tomorrow",
-            "updatedby": "Bill Bob"
+            "last_updated": "2019-06-27",
+            "query_reference": 1,
+            "task_sequence_number": 1,
+            "task_update_description": "Contact Not In Office Until Tomorrow",
+            "updated_by": "Bill Bob"
           }
         ]
       }
@@ -208,83 +206,83 @@ updateContributor:
   ```
   
   ```
-  getQuery/getQueryDashboard:
+  get_query/get_query_dashboard:
   {
-  "QueryReference": 1,
-  "PeriodQueryRelates": "",
-  "QueryType": "",
-  "RUReference": "77700000001",
-  "SurveyOutputCode": "",
-  "QueryStatus": "",
-  "RunReference": ""
+  "query_reference": 1,
+  "survey_period": "",
+  "query_type": "",
+  "ru_reference": "77700000001",
+  "survey_code": "",
+  "query_status": "",
+  "run_id": ""
   }
   OR
   {
-  "QueryReference": 2,
-  "PeriodQueryRelates": "",
-  "QueryType": "",
-  "RUReference": "",
-  "SurveyOutputCode": "066",
-  "QueryStatus": "",
-  "RunReference": ""
+  "query_reference": 2,
+  "survey_period": "",
+  "query_type": "",
+  "ru_reference": "",
+  "survey_code": "066",
+  "query_status": "",
+  "run_id": ""
   }
   OR
   {
-    "QueryReference": 1,
-    "PeriodQueryRelates": "",
-    "QueryType": "",
-    "RUReference": "",
-    "SurveyOutputCode": "",
-    "QueryStatus": "",
-    "RunReference": ""
+  "query_reference": 1,
+  "survey_period": "",
+  "query_type": "",
+  "ru_reference": "",
+  "survey_code": "",
+  "query_status": "",
+  "run_id": ""
   }
   ```
   
   ```
-Update Query:
+update_query:
   {
-    "currentperiod": 201806,
-    "datetimeraised": "2019-06-27",
-    "generalspecificflag": false,
-    "industrygroup": "Construction",
-    "lastqueryupdate": "2019-06-27",
-    "periodqueryrelates": "201803",
-    "queryactive": true,
-    "querydescription": "Company Data Suspisously.",
-    "queryreference": 1,
-    "querystatus": "open",
-    "querytype": "Register",
-    "raisedby": "Anna McCaffery",
-    "resultsstate": "NA",
-    "runreference": 1,
-    "rureference": "77700000001",
-    "surveyoutputcode": "066",
-    "targetresolutiondate": "2019-06-30",
+    "current_period": 201806,
+    "date_raised": "2019-06-27",
+    "general_specific_flag": false,
+    "industry_group": "Construction",
+    "last_query_update": "2019-06-27",
+    "survey_period": "201803",
+    "query_active": true,
+    "query_description": "Company Data Suspisously.",
+    "query_reference": 1,
+    "query_status": "open",
+    "query_type": "Register",
+    "raised_by": "Anna McCaffery",
+    "results_state": "NA",
+    "run_id": 1,
+    "ru_reference": "77700000001",
+    "survey_code": "066",
+    "target_resolution_date": "2019-06-30",
     "Exceptions": [],
     "QueryTasks": [
       {
-        "nextplannedaction": "Update Data",
-        "queryreference": 1,
-        "responserequiredby": "2019-06-28",
-        "taskdescription": "Call Company To See If Figures Incorrect.",
-        "taskresponsibility": "Bill Bob",
-        "taskseqno": 1,
-        "taskstatus": "In Progress",
-        "whenactionrequired": "2018-07-13",
+        "next_planned_action": "Update Data",
+        "query_reference": 1,
+        "response_required_by": "2019-06-28",
+        "task_description": "Call Company To See If Figures Incorrect.",
+        "task_responsibility": "Bill Bob",
+        "task_sequence_number": 1,
+        "task_status": "In Progress",
+        "when_action_required": "2018-07-13",
         "QueryTaskUpdates": [
           {
-            "lastupdated": "2019-06-27",
-            "queryreference": 1,
-            "taskseqno": 1,
-            "taskupdatedescription": "Contact Not In Office Until Tomorrow",
-            "updatedby": "Bill Bob"
+            "last_updated": "2019-06-27",
+            "query_reference": 1,
+            "task_sequence_number": 1,
+            "task_update_description": "Contact Not In Office Until Tomorrow",
+            "updated_by": "Bill Bob"
           },
           {
-            "lastupdated": "2019-06-30",
-            "queryreference": 1,
-            "taskseqno": 1,
-            "taskupdatedescription": "Contact In Office Now",
-            "updatedby": "Bob Bob"
+            "last_updated": "2019-06-30",
+            "query_reference": 1,
+            "task_sequence_number": 1,
+            "task_update_description": "Contact In Office Now",
+            "updated_by": "Bob Bob"
           }
         ]
       }
@@ -296,9 +294,10 @@ Update Query:
 <hr>
 
 **Technical Debt** <a id='td'>
-1) Lots of the INSERTS have On Conflict Do Nothing or Do Update. These may need to be removed or have more conditions on them.
-2) Code sometimes allows to work and sometimes doesn't the functions if no rows are returned from the gets. This will need some refinement.
-3) Current SQL based on the IBM BPM Alpha and do not represent an accurate picture of what data should be allowed to be updated.
+1) More conditions needed on the replacements for the On Conflict keywords.
+2) Update Query needs an if statement for Query Task because this should be an update and an insert.
+3) How the Get functions work when returning nothing needs to be better refined.
+4) Current SQL based on the IBM BPM Alpha and they do not represent an accurate picture of what the data should be allowed to be updated.
 
 [(Back to top)](#top)
 
