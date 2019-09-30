@@ -61,8 +61,8 @@ def lambda_handler(event, context):
         logger.info("Fetching Table Model: {}".format("query"))
         table_model = db_model.Query
         logger.info("Inserting Table Data: {}".format("query"))
-        session.add(
-            table_model(query_type=event['query_type'],
+        query_model = table_model(
+                        query_type=event['query_type'],
                         ru_reference=event['ru_reference'],
                         survey_code=event['survey_code'],
                         survey_period=event['survey_period'],
@@ -77,18 +77,11 @@ def lambda_handler(event, context):
                         raised_by=event['raised_by'],
                         results_state=event['results_state'],
                         target_resolution_date=event['target_resolution_date']
-                        ))
+                        )
+        session.add(query_model)
         session.flush()
-
-        # Couldn't get the ORM to do a returning clause.
-        # Below is a temporary work around until I have
-        # a chance to look at it more indepth.
-        # Further NOTE: Might have to do with SERIAL vs SEQUENCE
-        # Will try to link to some information on JIRA if possible
-        table_model = alchemy_functions.table_model(engine, metadata, 'query')
-        new_query = session.query(
-            func.max(table_model.columns.query_reference)).all()
-        new_query = new_query[0][0]
+        session.refresh(query_model)
+        new_query = query_model.query_reference
 
     except db.exc.OperationalError as exc:
         logger.error(
