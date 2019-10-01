@@ -2,12 +2,9 @@ import logging
 import os
 
 import sqlalchemy as db
-
 from marshmallow import ValidationError
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 
-import alchemy_functions
 import io_validation
 import db_model
 
@@ -43,7 +40,6 @@ def lambda_handler(event, context):
         logger.info("Connecting To The Database.")
         engine = db.create_engine(database)
         session = Session(engine)
-        metadata = db.MetaData()
     except db.exc.NoSuchModuleError as exc:
         logger.error("Driver Error, Failed To Connect: {}".format(exc))
         return {"statusCode": 500,

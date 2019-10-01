@@ -16,9 +16,9 @@ class TestCreateQuery(unittest.TestCase):
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.Session.add")
-    @mock.patch("create_query.alchemy_functions")
+    @mock.patch("create_query.Session.refresh")
     def test_lambda_handler_happy_path(self, mock_create_engine, mock_insert,
-                                       mock_alchemy_funks):
+                                       mock_refresh):
         with mock.patch.dict(
             create_query.os.environ, {"Database_Location": "sweden"}
         ):
@@ -69,9 +69,9 @@ class TestCreateQuery(unittest.TestCase):
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.Session.add")
-    @mock.patch("create_query.alchemy_functions")
+    @mock.patch("create_query.Session.refresh")
     def test_query_table_insert_fail(self, mock_create_engine, mock_insert,
-                                     mock_alchemy_funks):
+                                     mock_refresh):
         with mock.patch.dict(
             create_query.os.environ, {"Database_Location": "sweden"}
         ):
@@ -86,9 +86,9 @@ class TestCreateQuery(unittest.TestCase):
             assert ("Failed To Insert Data: query" in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
-    @mock.patch("create_query.alchemy_functions")
+    @mock.patch("create_query.Session.refresh")
     def test_step_exception_insert_fail(self, mock_create_engine,
-                                        mock_alchemy_funks):
+                                        mock_refresh):
         with mock.patch.dict(
             create_query.os.environ, {"Database_Location": "sweden"}
         ):
@@ -112,9 +112,9 @@ class TestCreateQuery(unittest.TestCase):
                     in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
-    @mock.patch("create_query.alchemy_functions")
+    @mock.patch("create_query.Session.refresh")
     def test_question_anomaly_insert_fail(self, mock_create_engine,
-                                          mock_alchemy_funks):
+                                          mock_refresh):
         with mock.patch.dict(
             create_query.os.environ, {"Database_Location": "sweden"}
         ):
@@ -136,9 +136,8 @@ class TestCreateQuery(unittest.TestCase):
                     in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
-    @mock.patch("create_query.alchemy_functions")
-    def test_failed_vet_insert_fail(self, mock_create_engine,
-                                    mock_alchemy_funks):
+    @mock.patch("create_query.Session.refresh")
+    def test_failed_vet_insert_fail(self, mock_create_engine, mock_refresh):
         with mock.patch.dict(
             create_query.os.environ, {"Database_Location": "sweden"}
         ):
@@ -161,9 +160,8 @@ class TestCreateQuery(unittest.TestCase):
             assert ("Failed To Insert Data: failed_vet" in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
-    @mock.patch("create_query.alchemy_functions")
-    def test_query_task_insert_fail(self, mock_create_engine,
-                                    mock_alchemy_funks):
+    @mock.patch("create_query.Session.refresh")
+    def test_query_task_insert_fail(self, mock_create_engine, mock_refresh):
         with mock.patch.dict(
             create_query.os.environ, {"Database_Location": "sweden"}
         ):
@@ -193,9 +191,9 @@ class TestCreateQuery(unittest.TestCase):
                     in x['body']['Error'])
 
     @mock.patch("create_query.db.create_engine")
-    @mock.patch("create_query.alchemy_functions")
+    @mock.patch("create_query.Session.refresh")
     def test_query_task_update_insert_fail(self, mock_create_engine,
-                                           mock_alchemy_funks):
+                                           mock_refresh):
         with mock.patch.dict(
             create_query.os.environ, {"Database_Location": "sweden"}
         ):
@@ -226,9 +224,7 @@ class TestCreateQuery(unittest.TestCase):
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.Session.add")
-    @mock.patch("create_query.alchemy_functions")
-    def test_commit_fail(self, mock_create_engine, mock_insert,
-                         mock_alchemy_funks):
+    def test_commit_fail(self, mock_create_engine, mock_insert):
         with mock.patch.dict(
             create_query.os.environ, {"Database_Location": "sweden"}
         ):
@@ -249,9 +245,7 @@ class TestCreateQuery(unittest.TestCase):
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.Session.add")
-    @mock.patch("create_query.alchemy_functions")
-    def test_close_fail(self, mock_create_engine, mock_insert,
-                        mock_alchemy_funks):
+    def test_close_fail(self, mock_create_engine, mock_insert):
         with mock.patch.dict(
             create_query.os.environ, {"Database_Location": "sweden"}
         ):
