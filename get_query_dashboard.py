@@ -35,7 +35,7 @@ def lambda_handler(event, context):
     except ValidationError as exc:
         logger.error("Input: {}".format(event))
         logger.error("Failed To Validate The Input: {}".format(exc.messages))
-        return {"statusCode": 500, "body": {"Error": exc.messages}}
+        return {"statusCode": 400, "body": {"Error": exc.messages}}
 
     search_list = ['query_reference',
                    'survey_period',
