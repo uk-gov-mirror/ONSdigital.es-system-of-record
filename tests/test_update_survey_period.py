@@ -50,7 +50,7 @@ class TestUpdateSurveyPeriod(unittest.TestCase):
                 x = update_survey_period.lambda_handler(
                     "MIKE LOVES BOUNTY BARS!!", '')
 
-        assert (x["statusCode"] == 500)
+        assert (x["statusCode"] == 400)
         assert ("Invalid" in str(x['body']['Error']))
 
     @mock.patch("update_survey_period.db.create_engine")

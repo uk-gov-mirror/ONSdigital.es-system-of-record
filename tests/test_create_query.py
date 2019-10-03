@@ -48,7 +48,7 @@ class TestCreateQuery(unittest.TestCase):
                 test_data.pop('query_type')
                 x = create_query.lambda_handler("MIKE", '')
 
-        assert (x["statusCode"] == 500)
+        assert (x["statusCode"] == 400)
         assert ("Invalid" in str(x['body']['Error']))
 
     @mock.patch("create_query.db.create_engine")

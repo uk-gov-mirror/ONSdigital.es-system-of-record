@@ -46,7 +46,7 @@ class TestUpdateQuery(unittest.TestCase):
                 test_data.pop('query_type')
                 x = update_query.lambda_handler("MIKE", '')
 
-        assert (x["statusCode"] == 500)
+        assert (x["statusCode"] == 400)
         assert ("Invalid" in str(x['body']))
 
     @mock.patch("update_query.db.create_engine")
