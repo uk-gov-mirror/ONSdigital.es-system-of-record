@@ -229,3 +229,7 @@ class AllReferenceData(Schema):
     VETsCodes = fields.Nested(VETsCodes(many=True), required=True)
     Surveys = fields.Nested(Surveys(many=True), required=True)
     GorRegions = fields.Nested(GorRegions(many=True), required=True)
+
+
+class Database(Schema):
+    Database_Location = fields.Str(required=True, allow_none=False)

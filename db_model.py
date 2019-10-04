@@ -1,5 +1,7 @@
 # coding: utf-8
-from sqlalchemy import Boolean, CHAR, Column, Date, ForeignKey, ForeignKeyConstraint, Integer, SmallInteger, String, Table, Text, text  # noqa: 401
+from sqlalchemy import Boolean, CHAR, Column, Date, ForeignKey
+from sqlalchemy import ForeignKeyConstraint, Integer, SmallInteger, String
+from sqlalchemy import Table, Text, text  # noqa: 401
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 

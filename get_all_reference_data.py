@@ -17,27 +17,30 @@ def lambda_handler(event, context):
 
     logger.info("get_all_reference_data Has Started Running.")
 
-    database = os.environ.get('Database_Location', None)
-    if database is None:
+    try:
+        database, error = io_validation.Database(strict=True).load(os.environ)
+    except ValidationError as e:
         logger.error(
-            "Database_Location Environment Variable Has Not Been Set.")
-        return {"statusCode": 500, "body": {"Error": "Configuration Error."}}
+            "Database_Location Environment Variable" +
+            "Has Not Been Set Correctly: {}".format(e.messages))
+        return {"statusCode": 500, "body": {"Error": "Configuration Error: {}"
+                .format(e)}}
 
     try:
         logger.info("Connecting To The Database.")
-        engine = db.create_engine(database)
+        engine = db.create_engine(database['Database_Location'])
         session = Session(engine)
         metadata = db.MetaData()
-    except db.exc.NoSuchModuleError as exc:
-        logger.error("Driver Error, Failed To Connect: {}".format(exc))
+    except db.exc.NoSuchModuleError as e:
+        logger.error("Driver Error, Failed To Connect: {}".format(e))
         return {"statusCode": 500,
                 "body": {"Error": "Driver Error, Failed To Connect."}}
-    except db.exc.OperationalError as exc:
-        logger.error("Operational Error Encountered: {}".format(exc))
+    except db.exc.OperationalError as e:
+        logger.error("Operational Error Encountered: {}".format(e))
         return {"statusCode": 500,
                 "body": {"Error": "Operational Error, Failed To Connect."}}
-    except Exception as exc:
-        logger.error("Failed To Connect To The Database: {}".format(exc))
+    except Exception as e:
+        logger.error("Failed To Connect To The Database: {}".format(e))
         return {"statusCode": 500,
                 "body": {"Error": "Failed To Connect To The Database."}}
 
@@ -59,17 +62,17 @@ def lambda_handler(event, context):
             logger.info("Converting Data: {}".format(current_table))
             table_data = alchemy_functions.to_df(statement)
             table_list[current_table] = table_data
-    except db.exc.OperationalError as exc:
+    except db.exc.OperationalError as e:
         logger.error(
             "Alchemy Operational Error When Retrieving Data: {} {}"
-            .format(current_table, exc))
+            .format(current_table, e))
         return {"statusCode": 500,
                 "body": {"Error":
                          "Operation Error, Failed To Retrieve Data: {}"
                          .format(current_table)}}
-    except Exception as exc:
+    except Exception as e:
         logger.error("Problem Retrieving Data From The Table: {} {}"
-                     .format(current_table, exc))
+                     .format(current_table, e))
         return {"statusCode": 500,
                 "body": {"Error": "Failed To Retrieve Data: {}"
                          .format(current_table)}}
@@ -92,22 +95,22 @@ def lambda_handler(event, context):
     try:
         logger.info("Closing Session.")
         session.close()
-    except db.exc.OperationalError as exc:
+    except db.exc.OperationalError as e:
         logger.error(
-            "Operational Error, Failed To Close The Session: {}".format(exc))
+            "Operational Error, Failed To Close The Session: {}".format(e))
         return {"statusCode": 500,
                 "body": {"Error": "Database Session Closed Badly."}}
-    except Exception as exc:
-        logger.error("Failed To Close The Session: {}".format(exc))
+    except Exception as e:
+        logger.error("Failed To Close The Session: {}".format(e))
         return {"statusCode": 500,
                 "body": {"Error": "Database Session Closed Badly."}}
 
     try:
         io_validation.AllReferenceData(strict=True).loads(out_json)
-    except ValidationError as exc:
+    except ValidationError as e:
         logger.error("Output: {}".format(out_json))
-        logger.error("Failed To Validate The Output: {}".format(exc.messages))
-        return {"statusCode": 500, "body": {"Error": exc.messages}}
+        logger.error("Failed To Validate The Output: {}".format(e.messages))
+        return {"statusCode": 500, "body": {"Error": e.messages}}
 
     logger.info("get_all_reference_data Has Successfully Run.")
     return {"statusCode": 200, "body": json.loads(out_json)}

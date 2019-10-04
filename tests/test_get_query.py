@@ -129,7 +129,7 @@ class TestGetQuery(unittest.TestCase):
         x = get_query.lambda_handler('', '')
 
         assert (x["statusCode"] == 500)
-        assert ("Configuration Error." in x['body']['Error'])
+        assert ("Configuration Error:" in x['body']['Error'])
 
     @mock.patch("get_query.db.create_engine")
     def test_db_connection_exception(self, mock_create_engine):

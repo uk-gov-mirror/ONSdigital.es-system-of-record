@@ -37,7 +37,7 @@ class TestCreateQuery(unittest.TestCase):
         x = create_query.lambda_handler("MIKE", '')
 
         assert (x["statusCode"] == 500)
-        assert ("Configuration Error." in x['body']['Error'])
+        assert ("Configuration Error:" in x['body']['Error'])
 
     def test_input_data_exception(self):
         with open('tests/fixtures/test_data.txt') as infile:
