@@ -93,11 +93,30 @@ class TestGetQuery(unittest.TestCase):
         with mock.patch.dict(
             get_query.os.environ, {"Database_Location": "MyPostgresDatase"}
         ):
-            mock_select.side_effect = sqlalchemy.exc.OperationalError
+            mock_select.side_effect =\
+                sqlalchemy.exc.OperationalError('', '', '')
             x = get_query.lambda_handler({"query_reference": 0}, '')
 
             assert(x["statusCode"] == 500)
             assert ("Failed To Retrieve Data:" in x['body']['Error'])
+            assert ("Operational Error" in x['body']['Error'])
+
+    @mock.patch("get_query.db.create_engine")
+    @mock.patch("get_query.Session.query")
+    @mock.patch("get_query.alchemy_functions")
+    def test_lambda_handler_select_fail_general(self, mock_create_engine,
+                                                mock_select,
+                                                mock_alchemy_functions):
+
+        with mock.patch.dict(
+            get_query.os.environ, {"Database_Location": "MyPostgresDatase"}
+        ):
+            mock_select.side_effect = Exception("Bad Me")
+            x = get_query.lambda_handler({"query_reference": 0}, '')
+
+            assert(x["statusCode"] == 500)
+            assert ("Failed To Retrieve Data:" in x['body']['Error'])
+            assert ("General Error" in x['body']['Error'])
 
     @mock.patch("get_query.db.create_engine")
     @mock.patch("get_query.Session.query")
@@ -137,11 +156,26 @@ class TestGetQuery(unittest.TestCase):
         with mock.patch.dict(
                 get_query.os.environ, {"Database_Location": "MyPostgresDatase"}
         ):
-            mock_create_engine.side_effect = sqlalchemy.exc.OperationalError
+            mock_create_engine.side_effect =\
+                sqlalchemy.exc.OperationalError('', '', '')
             x = get_query.lambda_handler({"query_reference": 0}, '')
 
         assert (x["statusCode"] == 500)
         assert ("Failed To Connect" in str(x['body']['Error']))
+        assert ("Operational Error" in x['body']['Error'])
+
+    @mock.patch("get_query.db.create_engine")
+    def test_db_connection_exception_general(self, mock_create_engine):
+
+        with mock.patch.dict(
+                get_query.os.environ, {"Database_Location": "MyPostgresDatase"}
+        ):
+            mock_create_engine.side_effect = Exception("Bad Me")
+            x = get_query.lambda_handler({"query_reference": 0}, '')
+
+        assert (x["statusCode"] == 500)
+        assert ("Failed To Connect" in str(x['body']['Error']))
+        assert ("General Error" in x['body']['Error'])
 
     @mock.patch("get_query.db.create_engine")
     @mock.patch("get_query.Session.query")
@@ -158,8 +192,30 @@ class TestGetQuery(unittest.TestCase):
                 mock_session = AlchemyMagicMock()
                 mock_sesh.return_value = mock_session
                 mock_session.close.side_effect =\
-                    sqlalchemy.exc.OperationalError
+                    sqlalchemy.exc.OperationalError('', '', '')
                 x = get_query.lambda_handler({"query_reference": 0}, '')
 
                 assert(x["statusCode"] == 500)
                 assert ("Database Session Closed Badly" in x['body']['Error'])
+                assert ("Operational Error" in x['body']['Error'])
+
+    @mock.patch("get_query.db.create_engine")
+    @mock.patch("get_query.Session.query")
+    @mock.patch("get_query.alchemy_functions")
+    def test_lambda_handler_connection_close_general(self, mock_create_engine,
+                                                     mock_select,
+                                                     mock_alchemy_functions):
+
+        with mock.patch.dict(
+            get_query.os.environ, {"Database_Location": "MyPostgresDatase"}
+        ):
+
+            with mock.patch("get_query.Session") as mock_sesh:
+                mock_session = AlchemyMagicMock()
+                mock_sesh.return_value = mock_session
+                mock_session.close.side_effect = Exception("Bad Me")
+                x = get_query.lambda_handler({"query_reference": 0}, '')
+
+                assert(x["statusCode"] == 500)
+                assert ("Database Session Closed Badly" in x['body']['Error'])
+                assert ("General Error" in x['body']['Error'])

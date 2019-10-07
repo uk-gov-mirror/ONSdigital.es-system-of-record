@@ -57,13 +57,13 @@ def lambda_handler(event, context):
         return {"statusCode": 500,
                 "body": {"Error": "Driver Error, Failed To Connect."}}
     except db.exc.OperationalError as e:
-        logger.error("Operational Error Encountered: {}".format(e))
+        logger.error("Operational Error, Encountered: {}".format(e))
         return {"statusCode": 500,
                 "body": {"Error": "Operational Error, Failed To Connect."}}
     except Exception as e:
-        logger.error("Failed To Connect To The Database: {}".format(e))
+        logger.error("General Error, Failed To Connect To The Database: {}".format(e))
         return {"statusCode": 500,
-                "body": {"Error": "Failed To Connect To The Database."}}
+                "body": {"Error": "General Error, Failed To Connect To The Database."}}
 
     try:
         logger.info("Fetching Table Model: {}".format("query"))
@@ -98,17 +98,17 @@ def lambda_handler(event, context):
 
     except db.exc.OperationalError as e:
         logger.error(
-            "Alchemy Operational Error When Retrieving Data: {} {}"
+            "Operational Error, When Retrieving Data: {} {}"
             .format("query", e))
         return {"statusCode": 500,
                 "body": {"Error":
-                         "Operation Error, Failed To Retrieve Data: {}"
+                         "Operational Error, Failed To Retrieve Data: {}"
                          .format("query")}}
     except Exception as e:
-        logger.error("Problem Retrieving Data From The Table: {} {}"
+        logger.error("General Error, Problem Retrieving Data From The Table: {} {}"
                      .format("query", e))
         return {"statusCode": 500,
-                "body": {"Error": "Failed To Retrieve Data: {}"
+                "body": {"Error": "General Error, Failed To Retrieve Data: {}"
                          .format("query")}}
 
     table_list = {'step_exception': None,
@@ -161,17 +161,17 @@ def lambda_handler(event, context):
                 table_list[current_table] = alchemy_functions.to_df(statement)
         except db.exc.OperationalError as e:
             logger.error(
-                "Alchemy Operational Error When Retrieving Data: {} {}"
+                "Operational Error, When Retrieving Data: {} {}"
                 .format(current_table, e))
             return {"statusCode": 500,
                     "body": {
-                        "Error": "Operation Error, Failed To Retrieve Data: {}"
+                        "Error": "Operational Error, Failed To Retrieve Data: {}"
                         .format(current_table)}}
         except Exception as e:
-            logger.error("Problem Retrieving Data From The Table: {} {}"
+            logger.error("General Error, Problem Retrieving Data From The Table: {} {}"
                          .format(current_table, e))
             return {"statusCode": 500,
-                    "body": {"Error": "Failed To Retrieve Data: {}"
+                    "body": {"Error": "General Error, Failed To Retrieve Data: {}"
                              .format(current_table)}}
 
         logger.info("Creating JSON.")
@@ -266,11 +266,11 @@ def lambda_handler(event, context):
         logger.error(
             "Operational Error, Failed To Close The Session: {}".format(e))
         return {"statusCode": 500,
-                "body": {"Error": "Database Session Closed Badly."}}
+                "body": {"Error": "Operational Error, Database Session Closed Badly."}}
     except Exception as e:
-        logger.error("Failed To Close The Session: {}".format(e))
+        logger.error("General Error, Failed To Close The Session: {}".format(e))
         return {"statusCode": 500,
-                "body": {"Error": "Database Session Closed Badly."}}
+                "body": {"Error": "General Error, Database Session Closed Badly."}}
 
     try:
         io_validation.Queries(strict=True).loads(out_json)

@@ -60,7 +60,7 @@ class TestUpdateSurveyPeriod(unittest.TestCase):
                 {"Database_Location": "Djibouti"}
         ):
             mock_create_engine.side_effect =\
-                db.exc.OperationalError("Side effect in full effect", "", "")
+                db.exc.OperationalError("", "", "")
 
             x = update_survey_period.lambda_handler(
                 {'active_period': True, 'number_of_responses': 2,
@@ -70,6 +70,25 @@ class TestUpdateSurveyPeriod(unittest.TestCase):
 
         assert (x["statusCode"] == 500)
         assert ("Failed To Connect" in str(x['body']['Error']))
+        assert ("Operational Error" in str(x['body']['Error']))
+
+    @mock.patch("update_survey_period.db.create_engine")
+    def test_db_connection_exception_general(self, mock_create_engine):
+        with mock.patch.dict(
+                update_survey_period.os.environ,
+                {"Database_Location": "Djibouti"}
+        ):
+            mock_create_engine.side_effect = Exception("Bad Me")
+
+            x = update_survey_period.lambda_handler(
+                {'active_period': True, 'number_of_responses': 2,
+                 'number_cleared': 2, 'number_cleared_first_time': 1,
+                 'sample_size': 2, 'survey_period': '201712',
+                 'survey_code': '066'}, '')
+
+        assert (x["statusCode"] == 500)
+        assert ("Failed To Connect" in str(x['body']['Error']))
+        assert ("General Error" in str(x['body']['Error']))
 
     @mock.patch("update_survey_period.db.create_engine")
     @mock.patch("update_survey_period.alchemy_functions")
@@ -82,8 +101,7 @@ class TestUpdateSurveyPeriod(unittest.TestCase):
             with mock.patch("update_survey_period.Session.query")\
                     as mock_update:
                 mock_update.side_effect =\
-                    db.exc.OperationalError("Side effect in full effect",
-                                            "", "")
+                    db.exc.OperationalError("", "", "")
 
                 x = update_survey_period.lambda_handler(
                     {'active_period': True, 'number_of_responses': 2,
@@ -93,6 +111,29 @@ class TestUpdateSurveyPeriod(unittest.TestCase):
 
         assert(x["statusCode"] == 500)
         assert ("Failed To Update Data: survey_period" in x['body']['Error'])
+        assert ("Operational Error" in str(x['body']['Error']))
+
+    @mock.patch("update_survey_period.db.create_engine")
+    @mock.patch("update_survey_period.alchemy_functions")
+    def test_update_survey_period_fail_general(self, mock_create_engine,
+                                       mock_alchemy_funcs):
+        with mock.patch.dict(
+            update_survey_period.os.environ,
+                {"Database_Location": "Djibouti"}
+        ):
+            with mock.patch("update_survey_period.Session.query")\
+                    as mock_update:
+                mock_update.side_effect = Exception('', '', '')
+
+                x = update_survey_period.lambda_handler(
+                    {'active_period': True, 'number_of_responses': 2,
+                     'number_cleared': 2, 'number_cleared_first_time': 1,
+                     'sample_size': 2, 'survey_period': '201712',
+                     'survey_code': '066'}, '')
+
+        assert(x["statusCode"] == 500)
+        assert ("Failed To Update Data: survey_period" in x['body']['Error'])
+        assert ("General Error" in str(x['body']['Error']))
 
     @mock.patch("update_survey_period.db.create_engine")
     @mock.patch("update_survey_period.Session.query")
@@ -107,8 +148,7 @@ class TestUpdateSurveyPeriod(unittest.TestCase):
                 mock_session = AlchemyMagicMock()
                 mock_sesh.return_value = mock_session
                 mock_session.commit.side_effect =\
-                    db.exc.OperationalError("Side effect in full effect",
-                                            "", "")
+                    db.exc.OperationalError("", "", "")
                 mock_update.return_value.values.return_value\
                     .returning.return_value\
                     .on_conflict_do_nothing.return_value = "bob"
@@ -121,6 +161,34 @@ class TestUpdateSurveyPeriod(unittest.TestCase):
 
         assert (x["statusCode"] == 500)
         assert ("Failed To Commit Changes" in x['body']['Error'])
+        assert ("Operational Error" in str(x['body']['Error']))
+
+    @mock.patch("update_survey_period.db.create_engine")
+    @mock.patch("update_survey_period.Session.query")
+    @mock.patch("update_survey_period.alchemy_functions")
+    def test_commit_fail_general(self, mock_create_engine, mock_update,
+                                 mock_alchemy_funks):
+        with mock.patch.dict(
+                update_survey_period.os.environ,
+                {"Database_Location": "Djibouti"}
+        ):
+            with mock.patch("update_survey_period.Session") as mock_sesh:
+                mock_session = AlchemyMagicMock()
+                mock_sesh.return_value = mock_session
+                mock_session.commit.side_effect = Exception("Bad Me")
+                mock_update.return_value.values.return_value\
+                    .returning.return_value\
+                    .on_conflict_do_nothing.return_value = "bob"
+
+                x = update_survey_period.lambda_handler(
+                    {'active_period': True, 'number_of_responses': 2,
+                     'number_cleared': 2, 'number_cleared_first_time': 1,
+                     'sample_size': 2, 'survey_period': '201712',
+                     'survey_code': '066'}, '')
+
+        assert (x["statusCode"] == 500)
+        assert ("Failed To Commit Changes" in x['body']['Error'])
+        assert ("General Error" in str(x['body']['Error']))
 
     @mock.patch("update_survey_period.db.create_engine")
     @mock.patch("update_survey_period.Session.query")
@@ -135,8 +203,7 @@ class TestUpdateSurveyPeriod(unittest.TestCase):
                 mock_session = AlchemyMagicMock()
                 mock_sesh.return_value = mock_session
                 mock_session.close.side_effect =\
-                    db.exc.OperationalError("Side effect in full effect",
-                                            "", "")
+                    db.exc.OperationalError("", "", "")
                 mock_update.return_value.values.return_value\
                     .returning.return_value\
                     .on_conflict_do_nothing.return_value = "bob"
@@ -149,3 +216,31 @@ class TestUpdateSurveyPeriod(unittest.TestCase):
 
         assert (x["statusCode"] == 500)
         assert ("Database Session Closed Badly." in x['body']['Error'])
+        assert ("Operational Error" in str(x['body']['Error']))
+
+    @mock.patch("update_survey_period.db.create_engine")
+    @mock.patch("update_survey_period.Session.query")
+    @mock.patch("update_survey_period.alchemy_functions")
+    def test_close_fail_general(self, mock_create_engine, mock_update,
+                                mock_alchemy_funks):
+        with mock.patch.dict(
+                update_survey_period.os.environ,
+                {"Database_Location": "Djibouti"}
+        ):
+            with mock.patch("update_survey_period.Session") as mock_sesh:
+                mock_session = AlchemyMagicMock()
+                mock_sesh.return_value = mock_session
+                mock_session.close.side_effect = Exception("Bad Me")
+                mock_update.return_value.values.return_value\
+                    .returning.return_value\
+                    .on_conflict_do_nothing.return_value = "bob"
+
+                x = update_survey_period.lambda_handler(
+                    {'active_period': True, 'number_of_responses': 2,
+                     'number_cleared': 2, 'number_cleared_first_time': 1,
+                     'sample_size': 2, 'survey_period': '201712',
+                     'survey_code': '066'}, '')
+
+        assert (x["statusCode"] == 500)
+        assert ("Database Session Closed Badly." in x['body']['Error'])
+        assert ("General Error" in str(x['body']['Error']))

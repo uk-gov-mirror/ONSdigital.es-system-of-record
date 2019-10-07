@@ -70,7 +70,7 @@ def lambda_handler(event, context):
             .format(current_table, e))
         return {"statusCode": 500,
                 "body": {"Error":
-                         "Operation Error, Failed To Retrieve Data: {}"
+                         "Operational Error, Failed To Retrieve Data: {}"
                          .format(current_table)}}
     except Exception as e:
         logger.error(

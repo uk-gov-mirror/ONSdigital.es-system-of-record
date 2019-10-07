@@ -59,12 +59,12 @@ class TestGetAllReferenceData(unittest.TestCase):
 
             assert(x["statusCode"] == 500)
             assert ("Failed To Retrieve" in x['body']['Error'])
-            assert ("Operation Error" in x['body']['Error'])
+            assert ("Operational Error" in x['body']['Error'])
 
     @mock.patch("get_all_reference_data.db.create_engine")
     @mock.patch("get_all_reference_data.Session.query")
     @mock.patch("get_all_reference_data.alchemy_functions")
-    def test_lambda_handler_select_general_fail(self, mock_create_engine,
+    def test_lambda_handler_select_fail_general(self, mock_create_engine,
                                                 mock_select,
                                                 mock_alchemy_functions):
 
@@ -123,7 +123,7 @@ class TestGetAllReferenceData(unittest.TestCase):
         assert ("Operational Error" in str(x['body']['Error']))
 
     @mock.patch("get_all_reference_data.db.create_engine")
-    def test_db_connection_exception(self, mock_create_engine):
+    def test_db_connection_exception_general(self, mock_create_engine):
         with mock.patch.dict(
                 get_all_reference_data.os.environ,
                 {"Database_Location": "MyPostgresDatase"}
@@ -161,9 +161,9 @@ class TestGetAllReferenceData(unittest.TestCase):
     @mock.patch("get_all_reference_data.db.create_engine")
     @mock.patch("get_all_reference_data.Session.query")
     @mock.patch("get_all_reference_data.alchemy_functions")
-    def test_lambda_handler_connection_close(self, mock_create_engine,
-                                             mock_select,
-                                             mock_alchemy_functions):
+    def test_lambda_handler_connection_close_general(self, mock_create_engine,
+                                                     mock_select,
+                                                     mock_alchemy_functions):
 
         with mock.patch.dict(
             get_all_reference_data.os.environ,
