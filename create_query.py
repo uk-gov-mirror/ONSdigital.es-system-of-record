@@ -48,13 +48,15 @@ def lambda_handler(event, context):
         return {"statusCode": 500,
                 "body": {"Error": "Driver Error, Failed To Connect."}}
     except db.exc.OperationalError as e:
-        logger.error("Operational Error Encountered: {}".format(e))
+        logger.error("Operational Error, Encountered: {}".format(e))
         return {"statusCode": 500,
                 "body": {"Error": "Operational Error, Failed To Connect."}}
     except Exception as e:
-        logger.error("Failed To Connect To The Database: {}".format(e))
+        logger.error("General Error, Failed To Connect To The Database: {}"
+                     .format(e))
         return {"statusCode": 500,
-                "body": {"Error": "Failed To Connect To The Database."}}
+                "body": {"Error": "General Error, " +
+                                  "Failed To Connect To The Database."}}
 
     try:
         logger.info("Fetching Table Model: {}".format("query"))
@@ -84,16 +86,19 @@ def lambda_handler(event, context):
 
     except db.exc.OperationalError as e:
         logger.error(
-            "Alchemy Operational Error When Inserting Data: {} {}"
+            "Operational Error, When Inserting Data: {} {}"
             .format("query", e))
         return {"statusCode": 500,
-                "body": {"Error": "Operation Error, Failed To Insert Data: {}"
+                "body": {"Error": "Operational Error, " +
+                                  "Failed To Insert Data: {}"
                          .format("query")}}
     except Exception as e:
-        logger.error("Problem Inserting Data From The Table: {} {}"
+        logger.error("General Error, Problem Inserting " +
+                     "Data From The Table: {} {}"
                      .format("query", e))
         return {"statusCode": 500,
-                "body": {"Error": "Failed To Insert Data: {}".format("query")}}
+                "body": {"Error": "General Error, Failed To Insert Data: {}"
+                         .format("query")}}
 
     try:
         if "Exceptions" in event.keys():
@@ -165,51 +170,57 @@ def lambda_handler(event, context):
                                 session.flush()
                             except db.exc.OperationalError as e:
                                 logger.error(
-                                    "Alchemy Operational Error " +
+                                    "Operational Error, " +
                                     "When Inserting Data: {} {}"
                                     .format("failed_vet", e))
                                 return {"statusCode": 500,
                                         "body": {
-                                          "Error": "Operation Error, " +
+                                          "Error": "Operational Error, " +
                                                    "Failed To Insert Data: {}"
                                                    .format("failed_vet")}}
                             except Exception as e:
                                 logger.error(
-                                    "Problem Inserting Data From " +
+                                    "General Error, Problem " +
+                                    "Inserting Data From " +
                                     "The Table: {} {}"
                                     .format("failed_vet", e))
                                 return {"statusCode": 500,
                                         "body": {
-                                          "Error": "Failed To Insert Data: {}"
+                                          "Error": "General Error, " +
+                                                   "Failed To Insert Data: {}"
                                           .format("failed_vet")}}
 
                 except db.exc.OperationalError as e:
                     logger.error(
-                        "Alchemy Operational Error When Inserting Data: {} {}"
+                        "Operational Error, When Inserting Data: {} {}"
                         .format("question_anomaly", e))
                     return {"statusCode": 500,
-                            "body": {"Error": "Operation Error, " +
+                            "body": {"Error": "Operational Error, " +
                                               "Failed To Insert Data: {}"
                                               .format("question_anomaly")}}
                 except Exception as e:
-                    logger.error("Problem Inserting Data From The Table: {} {}"
+                    logger.error("General Error, Problem Inserting " +
+                                 "Data From The Table: {} {}"
                                  .format("question_anomaly", e))
                     return {"statusCode": 500,
-                            "body": {"Error": "Failed To Insert Data: {}"
+                            "body": {"Error": "General Error, " +
+                                              "Failed To Insert Data: {}"
                                      .format("question_anomaly")}}
 
     except db.exc.OperationalError as e:
         logger.error(
-            "Alchemy Operational Error When Inserting Data: {} {}"
+            "Operational Error, When Inserting Data: {} {}"
             .format("step_exception", e))
         return {"statusCode": 500,
-                "body": {"Error": "Operation Error, Failed To Insert Data: {}"
+                "body": {"Error": "Operational Error, " +
+                                  "Failed To Insert Data: {}"
                          .format("step_exception")}}
     except Exception as e:
-        logger.error("Problem Inserting Data From The Table: {} {}"
+        logger.error("General Error, Problem Inserting " +
+                     "Data From The Table: {} {}"
                      .format("step_exception", e))
         return {"statusCode": 500,
-                "body": {"Error": "Failed To Insert Data: {}"
+                "body": {"Error": "General Error, Failed To Insert Data: {}"
                          .format("step_exception")}}
 
     try:
@@ -255,44 +266,51 @@ def lambda_handler(event, context):
                     session.flush()
                 except db.exc.OperationalError as e:
                     logger.error(
-                        "Alchemy Operational Error When Inserting Data: {} {}"
+                        "Operational Error, When Inserting Data: {} {}"
                         .format("query_task_update", e))
                     return {"statusCode": 500,
-                            "body": {"Error": "Operation Error, " +
+                            "body": {"Error": "Operational Error, " +
                                               "Failed To Insert Data: {}"
                                               .format("query_task_update")}}
                 except Exception as e:
                     logger.error(
-                        "Problem Inserting Data From The Table: {} {}"
+                        "General Error, Problem Inserting " +
+                        "Data From The Table: {} {}"
                         .format("query_task_update", e))
                     return {"statusCode": 500,
-                            "body": {"Error": "Failed To Insert Data: {}"
+                            "body": {"Error": "General Error, " +
+                                              "Failed To Insert Data: {}"
                                      .format("query_task_update")}}
     except db.exc.OperationalError as e:
-        logger.error("Alchemy Operational Error When Inserting Data: {} {}"
+        logger.error("Operational Error, When Inserting Data: {} {}"
                      .format("query_task", e))
         return {"statusCode": 500,
-                "body": {"Error": "Operation Error, Failed To Insert Data: {}"
+                "body": {"Error": "Operational Error, " +
+                                  "Failed To Insert Data: {}"
                          .format("query_task")}}
     except Exception as e:
-        logger.error("Problem Inserting Data From The Table: {} {}"
+        logger.error("General Error, Problem Inserting " +
+                     "Data From The Table: {} {}"
                      .format("query_task", e))
         return {"statusCode": 500,
-                "body": {"Error": "Failed To Insert Data: {}"
+                "body": {"Error": "General Error, Failed To Insert Data: {}"
                          .format("query_task")}}
 
     try:
         logger.info("Commit Session.")
         session.commit()
     except db.exc.OperationalError as e:
-        logger.error("Operation Error, Failed To Commit Changes: {}"
+        logger.error("Operational Error, Failed To Commit Changes: {}"
                      .format(e))
         return {"statusCode": 500,
-                "body": {"Error": "Failed To Commit Changes."}}
+                "body": {"Error": "Operational Error, " +
+                                  "Failed To Commit Changes."}}
     except Exception as e:
-        logger.error("Failed To Commit Changes To Database: {}".format(e))
+        logger.error("General Error, Failed To Commit Changes To Database: {}"
+                     .format(e))
         return {"statusCode": 500,
-                "body": {"Error": "Failed To Commit Changes To The Database."}}
+                "body": {"Error": "General Error, " +
+                                  "Failed To Commit Changes To The Database."}}
 
     try:
         logger.info("Closing Session.")
@@ -301,13 +319,15 @@ def lambda_handler(event, context):
         logger.error(
             "Operational Error, Failed To Close The Session: {}".format(e))
         return {"statusCode": 500,
-                "body": {"Error": "Database Session Closed Badly."}}
+                "body": {"Error": "Operational Error, " +
+                                  "Database Session Closed Badly."}}
     except Exception as e:
-        logger.error("Failed To Close The Session: {}".format(e))
+        logger.error("General Error, Failed To Close The Session: {}"
+                     .format(e))
         return {"statusCode": 500,
-                "body": {"Error": "Database Session Closed Badly."}}
+                "body": {"Error": "General Error, " +
+                                  "Database Session Closed Badly."}}
 
-    print(new_query)
     logger.info("create_query Has Successfully Run.")
     return {"statusCode": 201,
             "body": {"Success": "Successfully Created Query: {}"
