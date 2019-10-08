@@ -116,7 +116,7 @@ class TestUpdateSurveyPeriod(unittest.TestCase):
     @mock.patch("update_survey_period.db.create_engine")
     @mock.patch("update_survey_period.alchemy_functions")
     def test_update_survey_period_fail_general(self, mock_create_engine,
-                                       mock_alchemy_funcs):
+                                               mock_alchemy_funcs):
         with mock.patch.dict(
             update_survey_period.os.environ,
                 {"Database_Location": "Djibouti"}

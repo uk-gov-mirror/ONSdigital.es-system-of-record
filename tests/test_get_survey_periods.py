@@ -162,8 +162,8 @@ class TestGetSurveyPeriods(unittest.TestCase):
     @mock.patch("get_survey_periods.Session.query")
     @mock.patch("get_survey_periods.alchemy_functions")
     def test_lambda_handler_connection_close_general(self, mock_create_engine,
-                                             mock_select,
-                                             mock_alchemy_functions):
+                                                     mock_select,
+                                                     mock_alchemy_functions):
 
         with mock.patch.dict(
             get_survey_periods.os.environ,

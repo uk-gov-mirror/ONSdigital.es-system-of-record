@@ -107,8 +107,9 @@ class TestGetQueryDashboard(unittest.TestCase):
     @mock.patch("get_query_dashboard.db.create_engine")
     @mock.patch("get_query_dashboard.Session.query")
     @mock.patch("get_query_dashboard.alchemy_functions")
-    def test_lambda_handler_select_fail_general(self, mock_create_engine, mock_select,
-                                        mock_alchemy_functions):
+    def test_lambda_handler_select_fail_general(self, mock_create_engine,
+                                                mock_select,
+                                                mock_alchemy_functions):
         with mock.patch.dict(
                 get_query_dashboard.os.environ,
                 {"Database_Location": "MyPostgresDatase"}
@@ -210,8 +211,8 @@ class TestGetQueryDashboard(unittest.TestCase):
     @mock.patch("get_query_dashboard.Session.query")
     @mock.patch("get_query_dashboard.alchemy_functions")
     def test_lambda_handler_connection_close_general(self, mock_create_engine,
-                                             mock_select,
-                                             mock_alchemy_functions):
+                                                     mock_select,
+                                                     mock_alchemy_functions):
 
         with mock.patch.dict(
             get_query_dashboard.os.environ,

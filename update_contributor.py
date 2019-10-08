@@ -48,13 +48,15 @@ def lambda_handler(event, context):
         return {"statusCode": 500,
                 "body": {"Error": "Driver Error, Failed To Connect."}}
     except db.exc.OperationalError as e:
-        logger.error("Operational Error Encountered: {}".format(e))
+        logger.error("Operational Error, Encountered: {}".format(e))
         return {"statusCode": 500,
                 "body": {"Error": "Operational Error, Failed To Connect."}}
     except Exception as e:
-        logger.error("Failed To Connect To The Database: {}".format(e))
+        logger.error("General Error, Failed To Connect To The Database: {}"
+                     .format(e))
         return {"statusCode": 500,
-                "body": {"Error": "Failed To Connect To The Database."}}
+                "body": {"Error": "General Error, Failed To " +
+                                  "Connect To The Database."}}
 
     current_time = str(datetime.now())
 
@@ -80,30 +82,35 @@ def lambda_handler(event, context):
 
     except db.exc.OperationalError as e:
         logger.error(
-            "Alchemy Operational Error When Updating Data: {} {}"
+            "Operational Error, When Updating Data: {} {}"
             .format("contributor_survey_period", e))
         return {"statusCode": 500,
-                "body": {"Error": "Operation Error, Failed To Update Data: {}"
+                "body": {"Error": "Operational Error, " +
+                                  "Failed To Update Data: {}"
                          .format("contributor_survey_period")}}
     except Exception as e:
-        logger.error("Problem Updating Data From The Table: {} {}"
+        logger.error("General Error, " +
+                     "Problem Updating Data From The Table: {} {}"
                      .format("contributor_survey_period", e))
         return {"statusCode": 500,
-                "body": {"Error": "Failed To Update Data: {}"
+                "body": {"Error": "General Error, Failed To Update Data: {}"
                          .format("contributor_survey_period")}}
 
     try:
         logger.info("Commit Session.")
         session.commit()
     except db.exc.OperationalError as e:
-        logger.error("Operation Error, Failed To Commit Changes: {}"
+        logger.error("Operational Error, Failed To Commit Changes: {}"
                      .format(e))
         return {"statusCode": 500,
-                "body": {"Error": "Failed To Commit Changes."}}
+                "body": {"Error": "Operational Error, " +
+                                  "Failed To Commit Changes."}}
     except Exception as e:
-        logger.error("Failed To Commit Changes To Database: {}".format(e))
+        logger.error("General Error, Failed To Commit Changes To Database: {}"
+                     .format(e))
         return {"statusCode": 500,
-                "body": {"Error": "Failed To Commit Changes To The Database."}}
+                "body": {"Error": "General Error, Failed To " +
+                                  "Commit Changes To The Database."}}
 
     try:
         logger.info("Closing Session.")
@@ -112,11 +119,14 @@ def lambda_handler(event, context):
         logger.error(
             "Operational Error, Failed To Close The Session: {}".format(e))
         return {"statusCode": 500,
-                "body": {"Error": "Database Session Closed Badly."}}
+                "body": {"Error": "Operational Error, " +
+                                  "Database Session Closed Badly."}}
     except Exception as e:
-        logger.error("Failed To Close The Session: {}".format(e))
+        logger.error("General Error, Failed To Close " +
+                     "The Session: {}".format(e))
         return {"statusCode": 500,
-                "body": {"Error": "Database Session Closed Badly."}}
+                "body": {"Error": "General Error, " +
+                                  "Database Session Closed Badly."}}
 
     logger.info("update_contributor Has Successfully Run.")
     return {"statusCode": 200,
