@@ -103,6 +103,32 @@ class TestGetSurveyPeriods(unittest.TestCase):
         assert (x["statusCode"] == 500)
         assert ("Configuration Error:" in x['body']['Error'])
 
+    def test_input_exception(self):
+        with mock.patch.dict(
+                get_survey_periods.os.environ,
+                {"Database_Location": "MyPostgresDatase"}
+        ):
+            x = get_survey_periods.lambda_handler('', '')
+
+        assert (x["statusCode"] == 400)
+        assert ("Invalid" in str(x['body']['Error']))
+
+    @mock.patch("get_survey_periods.db.create_engine")
+    def test_db_connection_exception_driver(self, mock_create_engine):
+
+        with mock.patch.dict(
+                get_survey_periods.os.environ,
+                {"Database_Location": "MyPostgresDatase"}
+        ):
+            mock_create_engine.side_effect =\
+                sqlalchemy.exc.NoSuchModuleError('', '', '')
+            x = get_survey_periods.lambda_handler({"survey_period": "",
+                                                   "survey_code": ""}, '')
+
+        assert (x["statusCode"] == 500)
+        assert ("Failed To Connect" in x['body']['Error'])
+        assert ("Driver Error" in str(x['body']['Error']))
+
     @mock.patch("get_survey_periods.db.create_engine")
     def test_db_connection_exception(self, mock_create_engine):
 

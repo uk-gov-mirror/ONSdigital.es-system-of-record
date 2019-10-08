@@ -52,6 +52,22 @@ class TestCreateQuery(unittest.TestCase):
         assert ("Invalid" in str(x['body']['Error']))
 
     @mock.patch("create_query.db.create_engine")
+    def test_db_connection_exception_driver(self, mock_create_engine):
+        with open('tests/fixtures/test_data.txt') as infile:
+            test_data = json.load(infile)
+            with mock.patch.dict(
+                    create_query.os.environ,
+                    {"Database_Location": "MyPostgresDatase"}
+            ):
+                mock_create_engine.side_effect =\
+                    db.exc.NoSuchModuleError('', '', '')
+                x = create_query.lambda_handler(test_data, '')
+
+        assert (x["statusCode"] == 500)
+        assert ("Failed To Connect" in x['body']['Error'])
+        assert ("Driver Error" in str(x['body']['Error']))
+
+    @mock.patch("create_query.db.create_engine")
     def test_db_connection_exception(self, mock_create_engine):
         with open('tests/fixtures/test_data.txt') as infile:
             test_data = json.load(infile)
@@ -267,6 +283,37 @@ class TestCreateQuery(unittest.TestCase):
             assert(x["statusCode"] == 500)
             assert ("Failed To Insert Data: failed_vet" in x['body']['Error'])
             assert ("General Error" in str(x['body']['Error']))
+
+    @mock.patch("create_query.db.create_engine")
+    @mock.patch("create_query.Session.refresh")
+    def test_query_task_insert_fail(self, mock_create_engine, mock_refresh):
+        with mock.patch.dict(
+            create_query.os.environ, {"Database_Location": "sweden"}
+        ):
+            with open('tests/fixtures/test_data.txt') as infile:
+                test_data = json.load(infile)
+            with mock.patch("create_query.Session.add") as mock_insert:
+                with mock.patch("create_query.Session.query") as mock_return:
+                    mock_return.return_value.all.return_value = pd.DataFrame(
+                        {0: [1]})
+
+                    mock_therest = mock.Mock()
+
+                    #  So many 'mock_therest's are needed
+                    #  due to the nature of the test data used.
+                    mock_insert.side_effect = [
+                        mock_therest, mock_therest,
+                        mock_therest, mock_therest,
+                        mock_therest, mock_therest,
+                        mock_therest,
+                        db.exc.OperationalError("", "", "")]
+
+                    x = create_query.lambda_handler(test_data, '')
+
+            assert(x["statusCode"] == 500)
+            assert ("Failed To Insert Data: query_task"
+                    in x['body']['Error'])
+            assert ("Operational Error" in str(x['body']['Error']))
 
     @mock.patch("create_query.db.create_engine")
     @mock.patch("create_query.Session.refresh")

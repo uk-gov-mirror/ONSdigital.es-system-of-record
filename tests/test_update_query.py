@@ -50,6 +50,22 @@ class TestUpdateQuery(unittest.TestCase):
         assert ("Invalid" in str(x['body']))
 
     @mock.patch("update_query.db.create_engine")
+    def test_db_connection_exception_driver(self, mock_create_engine):
+        with open('tests/fixtures/test_data.txt') as infile:
+            test_data = json.load(infile)
+            with mock.patch.dict(
+                    update_query.os.environ,
+                    {"Database_Location": "MyPostgresDatase"}
+            ):
+                mock_create_engine.side_effect =\
+                    db.exc.NoSuchModuleError('', '', '')
+                x = update_query.lambda_handler(test_data, '')
+
+        assert (x["statusCode"] == 500)
+        assert ("Failed To Connect" in x['body']['Error'])
+        assert ("Driver Error" in str(x['body']['Error']))
+
+    @mock.patch("update_query.db.create_engine")
     def test_db_connection_exception(self, mock_create_engine,):
         with open('tests/fixtures/test_data.txt') as infile:
             test_data = json.load(infile)

@@ -108,6 +108,21 @@ class TestGetAllReferenceData(unittest.TestCase):
         assert ("Configuration Error:" in x['body']['Error'])
 
     @mock.patch("get_all_reference_data.db.create_engine")
+    def test_db_connection_exception_driver(self, mock_create_engine):
+
+        with mock.patch.dict(
+                get_all_reference_data.os.environ,
+                {"Database_Location": "MyPostgresDatase"}
+        ):
+            mock_create_engine.side_effect =\
+                sqlalchemy.exc.NoSuchModuleError('', '', '')
+            x = get_all_reference_data.lambda_handler('', '')
+
+        assert (x["statusCode"] == 500)
+        assert ("Failed To Connect" in x['body']['Error'])
+        assert ("Driver Error" in str(x['body']['Error']))
+
+    @mock.patch("get_all_reference_data.db.create_engine")
     def test_db_connection_exception(self, mock_create_engine):
 
         with mock.patch.dict(

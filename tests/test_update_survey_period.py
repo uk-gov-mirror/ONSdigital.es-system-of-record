@@ -54,6 +54,25 @@ class TestUpdateSurveyPeriod(unittest.TestCase):
         assert ("Invalid" in str(x['body']['Error']))
 
     @mock.patch("update_survey_period.db.create_engine")
+    def test_db_connection_exception_driver(self, mock_create_engine):
+
+        with mock.patch.dict(
+                update_survey_period.os.environ,
+                {"Database_Location": "MyPostgresDatase"}
+        ):
+            mock_create_engine.side_effect =\
+                db.exc.NoSuchModuleError('', '', '')
+            x = update_survey_period.lambda_handler(
+                {'active_period': True, 'number_of_responses': 2,
+                 'number_cleared': 2, 'number_cleared_first_time': 1,
+                 'sample_size': 2, 'survey_period': '201712',
+                 'survey_code': '066'}, '')
+
+        assert (x["statusCode"] == 500)
+        assert ("Failed To Connect" in x['body']['Error'])
+        assert ("Driver Error" in str(x['body']['Error']))
+
+    @mock.patch("update_survey_period.db.create_engine")
     def test_db_connection_exception(self, mock_create_engine):
         with mock.patch.dict(
                 update_survey_period.os.environ,

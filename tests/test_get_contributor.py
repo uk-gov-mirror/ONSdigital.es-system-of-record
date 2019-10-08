@@ -157,6 +157,31 @@ class TestGetContributor(unittest.TestCase):
         assert (x["statusCode"] == 500)
         assert ("Configuration Error:" in x['body']['Error'])
 
+    def test_input_exception(self):
+        with mock.patch.dict(
+                get_contributor.os.environ,
+                {"Database_Location": "MyPostgresDatase"}
+        ):
+            x = get_contributor.lambda_handler('', '')
+
+        assert (x["statusCode"] == 400)
+        assert ("Invalid" in str(x['body']['Error']))
+
+    @mock.patch("get_contributor.db.create_engine")
+    def test_db_connection_exception_driver(self, mock_create_engine):
+
+        with mock.patch.dict(
+                get_contributor.os.environ,
+                {"Database_Location": "MyPostgresDatase"}
+        ):
+            mock_create_engine.side_effect =\
+                sqlalchemy.exc.NoSuchModuleError('', '', '')
+            x = get_contributor.lambda_handler({"ru_reference": ""}, '')
+
+        assert (x["statusCode"] == 500)
+        assert ("Failed To Connect" in x['body']['Error'])
+        assert ("Driver Error" in str(x['body']['Error']))
+
     @mock.patch("get_contributor.db.create_engine")
     def test_db_connection_exception(self, mock_create_engine):
 
