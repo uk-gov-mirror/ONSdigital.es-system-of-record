@@ -88,9 +88,86 @@ class TestGetQueryDashboard(unittest.TestCase):
 
     @mock.patch("get_query_dashboard.db.create_engine")
     @mock.patch("get_query_dashboard.Session.query")
+    def test_lambda_handler_select_fail(self, mock_create_engine, mock_select):
+
+        with mock.patch.dict(
+            get_query_dashboard.os.environ, {"Database_Location":
+                                             "MyPostgresDatase"}
+        ):
+            with mock.patch("get_query_dashboard.alchemy_functions")\
+                    as mock_alchemy_functions:
+                mock_alchemy_functions.return_value\
+                    .table_model.return_value = 'I Am A Table'
+                mock_alchemy_functions.to_df.side_effect = [
+                    pd.DataFrame({"query_reference": [123456],
+                                  "ru_reference": ["xxxxx"],
+                                  "survey_code": ["xxxx"],
+                                  "survey_period": ["xxxxx"],
+                                  "current_period": ["xxxxx"],
+                                  "date_raised": ["2007-05-04"],
+                                  "industry_group": ["xxxx"],
+                                  "last_query_update": ["1999-12-16"],
+                                  "query_active": [True],
+                                  "query_description": ["xxxxx"],
+                                  "query_status": ["xxxxxx"],
+                                  "raised_by": ["xxxxxx"],
+                                  "results_state": ["xxxx"],
+                                  "query_type": ["Data Cleaning"],
+                                  "query_type_description": ["xxxxxxxxxxx"],
+                                  "general_specific_flag": [False],
+                                  "target_resolution_date": ["2000-09-11"]}),
+                    sqlalchemy.exc.OperationalError('', '', '')]
+                x = get_query_dashboard.lambda_handler({"query_reference": 0},
+                                                       '')
+
+            assert(x["statusCode"] == 500)
+            assert ("Failed To Retrieve Data: step" in x['body']['Error'])
+            assert ("Operational Error" in x['body']['Error'])
+
+    @mock.patch("get_query_dashboard.db.create_engine")
+    @mock.patch("get_query_dashboard.Session.query")
+    def test_lambda_handler_select_fail_general(self, mock_create_engine,
+                                                mock_select):
+
+        with mock.patch.dict(
+            get_query_dashboard.os.environ, {"Database_Location":
+                                             "MyPostgresDatase"}
+        ):
+            with mock.patch("get_query_dashboard.alchemy_functions")\
+                    as mock_alchemy_functions:
+                mock_alchemy_functions.return_value\
+                    .table_model.return_value = 'I Am A Table'
+                mock_alchemy_functions.to_df.side_effect = [
+                    pd.DataFrame({"query_reference": [123456],
+                                  "ru_reference": ["xxxxx"],
+                                  "survey_code": ["xxxx"],
+                                  "survey_period": ["xxxxx"],
+                                  "current_period": ["xxxxx"],
+                                  "date_raised": ["2007-05-04"],
+                                  "industry_group": ["xxxx"],
+                                  "last_query_update": ["1999-12-16"],
+                                  "query_active": [True],
+                                  "query_description": ["xxxxx"],
+                                  "query_status": ["xxxxxx"],
+                                  "raised_by": ["xxxxxx"],
+                                  "results_state": ["xxxx"],
+                                  "query_type": ["Data Cleaning"],
+                                  "query_type_description": ["xxxxxxxxxxx"],
+                                  "general_specific_flag": [False],
+                                  "target_resolution_date": ["2000-09-11"]}),
+                    Exception("Bad Me")]
+                x = get_query_dashboard.lambda_handler({"query_reference": 0},
+                                                       '')
+
+            assert(x["statusCode"] == 500)
+            assert ("Failed To Retrieve Data: step" in x['body']['Error'])
+            assert ("General Error" in x['body']['Error'])
+
+    @mock.patch("get_query_dashboard.db.create_engine")
+    @mock.patch("get_query_dashboard.Session.query")
     @mock.patch("get_query_dashboard.alchemy_functions")
-    def test_lambda_handler_select_fail(self, mock_create_engine, mock_select,
-                                        mock_alchemy_functions):
+    def test_lambda_handler_query_fail(self, mock_create_engine, mock_select,
+                                       mock_alchemy_functions):
 
         with mock.patch.dict(
             get_query_dashboard.os.environ,
@@ -107,9 +184,9 @@ class TestGetQueryDashboard(unittest.TestCase):
     @mock.patch("get_query_dashboard.db.create_engine")
     @mock.patch("get_query_dashboard.Session.query")
     @mock.patch("get_query_dashboard.alchemy_functions")
-    def test_lambda_handler_select_fail_general(self, mock_create_engine,
-                                                mock_select,
-                                                mock_alchemy_functions):
+    def test_lambda_handler_query_fail_general(self, mock_create_engine,
+                                               mock_select,
+                                               mock_alchemy_functions):
         with mock.patch.dict(
                 get_query_dashboard.os.environ,
                 {"Database_Location": "MyPostgresDatase"}
