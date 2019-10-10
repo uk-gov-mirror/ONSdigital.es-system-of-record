@@ -21,6 +21,7 @@ Designed to be used as lambda on aws. The use of alembic and sqlalchemy means th
 **Test Instructions** <br>
 <a id='test'>
 To run the basic tests, you just need to:
+
 1 - Build:
 
 ```
@@ -53,18 +54,18 @@ CREATE SCHEMA es_db_test;
 ```
 3 - Run alembic to migrate to latest version of DB:
 ```
-./do.sh run python alembic upgrade --verbose head
+./do.sh run python alembic upgrade head
 ```
 4 - Now you can run the insert_test_data script:
 ```buildoutcfg
 ./do.sh run python bash
 ```
-Open the alembic ini and copy the sqlalchemy.url.
+5 - Open the alembic ini and copy the sqlalchemy.url.
 Then within the python container:
 ```
 Database_Location=<thesqlalchemy.url> python insert_test_data.py
 ```
-Database should now be stocked with test data, you can run the various queries in the 
+6 - Database should now be stocked with test data, you can run the various queries in the 
 same way, eg:
 ```
 Database_Location=<thesqlalchemy.url> python get_query.py
