@@ -70,8 +70,7 @@ export Database_Location=postgres://postgres:@postgres/es_results_db
 ```
 python insert_test_data.py
 ```
-7 - Database should now be stocked with test data, you can run the various queries in the 
-same way, eg:
+7 - Database should now be stocked with test data, you can run the various queries as shown below, eg:
 ```
 python -c 'from get_all_reference_data.py, import lambda_handler; lambda_handler({},"")'
 ```
