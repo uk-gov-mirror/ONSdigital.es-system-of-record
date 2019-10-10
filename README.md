@@ -33,6 +33,8 @@ To run the basic tests, you just need to:
 ./do.sh test
 ```
 <hr>
+
+**Local Postgres Instance**
 In order to create a postgres database locally and fill it with test data in order to 
 run the query lambda and recieve test output.:
 
@@ -60,16 +62,20 @@ CREATE SCHEMA es_db_test;
 ```buildoutcfg
 ./do.sh run python bash
 ```
-5 - Open the alembic ini and copy the sqlalchemy.url.
-Then within the python container:
+5 - Set up the Database_Location variable.
 ```
-Database_Location=<thesqlalchemy.url> python insert_test_data.py
+export Database_Location=postgres://postgres:@postgres/es_results_db
 ```
-6 - Database should now be stocked with test data, you can run the various queries in the 
+6 - Load Test Data.
+```
+python insert_test_data.py
+```
+7 - Database should now be stocked with test data, you can run the various queries in the 
 same way, eg:
 ```
-Database_Location=<thesqlalchemy.url> python get_query.py
+python -c 'from get_all_reference_data.py, import lambda_handler; lambda_handler({},"")'
 ```
+
 [(Back to top)](#top)
 <hr>
 <a id='files'>
