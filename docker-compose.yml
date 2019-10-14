@@ -9,6 +9,11 @@ services:
     volumes:
       - .:/usr/src/app
       - pre_commit_cache:/home/dockeruser/.cache/pre-commit
+    environment:
+      db_host: postgres
+      db_name: es_results_db
+      db_user: postgres
+      db_pass: ""
   serverless:
     build:
       dockerfile: docker/images/lambda-serverless/Dockerfile
@@ -24,6 +29,12 @@ services:
       context: .
     volumes:
       - .:/usr/src/app
+  postgres:
+    image: postgres:11
+    volumes:
+      - ./docker/files/postgres:/docker-entrypoint-initdb.d
+
+
 volumes:
   pre_commit_cache:
     external: false
